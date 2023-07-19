@@ -20,7 +20,8 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'bev_camera=aiformula_detection.bev_camera:main'
+            'bev_camera=aiformula_detection.bev_camera:main',
+            'bev_pointcloud=aiformula_detection.bev_pointcloud:main'
         ],
     },
 )
