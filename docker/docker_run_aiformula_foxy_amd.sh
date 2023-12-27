@@ -14,6 +14,7 @@ docker run -it \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -u ${USER_NAME} \
     -w /home/${USER_NAME} \
+    --gpus all \
     --privileged \
     --net host \
     --name aiformula_foxy_amd \

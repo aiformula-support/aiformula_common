@@ -35,6 +35,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         git \
         vim \
         nano \
+        gedit \
         build-essential \
         python3-dev \
         python3-pip && \
@@ -66,6 +67,9 @@ RUN colcon mixin add default \
       https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
     colcon metadata update
 
+# install pytorch
+RUN pip3 install torch torchvision
+
 # add user
 ARG USER_NAME=aiformula
 ARG GROUP_NAME=aiformula
@@ -85,6 +89,12 @@ USER ${USER_NAME}
 RUN sudo echo ${USER_NAME}
 
 ENV TERM=xterm-256color
+
+# install yolop
+WORKDIR /home/${USER_NAME}/workspace
+RUN git clone https://github.com/hustvl/YOLOP.git && \
+    sed -i '/^scipy$/d' ./YOLOP/requirements.txt && \
+    pip3 install -r ./YOLOP/requirements.txt
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER_NAME}/.bashrc && \
     echo "source /home/${USER_NAME}/workspace/install/setup.bash" >> /home/${USER_NAME}/.bashrc
