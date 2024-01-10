@@ -51,6 +51,8 @@ RUN echo "deb http://snapshots.ros.org/${ROS_DISTRO}/final/ubuntu focal main" > 
 RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
     apt-get install -q -y --no-install-recommends \
         ros-${ROS_DISTRO}-${ROS_PKG}=0.9.2-1* \
+        gazebo11 \
+        ros-${ROS_DISTRO}-gazebo-ros-pkgs \
         python3-colcon-common-extensions \
         python3-colcon-mixin \
         python3-rosdep \
