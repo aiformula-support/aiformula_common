@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'zed_node'
+package_name = 'zedx_image_publisher'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-                'zed_node=zed_node.zed_node:main'
+                'zedx_image_publisher=zedx_image_publisher.zedx_image_publisher:main'
         ],
     },
 )

@@ -11,9 +11,9 @@ import pyzed.sl as sl
 
 r_resize = 1
 
-class CameraPublisher(Node):
+class ZedXImagePublisher(Node):
     def __init__(self):
-        super().__init__('camera_publisher')
+        super().__init__('zedx_image_publisher')
         init_params = sl.InitParameters()
         init_params.camera_resolution = sl.RESOLUTION.HD720
         init_params.camera_fps = 60
@@ -31,8 +31,8 @@ class CameraPublisher(Node):
         # self.image_size.height = self.image_size.height /2
         self.image_zed = sl.Mat(self.image_size.width, self.image_size.height, sl.MAT_TYPE.U8_C4)
 
-        self.commpressed_img_pub_ = self.create_publisher(CompressedImage, 'zed_image/compressed', 10)
-        self.raw_img_pub_ = self.create_publisher(Image, 'zed_image', 1)
+        self.commpressed_img_pub_ = self.create_publisher(CompressedImage, '/aiformula_sensing/zedx_image_publisher/image_raw/compressed', 10)
+        self.raw_img_pub_ = self.create_publisher(Image, '/aiformula_sensing/zedx_image_publisher/image_raw', 1)
         timer_cv2 = 1/30   # 15 FPS
         timer_period_raw = 1/30 # publish timer
         timer_period_com = 1/60
@@ -115,11 +115,11 @@ class CameraPublisher(Node):
 def main(args=None):
     rclpy.init(args=args)
     
-    camera_publisher = CameraPublisher()
+    zedx_image_publisher = ZedXImagePublisher()
     
-    rclpy.spin(camera_publisher)
+    rclpy.spin(zedx_image_publisher)
     
-    camera_publisher.destroy_node()
+    zedx_image_publisher.destroy_node()
     rclpy.shutdown()
 
     
