@@ -7,9 +7,5 @@ install(
     DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/urdf
     DESTINATION share/${PROJECT_NAME}
 )
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/launch
-    DESTINATION share/${PROJECT_NAME}
-)
 
 ament_package()
