@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'perception'
+package_name = 'road_detector'
 
 setup(
     name=package_name,
@@ -20,8 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'bev_camera=perception.bev_camera:main',
-            'bev_pointcloud=perception.bev_pointcloud:main'
+            'road_detector=road_detector.road_detector:main'
         ],
     },
 )

@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'control'
+package_name = 'handle_controller'
 
 setup(
     name=package_name,
@@ -20,8 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'roboteq_if=control.roboteq_if:main',
-            'g29_controller_if=control.g29_controller_if:main',
+            'handle_controller=handle_controller.handle_controller:main'
         ],
     },
 )

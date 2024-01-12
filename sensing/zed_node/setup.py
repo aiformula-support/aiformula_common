@@ -1,6 +1,6 @@
 from setuptools import setup
 
-package_name = 'sensing'
+package_name = 'zed_node'
 
 setup(
     name=package_name,
@@ -20,7 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'zedx_if=sensing.zedx_if:main',
+                'zed_node=zed_node.zed_node:main'
         ],
     },
 )
