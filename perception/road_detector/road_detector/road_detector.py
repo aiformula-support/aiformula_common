@@ -5,11 +5,8 @@ import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from pathlib import Path
+from rclpy.utilities import remove_ros_args
 
-# BASE_DIR = os.path.dirname(os.path.dirname(os.path.abspath(__file__)))
-# sys.path.append(BASE_DIR)
-
-# print(sys.path)
 import cv2
 from cv_bridge import CvBridge,CvBridgeError
 
@@ -17,16 +14,15 @@ import torch
 import numpy as np
 import torchvision.transforms as transforms
 
-# ワークスペースの直下にディレクトリyolopがあることを仮定
-# package = str(Path(__file__).resolve().parent.name)
-# print('package:', package)
-# from ament_index_python.packages import get_package_prefix
-# workspace = Path(get_package_prefix(package)).parents[1]
-# ROOT = workspace / 'YOLOP'
-# print('ROOT:', ROOT)
-# if str(ROOT) not in sys.path:
-#    sys.path.insert(0, str(ROOT))  # add ROOT to PATH
-#    ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+#ワークスペースの直下にディレクトリyolopがあることを仮定
+package = str(Path(__file__).resolve().parent.name)
+print('package:', package)
+from ament_index_python.packages import get_package_prefix
+workspace = Path(get_package_prefix(package)).parents[1]
+ROOT = workspace / 'YOLOP'
+if str(ROOT) not in sys.path:
+   sys.path.insert(0, str(ROOT))  # add ROOT to PATH
+   ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
 from lib.config import cfg
 from lib.utils.utils import create_logger, select_device
@@ -48,11 +44,10 @@ transform=transforms.Compose([
 class Detection(Node):
 
     def __init__(self,cfg, opt):
-        super().__init__('detect_node')
-        self.pub = self.create_publisher(Image, 'img_result', 10)
-        self.ll_pub = self.create_publisher(Image, 'll_result', 10)
-        # self.image = self.create_subscription(Image,'/zed_image', self.callback_detect, 10)
-        self.image = self.create_subscription(Image,'/camera/image_raw', self.callback_detect, 10)
+        super().__init__('aiformula_perception/road_detector')
+        self.pub = self.create_publisher(Image, 'aiformula_perception/road_detector/result_image', 10)
+        self.ll_pub = self.create_publisher(Image, 'aiformula_perception/road_detector/mask_image', 10)
+        self.image = self.create_subscription(Image,'aiformula_sensing/zedx_image_publisher/image_raw', self.callback_detect, 10)
         self.cv_bridge = CvBridge() 
 
         logger, _, _ = create_logger(
@@ -72,9 +67,8 @@ class Detection(Node):
 
     def callback_detect(self,data):
         try:
-            self.image = self.cv_bridge.imgmsg_to_cv2(data, "passthrough")
-            self.image = cv2.resize(self.image,(1920,1080))
-            # self.image = self.cv_bridge.imgmsg_to_cv2(data, "bgr8")
+            self.image = self.cv_bridge.imgmsg_to_cv2(data, "bgr8")
+            self.image = cv2.resize(self.image,(640,480))
         except CvBridgeError as e:
             print(e)
 
@@ -121,9 +115,10 @@ class Detection(Node):
         self.pub.publish(bridge.cv2_to_imgmsg(img_det,"bgr8"))
         self.ll_pub.publish(bridge.cv2_to_imgmsg(ll_seg_mask, "mono8"))
 
-def main():
+def parse_opt():
+    sys.argv = remove_ros_args(args=sys.argv)
     parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default='weights/End-to-end.pth', help='model.pth path(s)')
+    parser.add_argument('--weights', nargs='+', type=str, default= ROOT/'weights/End-to-end.pth', help='model.pth path(s)')
     parser.add_argument('--source', type=str, default='videos', help='source')  # file/folder   ex:inference/images
     parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
     parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
@@ -133,7 +128,10 @@ def main():
     parser.add_argument('--augment', action='store_true', help='augmented inference')
     parser.add_argument('--update', action='store_true', help='update all models')
     opt = parser.parse_args()
-    
+    return opt
+
+def main():
+    opt = parse_opt()
     with torch.no_grad():
         rclpy.init()
         detection = Detection(cfg,opt)
@@ -143,22 +141,3 @@ def main():
 
 if __name__ == '__main__':
     main()
-    # parser = argparse.ArgumentParser()
-    # parser.add_argument('--weights', nargs='+', type=str, default='weights/End-to-end.pth', help='model.pth path(s)')
-    # parser.add_argument('--source', type=str, default='videos', help='source')  # file/folder   ex:inference/images
-    # parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    # parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
-    # parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
-    # parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    # parser.add_argument('--save-dir', type=str, default='output', help='directory to save results')
-    # parser.add_argument('--augment', action='store_true', help='augmented inference')
-    # parser.add_argument('--update', action='store_true', help='update all models')
-    # self.opt = parser.parse_args()
-
-    # detection = Detection(cfg,self.opt)
-    # try:
-    #     rclpy.spin(detection)
-    # except KeyboardInterrupt:
-    #     detection.destroy_node()
-    #     rclpy.shutdown()
-    #     print("Shutting Down")   
