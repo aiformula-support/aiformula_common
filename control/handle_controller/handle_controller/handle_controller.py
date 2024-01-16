@@ -6,7 +6,7 @@ from sensor_msgs.msg import Joy
 
 class JoyTransFormer(Node): 
     def __init__(self):
-        super().__init__('g29_controller_node') 
+        super().__init__('handle_controller') 
         self.publisher = self.create_publisher(Twist,'cmd_vel', 10)
         self.subscription = self.create_subscription(Joy,'joy', self.listener_callback, 10)
         self.vel = Twist()

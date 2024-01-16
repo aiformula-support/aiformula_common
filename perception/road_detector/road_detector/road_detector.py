@@ -41,10 +41,10 @@ transform=transforms.Compose([
     normalize,
         ])
 
-class Detection(Node):
+class RoadDetector(Node):
 
     def __init__(self,cfg, opt):
-        super().__init__('aiformula_perception/road_detector')
+        super().__init__('road_detector')
         self.pub = self.create_publisher(Image, 'aiformula_perception/road_detector/result_image', 10)
         self.ll_pub = self.create_publisher(Image, 'aiformula_perception/road_detector/mask_image', 10)
         self.image = self.create_subscription(Image,'aiformula_sensing/zedx_image_publisher/image_raw', self.callback_detect, 10)
@@ -134,9 +134,9 @@ def main():
     opt = parse_opt()
     with torch.no_grad():
         rclpy.init()
-        detection = Detection(cfg,opt)
-        rclpy.spin(detection)
-        detection.destroy_node()
+        road_detector = RoadDetector(cfg,opt)
+        rclpy.spin(road_detector)
+        road_detector.destroy_node()
         rclpy.shutdown()
 
 if __name__ == '__main__':

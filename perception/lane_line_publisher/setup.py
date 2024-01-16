@@ -20,6 +20,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
+            'lane_line_publisher=lane_line_publisher.lane_line_publisher:main'
         ],
     },
 )

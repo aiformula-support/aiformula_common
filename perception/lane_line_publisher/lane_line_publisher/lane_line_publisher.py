@@ -10,9 +10,9 @@ import open3d as o3d
 import matplotlib.pyplot as plt
 from visualization_msgs.msg import Marker, MarkerArray
 
-class BEVPointCloud(Node):
+class LaneLinePublisher(Node):
 	def __init__(self):
-		super().__init__('aiformula_perception/lane_line_publisher')
+		super().__init__('lane_line_publisher')
 		self.image_sub = self.create_subscription(Image, "aiformula_perception/road_detector/mask_image", self.callback_transformer,10)
 		self.ll_points_pub = self.create_publisher(PointCloud2, 'aiformula_perception/lane_line_publisher/bev_points', 10)
 		self.line_points_pub = self.create_publisher(PointCloud2, 'line_points', 10)
@@ -113,9 +113,9 @@ def point_cloud(points, parent_frame):
 
 def main(args=None):
 	rclpy.init(args=args)
-	bev_pointcloud = BEVPointCloud()
-	rclpy.spin(bev_pointcloud)
-	bev_pointcloud.destroy_node()
+	lane_line_publisher = LaneLinePublisher()
+	rclpy.spin(lane_line_publisher)
+	lane_line_publisher.destroy_node()
 	rclpy.shutdown()
 
 if __name__ == '__main__':
