@@ -16,20 +16,20 @@ class JoyTransFormer(Node):
         accel = accel_raw + 1.0
         if accel > 0.1:
             self.vel.linear.x  = 2*accel
+            stearing = Joy.axes[0]
+            self.vel.angular.z  = -3*stearing
             
         brake_raw = Joy.axes[3]
         brake = brake_raw + 1.0
 
         if brake > 0.1:
             self.vel.linear.x  = 0.0
+            self.vel.angular.z  = 0.0
 
-        back_raw = Joy.axes[1]
-        back = back_raw + 1.0
-        if back > 0.1:
-            self.vel.linear.x = -1.5*back
-
-        stearing = Joy.axes[0]
-        self.vel.angular.z  = -4*stearing
+#        back_raw = Joy.axes[1]
+#        back = back_raw + 1.0
+#        if back > 0.1:
+#            self.vel.linear.x = -1.5*back
 
         self.publisher.publish(self.vel)
         self.get_logger().info("Velocity: Linear=%f" % (self.vel.linear.x)) 
