@@ -36,7 +36,7 @@ class ZedXImagePublisher(Node):
             image_sl_left = sl.Mat()
             self.zed.retrieve_image(image_sl_left, sl.VIEW.LEFT, sl.MEM.CPU, self.image_size)
             image_cv_left = image_sl_left.get_data()
-            pub_img = self.br.cv2_to_imgmsg(cv2.cvtColor(image_cv_left, cv2.COLOR_BGRA2RGB), 'bgr8')
+            pub_img = self.br.cv2_to_imgmsg(cv2.cvtColor(image_cv_left, cv2.COLOR_BGRA2BGR), 'bgr8')
 
             msg = CompressedImage()
             msg.format = "jpeg"
