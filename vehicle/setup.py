@@ -7,7 +7,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=[package_name],
-    data_files=get_data_files(package_name, ("config", "urdf")),
+    data_files=get_data_files(package_name, ("config", "launch", "xacro")),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Yuki Akimoto',
