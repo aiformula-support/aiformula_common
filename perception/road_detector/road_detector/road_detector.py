@@ -4,33 +4,30 @@ import platform
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from pathlib import Path
 from rclpy.utilities import remove_ros_args
 
 import cv2
 from cv_bridge import CvBridge,CvBridgeError
 
-import torch
 import numpy as np
+import torch
 import torchvision.transforms as transforms
 
-#ワークスペースの直下にディレクトリyolopがあることを仮定
+from pathlib import Path
+from ament_index_python.packages import get_package_prefix
+
 package = str(Path(__file__).resolve().parent.name)
 print('package:', package)
-from ament_index_python.packages import get_package_prefix
 workspace = Path(get_package_prefix(package)).parents[1]
-ROOT = workspace / 'YOLOP'
+ROOT = workspace / 'src/EC7D_AIformula_Control/perception/road_detector'
 if str(ROOT) not in sys.path:
-   sys.path.insert(0, str(ROOT))  # add ROOT to PATH
-   ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+    sys.path.insert(0, str(ROOT))  # add ROOT to PATH
 
 from lib.config import cfg
 from lib.utils.utils import create_logger, select_device
 from lib.models import get_net
 from lib.dataset.DemoDataset_ros import LoadImages
 from lib.utils import plot_one_box,show_seg_result
-
-#from models.common import DetectMultiBackend
 
 normalize = transforms.Normalize(
     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
@@ -45,7 +42,7 @@ class RoadDetector(Node):
 
     def __init__(self,cfg, opt):
         super().__init__('road_detector')
-        self.pub = self.create_publisher(Image, 'aiformula_perception/road_detector/result_image', 10)
+        self.pub = self.create_publisher(Image, 'aiformula_visualization/road_detector/result_image', 10)
         self.ll_pub = self.create_publisher(Image, 'aiformula_perception/road_detector/mask_image', 10)
         self.image = self.create_subscription(Image,'aiformula_sensing/zedx_image_publisher/image_raw', self.callback_detect, 10)
         self.cv_bridge = CvBridge() 
@@ -68,7 +65,7 @@ class RoadDetector(Node):
     def callback_detect(self,data):
         try:
             self.image = self.cv_bridge.imgmsg_to_cv2(data, "bgr8")
-            self.image = cv2.resize(self.image,(640,480))
+            self.image = cv2.resize(self.image,(640,360))
         except CvBridgeError as e:
             print(e)
 
@@ -97,18 +94,18 @@ class RoadDetector(Node):
         pad_h = int(pad_h)
         ratio = shapes[1][0][1]
 
-        da_predict = da_seg_out[:, :, pad_h:(height-pad_h),pad_w:(width-pad_w)]
-        da_seg_mask = torch.nn.functional.interpolate(da_predict, scale_factor=int(1/ratio), mode='bilinear')
-        _, da_seg_mask = torch.max(da_seg_mask, 1)
-        da_seg_mask = da_seg_mask.int().squeeze().cpu().numpy()
-#        da_seg_mask = morphological_process(da_seg_mask, kernel_size=7)
+#         da_predict = da_seg_out[:, :, pad_h:(height-pad_h),pad_w:(width-pad_w)]
+#         da_seg_mask = torch.nn.functional.interpolate(da_predict, scale_factor=int(1/ratio), mode='bilinear')
+#         _, da_seg_mask = torch.max(da_seg_mask, 1)
+#         da_seg_mask = da_seg_mask.int().squeeze().cpu().numpy()
+##        da_seg_mask = morphological_process(da_seg_mask, kernel_size=7)
         
         ll_predict = ll_seg_out[:, :,pad_h:(height-pad_h),pad_w:(width-pad_w)]
         ll_seg_mask = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1/ratio), mode='bilinear')
         _, ll_seg_mask = torch.max(ll_seg_mask, 1)
         ll_seg_mask = ll_seg_mask.int().squeeze().cpu().numpy()
 
-        img_det = show_seg_result(img_det, (da_seg_mask, ll_seg_mask), _, _, is_demo=True)
+        img_det = show_seg_result(img_det, (ll_seg_mask, ll_seg_mask), _, _, is_demo=True)
         ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
 
         bridge=CvBridge()
