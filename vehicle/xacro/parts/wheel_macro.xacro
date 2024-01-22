@@ -14,20 +14,20 @@
   <xacro:macro name="wheel_link_macro"
                params="wheel
                        x y z roll pitch yaw">
-    <xacro:property name="mesh_file" value="package://vehicle/xacro/meshes/tire_v1.dae"/>
-    <xacro:property name="thickness_scale" value="0.05"/>
-    <xacro:property name="size_scale" value="0.12"/>
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/tire_v1.dae"/>
+    <xacro:property name="THICKNESS_SCALE" value="0.05"/>
+    <xacro:property name="SIZE_SCALE" value="0.12"/>
     <link name="${wheel}_link">
       <visual>
         <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
         <geometry>
-          <mesh filename="${mesh_file}" scale="${thickness_scale} ${size_scale} ${size_scale}"/>
+          <mesh filename="${MESH_FILE}" scale="${THICKNESS_SCALE} ${SIZE_SCALE} ${SIZE_SCALE}"/>
         </geometry>
       </visual>
       <collision>
         <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
         <geometry>
-          <mesh filename="${mesh_file}" scale="${thickness_scale} ${size_scale} ${size_scale}"/>
+          <mesh filename="${MESH_FILE}" scale="${THICKNESS_SCALE} ${SIZE_SCALE} ${SIZE_SCALE}"/>
         </geometry>
       </collision>
       <inertial>
