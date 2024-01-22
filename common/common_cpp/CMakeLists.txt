@@ -3,17 +3,20 @@ project(common_cpp)
 
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
+find_package(tf2_ros REQUIRED)
 find_package(OpenCV REQUIRED)
 
 set(LIBRARY_NAME ${PROJECT_NAME})
 set(DEPENDENCIES
     rclcpp
+    tf2_ros
     OpenCV
 )
 set(INCLUDE_DIRECTORY_NAME_AT_INSTALL "include")
 
 add_library(${LIBRARY_NAME} SHARED
     src/camera.cpp
+    src/tf2_transform.cpp
     src/util.cpp
 )
 target_include_directories(${LIBRARY_NAME} PUBLIC
