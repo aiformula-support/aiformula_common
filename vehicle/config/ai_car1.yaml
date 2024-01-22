@@ -1,0 +1,5 @@
+/**:
+  ros__parameters:
+    size: { width: 1280, height: 720 } # [pix]
+    focal_length: { x: 534.735, y: 534.8950 } # [pix]
+    center_point: { x: 641.8650, y: 354.5450 } # [pix]
