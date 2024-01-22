@@ -1,5 +1,6 @@
 import os
 import sys
+import xacro
 from ament_index_python.packages import get_package_share_directory
 
 def get_intrinsic_param_path(vehicle_name: str) -> str:
@@ -26,3 +27,21 @@ def get_intrinsic_param_path(vehicle_name: str) -> str:
         sys.exit(1)
 
     return intrinsic_yaml_path
+
+def convert_xacro_to_urdf(xacro_path: str, urdf_path: str) -> None:
+    """Convert xacro file to urdf file
+
+    Parameters:
+    ----------
+    `xacro_path`: Source xacro file path
+    `urdf_path`: Converted urdf file path
+
+    Examples:
+    ----------
+    >>> convert_xacro_to_urdf("/path/to/robot.xacro", "/path/to/robot.urdf")
+    """
+    doc = xacro.process_file(xacro_path)
+    robot_desc = doc.toprettyxml(indent="  ")
+    f = open(urdf_path, "w")
+    f.write(robot_desc)
+    f.close()
