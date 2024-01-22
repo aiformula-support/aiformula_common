@@ -9,18 +9,18 @@
       <origin xyz="0.0  0.0  0.0" rpy="0.0  0.0  0.0"/>
     </joint>
 
-    <xacro:property name="mesh_file" value="package://vehicle/xacro/meshes/AIF_body.dae"/>
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/AIF_body.dae"/>
     <link name="${base}_link">
       <visual>
         <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
         <geometry>
-          <mesh filename="${mesh_file}"/>
+          <mesh filename="${MESH_FILE}"/>
         </geometry>
       </visual>
       <collision>
         <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
         <geometry>
-          <mesh filename="${mesh_file}"/>
+          <mesh filename="${MESH_FILE}"/>
         </geometry>
       </collision>
       <inertial>

@@ -13,12 +13,12 @@
   <xacro:macro name="zed_link_macro"
                params="camera
                        size_x size_y size_z roll pitch yaw">
-    <xacro:property name="mesh_file" value="package://vehicle/xacro/meshes/r200.dae"/>
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/r200.dae"/>
     <link name="${camera}_link">
       <visual>
         <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="${roll} ${pitch} ${yaw}"/>
         <geometry>
-          <mesh filename="${mesh_file}"/>
+          <mesh filename="${MESH_FILE}"/>
         </geometry>
       </visual>
       <collision>
@@ -29,17 +29,18 @@
       </collision>
     </link>
 
+    <xacro:property name="BASE_LINE" value="0.120005"/>
     <joint name="${camera}_left_joint" type="fixed">
       <parent link="${camera}_link"/>
       <child link="${camera}_left_link"/>
-      <origin xyz="0.0 ${size_y*0.5} 0.0" rpy="0.0  0.0  0.0"/>
+      <origin xyz="${-BASE_LINE*0.5}  0.0  0.0" rpy="0.0  0.0  0.0"/>
     </joint>
     <link name="${camera}_left_link"/>
 
     <joint name="${camera}_right_joint" type="fixed">
       <parent link="${camera}_link"/>
       <child link="${camera}_right_link"/>
-      <origin xyz="0.0 ${-size_y*0.5} 0.0" rpy="0.0  0.0  0.0"/>
+      <origin xyz="${BASE_LINE*0.5}  0.0  0.0" rpy="0.0  0.0  0.0"/>
     </joint>
     <link name="${camera}_right_link"/>
   </xacro:macro>  
