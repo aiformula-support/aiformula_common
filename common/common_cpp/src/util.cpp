@@ -3,12 +3,14 @@
 namespace aiformula {
 
 /**
- * If `variable` is `false_value`, output `error_statement` and shutdown ros.
+ * @brief If `variable` is `false_value`, output `error_statement` and shutdown ros.
  *
  * @param[in] node_ptr node pointer
  * @param[in] variable Variable to check
  * @param[in] false_value Error value
  * @param[in] error_statement Output statement in case of error
+ *
+ * @note Usage: `checkParam(str, std::string(""), std::string("str is empty !"));`
  */
 template <typename T>
 inline void checkVariable(const rclcpp::Node* node_ptr, const T& variable, const T& false_value,
