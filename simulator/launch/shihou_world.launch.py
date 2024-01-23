@@ -1,58 +1,63 @@
-#!/usr/bin/env python3
-#
-# Copyright 2019 ROBOTIS CO., LTD.
-#
-# Licensed under the Apache License, Version 2.0 (the "License");
-# you may not use this file except in compliance with the License.
-# You may obtain a copy of the License at
-#
-#     http://www.apache.org/licenses/LICENSE-2.0
-#
-# Unless required by applicable law or agreed to in writing, software
-# distributed under the License is distributed on an "AS IS" BASIS,
-# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
-# See the License for the specific language governing permissions and
-# limitations under the License.
-#
-# Authors: Darby Lim
-
 import os
-
-from ament_index_python.packages import get_package_share_directory
 from launch import LaunchDescription
-from launch.actions import ExecuteProcess
+from launch.actions import DeclareLaunchArgument
+from launch.substitutions import LaunchConfiguration
 from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
-from launch.substitutions import LaunchConfiguration
+from launch.actions import ExecuteProcess
+from ament_index_python.packages import get_package_share_directory
+
 
 def generate_launch_description():
-    use_sim_time = LaunchConfiguration('use_sim_time', default='True')
-    world_file_name = 'shihou_world/ai_car.model'
-    world = os.path.join(get_package_share_directory('simulator'),
-                         'worlds', world_file_name)
-    launch_file_dir = os.path.join(get_package_share_directory('simulator'), 'launch')
-    pkg_gazebo_ros = get_package_share_directory('gazebo_ros')
 
-    return LaunchDescription([
+    launch_args = (
+        DeclareLaunchArgument(
+            "world_name",
+            default_value="ai_car",
+            description="World Name",
+        ),
+        DeclareLaunchArgument(
+            "use_sim_time",
+            default_value="true",
+            description="If true, use simulation (Gazebo) clock",
+        ),
+    )
+
+    # use_sim_time = LaunchConfiguration("use_sim_time")
+    use_sim_time = "true"
+    world_name = "ai_car"
+    world_path = os.path.join(get_package_share_directory("simulator"),
+                              "worlds", "shihou_world", world_name + ".model")
+
+    nodes = (
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(pkg_gazebo_ros, 'launch', 'gzserver.launch.py')
+                get_package_share_directory("vehicle") + "/launch/extrinsic_tfstatic_broadcaster.launch.py"
             ),
-            launch_arguments={'world': world}.items(),
+            launch_arguments={
+                "vehicle_name": "ai_car1",
+                "use_sim_time": "true",
+                "use_joint_state_publisher": "true",
+                "use_gui": "false",
+            }.items()
         ),
-
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                os.path.join(pkg_gazebo_ros, 'launch', 'gzclient.launch.py')
+                get_package_share_directory("gazebo_ros") + "/launch/gzserver.launch.py"
+            ),
+            launch_arguments={
+                "world": world_path,
+            }.items()
+        ),
+        IncludeLaunchDescription(
+            PythonLaunchDescriptionSource(
+                get_package_share_directory("gazebo_ros") + "/launch/gzclient.launch.py"
             ),
         ),
-
         ExecuteProcess(
             cmd=['ros2', 'param', 'set', '/gazebo', 'use_sim_time', use_sim_time],
             output='screen'),
-
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource([launch_file_dir, '/robot_state_publisher.launch.py']),
-            launch_arguments={'use_sim_time': use_sim_time}.items(),
-        ),
+    )
+    return LaunchDescription([
+        *nodes,
     ])
