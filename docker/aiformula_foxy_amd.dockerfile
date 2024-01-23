@@ -98,6 +98,9 @@ RUN git clone https://github.com/hustvl/YOLOP.git && \
     sed -i '/^scipy$/d' ./YOLOP/requirements.txt && \
     pip3 install -r ./YOLOP/requirements.txt
 
+# install pytorch
+RUN pip3 install xacro
+
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER_NAME}/.bashrc && \
     echo "source /home/${USER_NAME}/workspace/install/setup.bash" >> /home/${USER_NAME}/.bashrc
 
