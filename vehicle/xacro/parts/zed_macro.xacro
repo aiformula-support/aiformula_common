@@ -13,7 +13,7 @@
   <xacro:macro name="zed_link_macro"
                params="camera
                        size_x size_y size_z roll pitch yaw">
-    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/r200.dae"/>
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/realsense_r200.dae"/>
     <link name="${camera}_link">
       <visual>
         <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="${roll} ${pitch} ${yaw}"/>
