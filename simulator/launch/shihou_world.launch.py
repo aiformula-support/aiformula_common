@@ -25,9 +25,9 @@ def generate_launch_description():
 
     # use_sim_time = LaunchConfiguration("use_sim_time")
     use_sim_time = "true"
-    world_name = "ai_car"
+    world_name = "ai_car1"
     world_path = os.path.join(get_package_share_directory("simulator"),
-                              "worlds", "shihou_world", world_name + ".model")
+                              "worlds", "shihou_course", world_name + ".model")
 
     nodes = (
         IncludeLaunchDescription(
@@ -41,6 +41,9 @@ def generate_launch_description():
                 "use_gui": "false",
             }.items()
         ),
+        # ExecuteProcess(
+            # cmd=["export", "GAZEBO_MODEL_PATH=$(ros2 pkg prefix vehicle)/share/vehicle/xacro"],
+            # shell=True),
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
                 get_package_share_directory("gazebo_ros") + "/launch/gzserver.launch.py"
