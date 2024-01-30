@@ -53,6 +53,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         ros-${ROS_DISTRO}-${ROS_PKG}=0.9.2-1* \
         gazebo11 \
         ros-${ROS_DISTRO}-gazebo-ros-pkgs \
+        ros-${ROS_DISTRO}-joint-state-publisher* \
         python3-colcon-common-extensions \
         python3-colcon-mixin \
         python3-rosdep \
@@ -68,6 +69,9 @@ RUN colcon mixin add default \
     colcon metadata add default \
       https://raw.githubusercontent.com/colcon/colcon-metadata-repository/master/index.yaml && \
     colcon metadata update
+
+# install xacro
+RUN pip3 install xacro
 
 # install pytorch
 RUN pip3 install torch torchvision
@@ -97,9 +101,6 @@ WORKDIR /home/${USER_NAME}/workspace
 RUN git clone https://github.com/hustvl/YOLOP.git && \
     sed -i '/^scipy$/d' ./YOLOP/requirements.txt && \
     pip3 install -r ./YOLOP/requirements.txt
-
-# install pytorch
-RUN pip3 install xacro
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER_NAME}/.bashrc && \
     echo "source /home/${USER_NAME}/workspace/install/setup.bash" >> /home/${USER_NAME}/.bashrc
