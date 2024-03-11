@@ -26,8 +26,8 @@ tf2::Transform getTf2Transform(rclcpp::Node* node_ptr, const std::string& dst_fr
         stamped_tf_dst_T_src =
             tf_buffer.lookupTransform(dst_frame_id, src_frame_id, tf2::TimePointZero, tf2::durationFromSec(1.0));
     } catch (const tf2::TransformException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "[%s] Could not transform %s to %s: %s !", __func__, dst_frame_id.c_str(),
-                     src_frame_id.c_str(), e.what());
+        RCLCPP_ERROR(node_ptr->get_logger(), "[%s] Could not transform '%s' to '%s': %s !", __func__,
+                     dst_frame_id.c_str(), src_frame_id.c_str(), e.what());
         rclcpp::shutdown();
         exit(1);
     }
