@@ -14,10 +14,9 @@ set(DEPENDENCIES
 )
 set(INCLUDE_DIRECTORY_NAME_AT_INSTALL "include")
 
+file(GLOB SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_library(${LIBRARY_NAME} SHARED
-    src/camera.cpp
-    src/tf2_transform.cpp
-    src/util.cpp
+    ${SOURCE_FILES}
 )
 target_include_directories(${LIBRARY_NAME} PUBLIC
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
