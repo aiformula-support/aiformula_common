@@ -55,6 +55,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         ros-${ROS_DISTRO}-gazebo-ros-pkgs \
         ros-${ROS_DISTRO}-joint-state-publisher* \
         python3-colcon-common-extensions \
+        ros-${ROS_DISTRO}-can-msgs \
         python3-colcon-mixin \
         python3-rosdep \
         python3-vcstool && \
