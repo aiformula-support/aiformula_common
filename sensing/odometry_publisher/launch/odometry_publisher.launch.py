@@ -10,9 +10,10 @@ from ament_index_python.packages import get_package_share_directory
 
 def get_bag_play_node(
         context: LaunchContext,
-        use_rosbag_lc: LaunchConfiguration,
+        can_frame_topic_name_lc: LaunchConfiguration,
+        rosbag_play_speed_lc: LaunchConfiguration,
         rosbag_path_lc: LaunchConfiguration,
-        can_frame_topic_name_lc: LaunchConfiguration
+        use_rosbag_lc: LaunchConfiguration
     ) -> Tuple[Node]:
     can_frame_topic_name = context.perform_substitution(can_frame_topic_name_lc)
     topics = [
@@ -24,6 +25,8 @@ def get_bag_play_node(
                 "ros2 bag play",
                 " --topics ",
                 " ".join(topics),
+                " -r ",
+                rosbag_play_speed_lc,
                 " -- ",
                 rosbag_path_lc,
             ],
@@ -55,6 +58,11 @@ def generate_launch_description():
             "rosbag_path",
             default_value="~/data/aiformula/20240212_odom_data/can_rotations",
             description="Path of rosbag to play",
+        ),
+        DeclareLaunchArgument(
+            "rosbag_play_speed",
+            default_value="3.0",
+            description="Speed to play rosbag",
         ),
         DeclareLaunchArgument(
             "use_rviz",
@@ -97,9 +105,10 @@ def generate_launch_description():
         OpaqueFunction(
             function=get_bag_play_node,
             args=[
-                LaunchConfiguration("use_rosbag"),
-                LaunchConfiguration("rosbag_path"),
                 LaunchConfiguration("sub_can_frame_topic_name"),
+                LaunchConfiguration("rosbag_play_speed"),
+                LaunchConfiguration("rosbag_path"),
+                LaunchConfiguration("use_rosbag"),
             ],
         ),
 
