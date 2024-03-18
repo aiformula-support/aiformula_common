@@ -98,6 +98,7 @@ RUN sudo echo ${USER_NAME}
 ENV TERM=xterm-256color
 
 # install yolop
+RUN mkdir /home/${USER_NAME}/workspace
 WORKDIR /home/${USER_NAME}/workspace
 RUN git clone https://github.com/hustvl/YOLOP.git && \
     sed -i '/^scipy$/d' ./YOLOP/requirements.txt && \
