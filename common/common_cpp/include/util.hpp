@@ -2,16 +2,24 @@
 #define UTIL_HPP
 
 // ROS
+#include <tf2/impl/utils.h>
+
 #include <rclcpp/rclcpp.hpp>
 
-// C++
-#include <type_traits>
+// ROS msg
+#include <geometry_msgs/msg/quaternion.hpp>
+#include <std_msgs/msg/header.hpp>
 
 namespace aiformula {
 
-template <typename T>
-inline void checkVariable(const rclcpp::Node* node_ptr, const T& variable, const T& false_value,
-                          const std::string& error_statement);
+inline double toTimeStampDouble(const std_msgs::msg::Header& header) {
+    return header.stamp.sec + static_cast<double>(header.stamp.nanosec) / 1e9;
+}
+
+inline double getYaw(const geometry_msgs::msg::Quaternion& quat_msg) {
+    return tf2::impl::getYaw(tf2::impl::toQuaternion(quat_msg));
+}
+
 }  // namespace aiformula
 
 #endif  // UTIL_HPP
