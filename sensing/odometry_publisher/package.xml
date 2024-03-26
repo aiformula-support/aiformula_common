@@ -9,7 +9,9 @@
 
   <buildtool_depend>ament_cmake</buildtool_depend>
   <depend>rclcpp</depend>
+  <depend>tf2</depend>
   <depend>tf2_ros</depend>
+  <depend>sensor_msgs</depend>
   <depend>can_msgs</depend>
   <depend>nav_msgs</depend>
   <depend>common_cpp</depend>

@@ -1,5 +1,5 @@
 /**:
   ros__parameters:
-    tire:
+    wheel:
       diameter: 0.254 # [m]
       tread: 0.6      # [m]
