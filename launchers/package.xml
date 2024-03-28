@@ -8,6 +8,12 @@
   <license>TODO: License declaration</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
+  <depend>vehicle</depend>
+  <depend>zedx_image_publisher</depend>
+  <depend>ros2_socketcan</depend>
+  <depend>vectornav</depend>
+  <depend>teleop_twist_joy</depend>
+  <depend>odometry_publisher</depend>
 
   <test_depend>ament_lint_auto</test_depend>
   <test_depend>ament_lint_common</test_depend>

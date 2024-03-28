@@ -4,7 +4,7 @@ project(launchers)
 find_package(ament_cmake REQUIRED)
 
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/shell
+    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/launch
     DESTINATION share/${PROJECT_NAME}
 )
 
