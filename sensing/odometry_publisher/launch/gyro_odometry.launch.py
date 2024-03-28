@@ -83,7 +83,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "odom_frame_id",
             default_value="odom",
-            description="Frame id odom",
+            description="Frame id of odom",
         ),
         DeclareLaunchArgument(
             "robot_frame_id",

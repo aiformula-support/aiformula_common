@@ -11,7 +11,6 @@ find_package(nav_msgs REQUIRED)
 find_package(common_cpp REQUIRED)
 
 # wheel_odometry
-file(GLOB SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/*.cpp")
 add_executable(wheel_odometry
 ${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp
 ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/main.cpp
