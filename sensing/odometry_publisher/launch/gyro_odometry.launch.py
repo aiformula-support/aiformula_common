@@ -1,42 +1,11 @@
 import os
-from typing import Tuple
-from launch import LaunchDescription, LaunchContext
+from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, ExecuteProcess, OpaqueFunction
+from launch.actions import DeclareLaunchArgument, ExecuteProcess
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
 from ament_index_python.packages import get_package_share_directory
 
-
-def get_bag_play_node(
-        context: LaunchContext,
-        imu_topic_name_lc: LaunchConfiguration,
-        can_frame_topic_name_lc: LaunchConfiguration,
-        rosbag_play_speed_lc: LaunchConfiguration,
-        rosbag_path_lc: LaunchConfiguration,
-        use_rosbag_lc: LaunchConfiguration
-    ) -> Tuple[Node]:
-    can_frame_topic_name = context.perform_substitution(can_frame_topic_name_lc)
-    imu_topic_name = context.perform_substitution(imu_topic_name_lc)
-    topics = [
-        can_frame_topic_name,
-        imu_topic_name,
-    ]
-    return (
-        ExecuteProcess(
-            cmd=[
-                "ros2 bag play",
-                " --topics ",
-                " ".join(topics),
-                " -r ",
-                rosbag_play_speed_lc,
-                " -- ",
-                rosbag_path_lc,
-            ],
-            condition=IfCondition(use_rosbag_lc),
-            shell=True,
-        ),
-    )
 
 def generate_launch_description():
     PACKAGE_NAME = "odometry_publisher"
@@ -67,7 +36,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "rosbag_path",
-            default_value="~/data/aiformula/20240320_shiho_can_imu/block",
+            default_value="~/data/aiformula/20240328_shiho_can_imu_mag_gnss/test_01",
             description="Path of rosbag to play",
         ),
         DeclareLaunchArgument(
@@ -114,15 +83,19 @@ def generate_launch_description():
         ),
 
         # ros2 bag play
-        OpaqueFunction(
-            function=get_bag_play_node,
-            args=[
+        ExecuteProcess(
+            cmd=[
+                "ros2 bag play",
+                " --topics ",
                 LaunchConfiguration("sub_imu"),
                 LaunchConfiguration("sub_can_frame"),
+                " -r ",
                 LaunchConfiguration("rosbag_play_speed"),
+                " -- ",
                 LaunchConfiguration("rosbag_path"),
-                LaunchConfiguration("use_rosbag"),
             ],
+            condition=IfCondition(LaunchConfiguration("use_rosbag")),
+            shell=True,
         ),
 
         # rviz2
@@ -130,7 +103,8 @@ def generate_launch_description():
             package="rviz2",
             executable="rviz2",
             name="rviz2_gyro_odometry",
-            arguments=["-d", os.path.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
+            arguments=[
+                "-d", os.path.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )
