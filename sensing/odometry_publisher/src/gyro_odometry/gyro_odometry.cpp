@@ -44,10 +44,10 @@ void GyroOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::SharedP
     const odometry_publisher::WheelRates<unsigned int> rpm(msg->data[4], msg->data[0]);
     const odometry_publisher::WheelRates<double> vel =
         rpm * odometry_publisher::MINUTE_TO_SECOND * tire_diameter_ * M_PI;
-    const double linear_velocity_ave = (vel.left + vel.right) * 0.5;
+    const double vehicle_linear_velocity = (vel.left + vel.right) * 0.5;
 
     const double dt = calcTimeDelta(msg->header.stamp);
-    updatePosition(dt, linear_velocity_ave);
+    updatePosition(dt, vehicle_linear_velocity);
     nav_msgs::msg::Odometry odometry = createOdometryMsg(msg->header.stamp);
     odometry_pub_->publish(odometry);
     broadcastTf(odometry);

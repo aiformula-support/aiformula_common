@@ -4,10 +4,10 @@ namespace aiformula {
 
 OdometryPublisher::OdometryPublisher(const std::string& node_name)
     : Node(node_name),
-      stamp_prev_(0.0),
+      prev_time_(0.0),
       pos_(toPointMsg(0.0, 0.0, 0.0)),
       yaw_angle_(0.0),
-      linear_velocity_(toVector3Msg(0.0, 0.0, 0.0)),
+      vehicle_linear_velocity_(toVector3Msg(0.0, 0.0, 0.0)),
       yaw_rate_(0.0) {
     getRosParams();
     initValues();
@@ -34,32 +34,32 @@ void OdometryPublisher::printParam() const {
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
-double OdometryPublisher::calcTimeDelta(const builtin_interfaces::msg::Time& msg_stamp) {
-    if (!stamp_prev_) {
-        stamp_prev_ = toTimeStampDouble(msg_stamp);
+double OdometryPublisher::calcTimeDelta(const builtin_interfaces::msg::Time& msg_time) {
+    if (!prev_time_) {
+        prev_time_ = toTimeStampDouble(msg_time);
         return 0.0;
     }
-    const double stamp_now = toTimeStampDouble(msg_stamp);
-    const double dt = stamp_now - stamp_prev_;
-    stamp_prev_ = stamp_now;
+    const double current_time = toTimeStampDouble(msg_time);
+    const double dt = current_time - prev_time_;
+    prev_time_ = current_time;
     return dt;
 }
 
-void OdometryPublisher::updatePosition(const double& dt, const double& linear_velocity_ave) {
-    linear_velocity_.x = linear_velocity_ave * cos(yaw_angle_);
-    linear_velocity_.y = linear_velocity_ave * sin(yaw_angle_);
-    pos_.x += linear_velocity_.x * dt;
-    pos_.y += linear_velocity_.y * dt;
+void OdometryPublisher::updatePosition(const double& dt, const double& vehicle_linear_velocity) {
+    vehicle_linear_velocity_.x = vehicle_linear_velocity * cos(yaw_angle_);
+    vehicle_linear_velocity_.y = vehicle_linear_velocity * sin(yaw_angle_);
+    pos_.x += vehicle_linear_velocity_.x * dt;
+    pos_.y += vehicle_linear_velocity_.y * dt;
 }
 
-nav_msgs::msg::Odometry OdometryPublisher::createOdometryMsg(const builtin_interfaces::msg::Time& msg_stamp) const {
+nav_msgs::msg::Odometry OdometryPublisher::createOdometryMsg(const builtin_interfaces::msg::Time& msg_time) const {
     nav_msgs::msg::Odometry odometry;
-    odometry.header.stamp = msg_stamp;
+    odometry.header.stamp = msg_time;
     odometry.header.frame_id = odom_frame_id_;
     odometry.child_frame_id = robot_frame_id_;
     odometry.pose.pose.position = pos_;
     odometry.pose.pose.orientation = toQuaternionMsg(0.0, 0.0, yaw_angle_);
-    odometry.twist.twist.linear = linear_velocity_;
+    odometry.twist.twist.linear = vehicle_linear_velocity_;
     odometry.twist.twist.angular = toVector3Msg(0.0, 0.0, yaw_rate_);
     return odometry;
 }

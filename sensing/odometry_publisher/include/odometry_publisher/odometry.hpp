@@ -24,9 +24,9 @@ public:
     ~OdometryPublisher() = default;
 
 protected:
-    double calcTimeDelta(const builtin_interfaces::msg::Time& msg_stamp);
-    void updatePosition(const double& dt, const double& linear_velocity_ave);
-    nav_msgs::msg::Odometry createOdometryMsg(const builtin_interfaces::msg::Time& msg_stamp) const;
+    double calcTimeDelta(const builtin_interfaces::msg::Time& msg_time);
+    void updatePosition(const double& dt, const double& vehicle_linear_velocity);
+    nav_msgs::msg::Odometry createOdometryMsg(const builtin_interfaces::msg::Time& msg_time) const;
     void broadcastTf(const nav_msgs::msg::Odometry& odom);
 
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
@@ -42,9 +42,9 @@ private:
     std::string robot_frame_id_;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> odometry_br_;
-    double stamp_prev_;
+    double prev_time_;
     geometry_msgs::msg::Point pos_;
-    geometry_msgs::msg::Vector3 linear_velocity_;
+    geometry_msgs::msg::Vector3 vehicle_linear_velocity_;
 };
 
 }  // namespace aiformula
