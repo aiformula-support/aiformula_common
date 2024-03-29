@@ -14,15 +14,15 @@
 // Original
 #include "common_cpp/get_ros_parameter.hpp"
 #include "common_cpp/util.hpp"
-#include "odometry.hpp"
-#include "wheel.hpp"
+#include "odometry_publisher/odometry.hpp"
+#include "odometry_publisher/wheel.hpp"
 
 namespace aiformula {
 
-class GyroOdometry : public Odometry {
+class GyroOdometryPublisher : public OdometryPublisher {
 public:
-    GyroOdometry();
-    ~GyroOdometry() = default;
+    GyroOdometryPublisher();
+    ~GyroOdometryPublisher() = default;
 
 private:
     void getRosParams();

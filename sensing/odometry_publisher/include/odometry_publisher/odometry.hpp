@@ -18,10 +18,10 @@
 
 namespace aiformula {
 
-class Odometry : public rclcpp::Node {
+class OdometryPublisher : public rclcpp::Node {
 public:
-    Odometry(const std::string& node_name);
-    ~Odometry() = default;
+    OdometryPublisher(const std::string& node_name);
+    ~OdometryPublisher() = default;
 
 protected:
     double calcTimeDelta(const builtin_interfaces::msg::Time& msg_stamp);

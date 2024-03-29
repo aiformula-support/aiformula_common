@@ -1,26 +1,27 @@
-#include "wheel_odometry.hpp"
+#include "odometry_publisher/wheel_odometry.hpp"
 
 namespace aiformula {
 
-WheelOdometry::WheelOdometry() : Odometry("wheel_odometry") {
+WheelOdometryPublisher::WheelOdometryPublisher() : OdometryPublisher("wheel_odometry") {
     getRosParams();
     initValues();
     printParam();
 }
 
-void WheelOdometry::getRosParams() {
+void WheelOdometryPublisher::getRosParams() {
     // wheel.yaml
     tire_diameter_ = getRosParameter<double>(this, "wheel.diameter");
     tire_tread_ = getRosParameter<double>(this, "wheel.tread");
 }
 
-void WheelOdometry::initValues() {
+void WheelOdometryPublisher::initValues() {
     const int buffer_size = 10;
     can_frame_sub_ = this->create_subscription<can_msgs::msg::Frame>(
-        "sub_can_frame", buffer_size, std::bind(&WheelOdometry::canFrameCallback, this, std::placeholders::_1));
+        "sub_can_frame", buffer_size,
+        std::bind(&WheelOdometryPublisher::canFrameCallback, this, std::placeholders::_1));
 }
 
-void WheelOdometry::printParam() const {
+void WheelOdometryPublisher::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
     RCLCPP_INFO(this->get_logger(), "(wheel.yaml)");
     RCLCPP_INFO(this->get_logger(), "  tire_diameter_ = %.3lf [m]", tire_diameter_);
@@ -28,7 +29,7 @@ void WheelOdometry::printParam() const {
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
-void WheelOdometry::canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg) {
+void WheelOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg) {
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Can Frame !");
     if (msg->id != odometry_publisher::RPM_ID) return;
 

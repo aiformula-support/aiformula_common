@@ -12,15 +12,15 @@
 
 // Original
 #include "common_cpp/get_ros_parameter.hpp"
-#include "odometry.hpp"
-#include "wheel.hpp"
+#include "odometry_publisher/odometry.hpp"
+#include "odometry_publisher/wheel.hpp"
 
 namespace aiformula {
 
-class WheelOdometry : public Odometry {
+class WheelOdometryPublisher : public OdometryPublisher {
 public:
-    WheelOdometry();
-    ~WheelOdometry() = default;
+    WheelOdometryPublisher();
+    ~WheelOdometryPublisher() = default;
 
 private:
     void getRosParams();
