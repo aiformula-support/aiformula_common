@@ -11,9 +11,8 @@
 #include <nav_msgs/msg/odometry.hpp>
 
 // Original
-#include "get_ros_parameter.hpp"  // common_cpp librtary
+#include "common_cpp/get_ros_parameter.hpp"
 #include "odometry.hpp"
-#include "to_geometry_msgs.hpp"  // common_cpp librtary
 #include "wheel.hpp"
 
 namespace aiformula {

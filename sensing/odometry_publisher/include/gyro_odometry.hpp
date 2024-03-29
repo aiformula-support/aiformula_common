@@ -12,9 +12,9 @@
 #include <sensor_msgs/msg/imu.hpp>
 
 // Original
-#include "get_ros_parameter.hpp"  // common_cpp librtary
+#include "common_cpp/get_ros_parameter.hpp"
+#include "common_cpp/util.hpp"
 #include "odometry.hpp"
-#include "util.hpp"  // common_cpp librtary
 #include "wheel.hpp"
 
 namespace aiformula {

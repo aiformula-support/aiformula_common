@@ -1,4 +1,4 @@
-#include "camera.hpp"
+#include "common_cpp/camera.hpp"
 
 namespace aiformula {
 

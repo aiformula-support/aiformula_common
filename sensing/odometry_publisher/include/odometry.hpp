@@ -12,9 +12,9 @@
 #include <nav_msgs/msg/odometry.hpp>
 
 // Original
-#include "get_ros_parameter.hpp"  // common_cpp librtary
-#include "to_geometry_msgs.hpp"   // common_cpp librtary
-#include "util.hpp"               // common_cpp librtary
+#include "common_cpp/get_ros_parameter.hpp"
+#include "common_cpp/to_geometry_msgs.hpp"
+#include "common_cpp/util.hpp"
 
 namespace aiformula {
 
