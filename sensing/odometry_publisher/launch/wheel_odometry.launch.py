@@ -41,13 +41,13 @@ def generate_launch_description():
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     launch_args = (
         DeclareLaunchArgument(
-            "sub_can_frame_topic_name",
+            "sub_can_frame",
             default_value="/from_can_bus",
             # default_value="/aiformula_sensing/can/frame",
             description="Can topic name",
         ),
         DeclareLaunchArgument(
-            "pub_odometry_topic_name",
+            "pub_odometry",
             default_value="/aiformula_sensing/wheel_odometry/odom",
             description="Odometry topic name.",
         ),
@@ -98,8 +98,8 @@ def generate_launch_description():
                             "robot_frame_id": LaunchConfiguration("robot_frame_id"),
                         }],
             remappings=[
-                ("sub_can_frame_topic_name", LaunchConfiguration("sub_can_frame_topic_name")),
-                ("pub_odometry_topic_name", LaunchConfiguration("pub_odometry_topic_name")),
+                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("pub_odometry", LaunchConfiguration("pub_odometry")),
             ],
         ),
 
@@ -107,7 +107,7 @@ def generate_launch_description():
         OpaqueFunction(
             function=get_bag_play_node,
             args=[
-                LaunchConfiguration("sub_can_frame_topic_name"),
+                LaunchConfiguration("sub_can_frame"),
                 LaunchConfiguration("rosbag_play_speed"),
                 LaunchConfiguration("rosbag_path"),
                 LaunchConfiguration("use_rosbag"),

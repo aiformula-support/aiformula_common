@@ -43,24 +43,24 @@ def generate_launch_description():
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     launch_args = (
         DeclareLaunchArgument(
-            "sub_imu_topic_name",
+            "sub_imu",
             default_value="/vectornav/imu",
             # default_value="/aiformula_sensing/vectornav/imu",
             description="Imu topic name",
         ),
         DeclareLaunchArgument(
-            "sub_can_frame_topic_name",
+            "sub_can_frame",
             default_value="/from_can_bus",
             # default_value="/aiformula_sensing/can/frame",
             description="Can topic name",
         ),
         DeclareLaunchArgument(
-            "pub_wheel_odometry_topic_name",
+            "pub_wheel_odometry",
             default_value="/aiformula_sensing/wheel_odometry/odom",
             description="Wheel odometry topic name.",
         ),
         DeclareLaunchArgument(
-            "pub_gyro_odometry_topic_name",
+            "pub_gyro_odometry",
             default_value="/aiformula_sensing/gyro_odometry/odom",
             description="Gyro odometry topic name.",
         ),
@@ -116,8 +116,8 @@ def generate_launch_description():
                             "robot_frame_id": LaunchConfiguration("robot_frame_id_wheel_odometry"),
                         }],
             remappings=[
-                ("sub_can_frame_topic_name", LaunchConfiguration("sub_can_frame_topic_name")),
-                ("pub_odometry_topic_name", LaunchConfiguration("pub_wheel_odometry_topic_name")),
+                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("pub_odometry_topic_name", LaunchConfiguration("pub_wheel_odometry")),
             ],
         ),
 
@@ -134,9 +134,9 @@ def generate_launch_description():
                             "robot_frame_id": LaunchConfiguration("robot_frame_id_gyro_odometry"),
                         }],
             remappings=[
-                ("sub_imu_topic_name", LaunchConfiguration("sub_imu_topic_name")),
-                ("sub_can_frame_topic_name", LaunchConfiguration("sub_can_frame_topic_name")),
-                ("pub_odometry_topic_name", LaunchConfiguration("pub_gyro_odometry_topic_name")),
+                ("sub_imu", LaunchConfiguration("sub_imu")),
+                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("pub_odometry_topic_name", LaunchConfiguration("pub_gyro_odometry")),
             ],
         ),
 
@@ -144,8 +144,8 @@ def generate_launch_description():
         OpaqueFunction(
             function=get_bag_play_node,
             args=[
-                LaunchConfiguration("sub_imu_topic_name"),
-                LaunchConfiguration("sub_can_frame_topic_name"),
+                LaunchConfiguration("sub_imu"),
+                LaunchConfiguration("sub_can_frame"),
                 LaunchConfiguration("rosbag_play_speed"),
                 LaunchConfiguration("rosbag_path"),
                 LaunchConfiguration("use_rosbag"),
@@ -157,7 +157,7 @@ def generate_launch_description():
             package="rviz2",
             executable="rviz2",
             name="rviz2_gyro_odometry",
-            arguments=["-d", os.path.join(PACKAGE_DIR, "rviz", "both.rviz")],
+            arguments=["-d", os.path.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometries.rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )

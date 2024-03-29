@@ -12,8 +12,8 @@
 
 namespace aiformula {
 
-inline double toTimeStampDouble(const std_msgs::msg::Header& header) {
-    return header.stamp.sec + static_cast<double>(header.stamp.nanosec) / 1e9;
+inline double toTimeStampDouble(const builtin_interfaces::msg::Time& msg_stamp) {
+    return msg_stamp.sec + static_cast<double>(msg_stamp.nanosec) / 1e9;
 }
 
 inline double getYaw(const geometry_msgs::msg::Quaternion& quat_msg) {

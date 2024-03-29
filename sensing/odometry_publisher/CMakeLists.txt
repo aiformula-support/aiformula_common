@@ -12,9 +12,9 @@ find_package(common_cpp REQUIRED)
 
 # wheel_odometry
 add_executable(wheel_odometry
-${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/main.cpp
-${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/wheel_odometry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/wheel_odometry.cpp
 )
 target_include_directories(wheel_odometry PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -33,7 +33,7 @@ install(TARGETS wheel_odometry
 
 # gyro_odometry
 add_executable(gyro_odometry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/common.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry/gyro_odometry.cpp
 )

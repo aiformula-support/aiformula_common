@@ -12,14 +12,14 @@
 #include <sensor_msgs/msg/imu.hpp>
 
 // Original
-#include "common.hpp"
 #include "get_ros_parameter.hpp"  // common_cpp librtary
-#include "to_geometry_msgs.hpp"   // common_cpp librtary
-#include "util.hpp"               // common_cpp librtary
+#include "odometry.hpp"
+#include "util.hpp"  // common_cpp librtary
+#include "wheel.hpp"
 
 namespace aiformula {
 
-class GyroOdometry : public rclcpp::Node {
+class GyroOdometry : public Odometry {
 public:
     GyroOdometry();
     ~GyroOdometry() = default;
@@ -31,18 +31,11 @@ private:
     void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
     void canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg);
 
-    std::string odom_frame_id_;
-    std::string robot_frame_id_;
     double tire_diameter_;
     double tire_tread_;
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
     rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_frame_sub_;
-    rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
-    std::unique_ptr<tf2_ros::TransformBroadcaster> odometry_br_;
-
-    double yaw_;
-    double angular_velocity_z_;
 };
 
 }  // namespace aiformula
