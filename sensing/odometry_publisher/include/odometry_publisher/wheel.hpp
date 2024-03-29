@@ -6,8 +6,8 @@ namespace odometry_publisher {
 
 template <typename T>
 struct WheelRates {
-    WheelRates(const T& left, const T& right) : left(left), right(right) {}
-    WheelRates<double> operator*(const double& rhs) const { return {left * rhs, right * rhs}; }
+    explicit WheelRates(const T& left, const T& right) : left(left), right(right) {}
+    WheelRates<double> operator*(const double& rhs) const { return WheelRates<double>(left * rhs, right * rhs); }
     T left, right;
 };
 const double MINUTE_TO_SECOND = 0.016667;  // = 1/60

@@ -20,7 +20,7 @@ namespace aiformula {
 
 class OdometryPublisher : public rclcpp::Node {
 public:
-    OdometryPublisher(const std::string& node_name);
+    explicit OdometryPublisher(const std::string& node_name);
     ~OdometryPublisher() = default;
 
 protected:

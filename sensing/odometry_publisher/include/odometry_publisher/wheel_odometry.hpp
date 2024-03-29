@@ -19,7 +19,7 @@ namespace aiformula {
 
 class WheelOdometryPublisher : public OdometryPublisher {
 public:
-    WheelOdometryPublisher();
+    explicit WheelOdometryPublisher();
     ~WheelOdometryPublisher() = default;
 
 private:

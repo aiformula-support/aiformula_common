@@ -21,7 +21,7 @@ namespace aiformula {
 
 class GyroOdometryPublisher : public OdometryPublisher {
 public:
-    GyroOdometryPublisher();
+    explicit GyroOdometryPublisher();
     ~GyroOdometryPublisher() = default;
 
 private:
