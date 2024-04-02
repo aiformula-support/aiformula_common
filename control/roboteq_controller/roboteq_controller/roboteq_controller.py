@@ -2,11 +2,11 @@
 # coding: utf-8
 import rclpy
 import math
+import numpy as np
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
-from std_msgs.msg import String, Float64, UInt8, Int32
 from can_msgs.msg import Frame
-from decimal import Decimal, ROUND_HALF_DOWN
+from typing import List
 
 
 class MinimalPublisher(Node):
@@ -23,52 +23,48 @@ class MinimalPublisher(Node):
         self.gear_ratio = 1
         timer = 1/100
         self.timer = self.create_timer(timer, self.callback)
+        self.declare_parameter('tread')
+        self.declare_parameter('diameter')
+        self.declare_parameter('gear_ratio')
+        self.tread = self.get_parameter('tread').get_parameter_value().double_value
+        self.diameter = self.get_parameter('diameter').get_parameter_value().double_value
+        self.gear_ratio = self.get_parameter('gear_ratio').get_parameter_value().double_value
 
     def cmd_callback(self, msg):
         self.vel = msg
-        self.cmd_linear_x = self.vel.linear.x
-        self.cmd_angular_z = self.vel.angular.z
+        ref = toRefRPM(self.vel.linear.x, self.vel.angular.z)
+        l_cmd = toCanCmd(ref[0])
+        r_cmd = toCanCmd(ref[1])
+        can_data = l_cmd + r_cmd
 
-        r_ref = (1 / (self.diameter / 2)) * self.cmd_linear_x + (
-            self.tread / self.diameter
-        ) * self.cmd_angular_z  # [rad/s]
-        r_ref = r_ref * 30 / math.pi  # [rpm]  タイヤ1回転　30rpm
-        r_ref = r_ref * self.gear_ratio  # [rpm]
+        self.cmd.header.frame_id = "can0"        # Default can0
+        self.cmd.id = 0x210                      # MotorControler CAN ID : 0x210
+        self.cmd.dlc = 8                         # Data length
+        self.cmd.data = can_data
 
-        l_ref = (1 / (self.diameter / 2)) * self.cmd_linear_x - (
-            self.tread / self.diameter
-        ) * self.cmd_angular_z  # [rad/s]
-        l_ref = l_ref * 30 / math.pi  # [rpm]
-        l_ref = l_ref * self.gear_ratio  # [rpm]
-        # convert cg command
-        r_ref = Decimal(str(r_ref)).quantize(
-            Decimal("0"), rounding=ROUND_HALF_DOWN)
-        l_ref = Decimal(str(l_ref)).quantize(
-            Decimal("0"), rounding=ROUND_HALF_DOWN)
-        r_byte = (int(r_ref)).to_bytes(
-            4, "big", signed=True)  # high byteから順番に並んでいる
-        l_byte = (int(l_ref)).to_bytes(4, "big", signed=True)
-        r_cmd = [int(r_byte[0]), int(r_byte[1]),
-                 int(r_byte[2]), int(r_byte[3])]
-        l_cmd = [int(l_byte[0]), int(l_byte[1]),
-                 int(l_byte[2]), int(l_byte[3])]
-#        self.cmd.header(
-#            header=0x210, can_data=[l_cmd[3], l_cmd[2], l_cmd[1], l_cmd[0], r_cmd[3], r_cmd[2], r_cmd[1], r_cmd[0]]
-#        )
-        self.cmd.header.frame_id = "can0"
-        self.cmd.id = 0x210
-        self.cmd.dlc = 8
-        self.cmd.data = [l_cmd[3], l_cmd[2], l_cmd[1],
-                         l_cmd[0], r_cmd[3], r_cmd[2], r_cmd[1], r_cmd[0]]
+    def callback(self):
         self.publisher_.publish(self.cmd)
+
+
+def toRefRPM(self, linear, angular):  # Calc Motor ref rpm
+    ref = np.array([(1 / (self.diameter * 0.5)) * linear + (self.tread / self.diameter) * angular,  # right[rad/s]
+                   (1 / (self.diameter * 0.5)) * linear - (self.tread / self.diameter) * angular])  # left[raad/s]
+    ref *= 30 / math.pi               # [rpm]  タイヤ1回転　30
+    ref *= self.gear_ratio            # [rpm]
+    return ref.tolist()
+
+
+def toCanCmd(rpm: float) -> List[int]:
+    rounded = round(rpm)
+    bytes = rounded.to_bytes(4, "little", signed=True)
+    return list(bytes)
 
 
 def main(args=None):
     rclpy.init(args=args)
-
-    minimal_publisher = MinimalPublisher()
-    rclpy.spin(minimal_publisher)
-    minimal_publisher.destroy_node()
+    roboteq_controller = RoboteqController()
+    rclpy.spin(roboteq_controller)
+    roboteq_controller.destroy_node()
     rclpy.shutdown()
 
 
