@@ -2,8 +2,6 @@
 #define WHEEL_ODOMETRY_PUBLISHER_HPP
 
 // ROS
-#include <tf2_ros/transform_broadcaster.h>
-
 #include <rclcpp/rclcpp.hpp>
 
 // ROS msg
