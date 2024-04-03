@@ -1,7 +1,7 @@
 from setuptools import setup
 from common_python.setup_util import get_data_files
 
-package_name = 'roboteq_controller'
+package_name = 'teleop_twist_handle_controller'
 
 setup(
     name=package_name,
@@ -17,7 +17,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'roboteq_controller=roboteq_controller.roboteq_controller:main'
+            'teleop_twist_handle_controller=teleop_twist_handle_controller.teleop_twist_handle_controller:main'
         ],
     },
 )

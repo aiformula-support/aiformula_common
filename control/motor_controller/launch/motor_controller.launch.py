@@ -4,7 +4,7 @@ from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
-    PACKAGE_NAME = "roboteq_controller"
+    PACKAGE_NAME = "motor_controller"
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
     motor_controller = Node(

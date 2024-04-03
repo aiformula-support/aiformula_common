@@ -7,12 +7,12 @@ from ament_index_python.packages import get_package_share_directory
 
 
 def generate_launch_description():
-    PACKAGE_NAME = "handle_controller"
+    PACKAGE_NAME = "teleop_twist_handle_controller"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
 
     launch_args = (
         DeclareLaunchArgument(
-            "pub_handle_controller",
+            "pub_teleop_twist_handle_controller",
             default_value="/cmd_vel",
             description="handle controller topic name",
         ),
@@ -24,9 +24,9 @@ def generate_launch_description():
         ),
 
         DeclareLaunchArgument(
-            "handle_controller_frame_id",
-            default_value="handle_controller",
-            description="Frame id of handle_controller",
+            "teleop_twist_handle_controller_frame_id",
+            default_value="teleop_twist_handle_controller",
+            description="Frame id of teleop_twist_handle_controller",
         ),
 
         DeclareLaunchArgument(
@@ -35,7 +35,10 @@ def generate_launch_description():
         ),
     )
 
-    ROS_PARAM_CONFIG = os.path.join(PACKAGE_DIR, "config", "handle_controller.yaml")
+    ROS_PARAM_CONFIG = (
+        os.path.join(PACKAGE_DIR, "config", "teleop_twist_handle_controller.yaml"),
+    )
+
     nodes = (
         Node(
             package=PACKAGE_NAME,
@@ -44,13 +47,12 @@ def generate_launch_description():
             namespace="/aiformula_control",
             output="screen",
             emulate_tty=True,
-            parameters=[ROS_PARAM_CONFIG,
+            parameters=[*ROS_PARAM_CONFIG,
                         {
-                            "handle_controller_frame_id": LaunchConfiguration("handle_controller_frame_id"),
                         }],
             remappings=[
                 ("sub_joy_frame", LaunchConfiguration("sub_joy_frame")),
-                ("pub_handle_controller", LaunchConfiguration("pub_handle_controller")),
+                ("pub_teleop_twist_handle_controller", LaunchConfiguration("pub_teleop_twist_handle_controller")),
             ],
         ),
 
@@ -60,7 +62,7 @@ def generate_launch_description():
                 'dev': LaunchConfiguration("joy_dev"),
                 'deadzone': 0.3,
                 'autorepeat_rate': 20.0,
-            }]
+            }],
         ),
     )
 

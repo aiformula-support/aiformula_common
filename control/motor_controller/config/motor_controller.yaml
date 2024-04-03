@@ -1,0 +1,8 @@
+/**:
+  ros__parameters:
+      motor:
+        tread: 0.60      #[m]
+        diameter: 0.254  #[m]
+        gear_ratio: 1.0
+        publish_timer_loop_duration: 0.01 #[sec]
+      
