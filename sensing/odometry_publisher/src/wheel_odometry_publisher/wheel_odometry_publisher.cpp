@@ -32,8 +32,8 @@ void WheelOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::Shared
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Can Frame !");
     if (msg->id != odometry_publisher::RPM_ID) return;
 
-    const double vehicle_linear_velocity = odometry_publisher::calcVehicleLinearVelocity(msg, wheel_diameter_);
-    yaw_rate_ = odometry_publisher::calcYawRateUsingWheelRpm(msg, wheel_diameter_, wheel_tread_);
+    const double vehicle_linear_velocity = odometry_publisher::calcLinearVelocity(msg, wheel_diameter_);
+    yaw_rate_ = odometry_publisher::calcYawRateFromWheelRpm(msg, wheel_diameter_, wheel_tread_);
     const double dt = calcTimeDelta(msg->header.stamp);
     yaw_angle_ += yaw_rate_ * dt;
     updatePosition(vehicle_linear_velocity, dt);

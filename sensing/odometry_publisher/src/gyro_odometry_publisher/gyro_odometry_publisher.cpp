@@ -51,7 +51,7 @@ void GyroOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::SharedP
 }
 
 void GyroOdometryPublisher::publishOdometryCallback() {
-    if (imu_msgs_.size() < 2 || !can_msgs_.size()) return;
+    if (imu_msgs_.size() < 2 || can_msgs_.empty()) return;  // At least two IMU messages are required for interpolation.
     static const double yaw_angle_offset = getYaw(imu_msgs_[0]->orientation);
 
     static double prev_can_time = 0.0;
@@ -73,7 +73,7 @@ void GyroOdometryPublisher::publishOdometryCallback() {
 
             if (prev_can_time) {  // Other than the first can message
                 const double vehicle_linear_velocity =
-                    odometry_publisher::calcVehicleLinearVelocity(can_msgs_[can_idx], wheel_diameter_);
+                    odometry_publisher::calcLinearVelocity(can_msgs_[can_idx], wheel_diameter_);
                 linearlyInterpolateAngleAndRate(current_can_time, prev_imu_time, current_imu_time, prev_orientation,
                                                 current_orientation, yaw_angle_offset, yaw_rate_lerp_a,
                                                 yaw_rate_lerp_b);
