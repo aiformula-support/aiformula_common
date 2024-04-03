@@ -1,8 +1,8 @@
-#include "odometry_publisher/wheel_odometry.hpp"
+#include "odometry_publisher/wheel_odometry_publisher.hpp"
 
 namespace aiformula {
 
-WheelOdometryPublisher::WheelOdometryPublisher() : OdometryPublisher("wheel_odometry") {
+WheelOdometryPublisher::WheelOdometryPublisher() : OdometryPublisher("wheel_odometry_publisher") {
     getRosParams();
     initValues();
     printParam();

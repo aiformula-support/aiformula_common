@@ -10,16 +10,16 @@ find_package(can_msgs REQUIRED)
 find_package(nav_msgs REQUIRED)
 find_package(common_cpp REQUIRED)
 
-# wheel_odometry
-add_executable(wheel_odometry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry/wheel_odometry.cpp
+# wheel_odometry_publisher
+add_executable(wheel_odometry_publisher
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry_publisher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry_publisher/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry_publisher/wheel_odometry_publisher.cpp
 )
-target_include_directories(wheel_odometry PRIVATE
+target_include_directories(wheel_odometry_publisher PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-ament_target_dependencies(wheel_odometry
+ament_target_dependencies(wheel_odometry_publisher
     rclcpp
     tf2
     tf2_ros
@@ -27,20 +27,20 @@ ament_target_dependencies(wheel_odometry
     nav_msgs
     common_cpp
 )
-install(TARGETS wheel_odometry
+install(TARGETS wheel_odometry_publisher
     DESTINATION lib/${PROJECT_NAME}
 )
 
-# gyro_odometry
-add_executable(gyro_odometry
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry/main.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry/gyro_odometry.cpp
+# gyro_odometry_publisher
+add_executable(gyro_odometry_publisher
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry_publisher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry_publisher/main.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry_publisher/gyro_odometry_publisher.cpp
 )
-target_include_directories(gyro_odometry PRIVATE
+target_include_directories(gyro_odometry_publisher PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-ament_target_dependencies(gyro_odometry
+ament_target_dependencies(gyro_odometry_publisher
     rclcpp
     tf2_ros
     sensor_msgs
@@ -48,7 +48,7 @@ ament_target_dependencies(gyro_odometry
     nav_msgs
     common_cpp
 )
-install(TARGETS gyro_odometry
+install(TARGETS gyro_odometry_publisher
     DESTINATION lib/${PROJECT_NAME}
 )
 

@@ -25,12 +25,12 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "pub_wheel_odometry",
-            default_value="/aiformula_sensing/wheel_odometry/odom",
+            default_value="/aiformula_sensing/wheel_odometry_publisher/odom",
             description="Wheel odometry topic name.",
         ),
         DeclareLaunchArgument(
             "pub_gyro_odometry",
-            default_value="/aiformula_sensing/gyro_odometry/odom",
+            default_value="/aiformula_sensing/gyro_odometry_publisher/odom",
             description="Gyro odometry topic name.",
         ),
         DeclareLaunchArgument(
@@ -75,13 +75,13 @@ def generate_launch_description():
     )
     ROS_PARAM_CONFIG_GYRO_ODOMETRY = (
         os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
-        os.path.join(PACKAGE_DIR, "config", "gyro_odometry.yaml"),
+        os.path.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     nodes = (
         Node(
             package=PACKAGE_NAME,
-            executable="wheel_odometry",
-            name="wheel_odometry",
+            executable="wheel_odometry_publisher",
+            name="wheel_odometry_publisher",
             namespace="/aiformula_sensing",
             output="screen",
             emulate_tty=True,
@@ -98,8 +98,8 @@ def generate_launch_description():
 
         Node(
             package=PACKAGE_NAME,
-            executable="gyro_odometry",
-            name="gyro_odometry",
+            executable="gyro_odometry_publisher",
+            name="gyro_odometry_publisher",
             namespace="/aiformula_sensing",
             output="screen",
             emulate_tty=True,
@@ -135,9 +135,9 @@ def generate_launch_description():
         Node(
             package="rviz2",
             executable="rviz2",
-            name="rviz2_gyro_odometry",
+            name="rviz2_wheel_and_gyro_odometry_publishers",
             arguments=[
-                "-d", os.path.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometries.rviz")],
+                "-d", os.path.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometry_publishers.rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )

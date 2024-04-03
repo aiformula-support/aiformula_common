@@ -1,15 +1,15 @@
-#include "odometry_publisher/gyro_odometry.hpp"
+#include "odometry_publisher/gyro_odometry_publisher.hpp"
 
 namespace aiformula {
 
-GyroOdometryPublisher::GyroOdometryPublisher() : OdometryPublisher("gyro_odometry") {
+GyroOdometryPublisher::GyroOdometryPublisher() : OdometryPublisher("gyro_odometry_publisher") {
     getRosParams();
     initValues();
     printParam();
 }
 
 void GyroOdometryPublisher::getRosParams() {
-    // From 'gyro_odometry.yaml'
+    // From 'gyro_odometry_publisher.yaml'
     publish_timer_loop_duration_ = getRosParameter<int>(this, "publish_timer_loop_duration");
 
     // From 'wheel.yaml'
@@ -30,7 +30,7 @@ void GyroOdometryPublisher::initValues() {
 
 void GyroOdometryPublisher::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
-    RCLCPP_INFO(this->get_logger(), "(gyro_odometry.yaml)");
+    RCLCPP_INFO(this->get_logger(), "(gyro_odometry_publisher.yaml)");
     RCLCPP_INFO(this->get_logger(), "  publish_timer_loop_duration_ = %d [msec]", publish_timer_loop_duration_);
 
     RCLCPP_INFO(this->get_logger(), "(wheel.yaml)");

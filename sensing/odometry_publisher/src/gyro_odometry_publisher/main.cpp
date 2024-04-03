@@ -1,4 +1,4 @@
-#include "odometry_publisher/gyro_odometry.hpp"
+#include "odometry_publisher/gyro_odometry_publisher.hpp"
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);

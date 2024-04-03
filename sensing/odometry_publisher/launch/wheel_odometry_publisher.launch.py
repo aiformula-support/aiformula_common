@@ -9,7 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     PACKAGE_NAME = "odometry_publisher"
-    NODE_NAME = "wheel_odometry"
+    NODE_NAME = "wheel_odometry_publisher"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     launch_args = (
         DeclareLaunchArgument(
@@ -20,7 +20,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "pub_odometry",
-            default_value="/aiformula_sensing/wheel_odometry/odom",
+            default_value="/aiformula_sensing/wheel_odometry_publisher/odom",
             description="Odometry topic name.",
         ),
         DeclareLaunchArgument(
@@ -96,7 +96,7 @@ def generate_launch_description():
         Node(
             package="rviz2",
             executable="rviz2",
-            name="rviz2_wheel_odometry",
+            name="rviz2_wheel_odometry_publisher",
             arguments=[
                 "-d", os.path.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),

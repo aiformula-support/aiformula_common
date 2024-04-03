@@ -9,7 +9,7 @@ from ament_index_python.packages import get_package_share_directory
 
 def generate_launch_description():
     PACKAGE_NAME = "odometry_publisher"
-    NODE_NAME = "gyro_odometry"
+    NODE_NAME = "gyro_odometry_publisher"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     launch_args = (
         DeclareLaunchArgument(
@@ -26,7 +26,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "pub_odometry",
-            default_value="/aiformula_sensing/gyro_odometry/odom",
+            default_value="/aiformula_sensing/gyro_odometry_publisher/odom",
             description="Odometry topic name.",
         ),
         DeclareLaunchArgument(
@@ -63,7 +63,7 @@ def generate_launch_description():
 
     ROS_PARAM_CONFIG = (
         os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
-        os.path.join(PACKAGE_DIR, "config", "gyro_odometry.yaml"),
+        os.path.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     nodes = (
         Node(
@@ -105,7 +105,7 @@ def generate_launch_description():
         Node(
             package="rviz2",
             executable="rviz2",
-            name="rviz2_gyro_odometry",
+            name="rviz2_gyro_odometry_publisher",
             arguments=[
                 "-d", os.path.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
