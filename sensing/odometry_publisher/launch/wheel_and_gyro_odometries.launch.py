@@ -18,9 +18,9 @@ def generate_launch_description():
             description="Imu topic name",
         ),
         DeclareLaunchArgument(
-            "sub_can_frame",
+            "sub_can",
             default_value="/from_can_bus",
-            # default_value="/aiformula_sensing/can/frame",
+            # default_value="/aiformula_sensing/can/vehicle_info",
             description="Can topic name",
         ),
         DeclareLaunchArgument(
@@ -70,7 +70,13 @@ def generate_launch_description():
         ),
     )
 
-    ROS_PARAM_CONFIG = os.path.join(PACKAGE_DIR, "config", "wheel.yaml")
+    ROS_PARAM_CONFIG_WHEEL_ODOMETRY = (
+        os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
+    )
+    ROS_PARAM_CONFIG_GYRO_ODOMETRY = (
+        os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
+        os.path.join(PACKAGE_DIR, "config", "gyro_odometry.yaml"),
+    )
     nodes = (
         Node(
             package=PACKAGE_NAME,
@@ -79,13 +85,13 @@ def generate_launch_description():
             namespace="/aiformula_sensing",
             output="screen",
             emulate_tty=True,
-            parameters=[ROS_PARAM_CONFIG,
+            parameters=[*ROS_PARAM_CONFIG_WHEEL_ODOMETRY,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
                             "robot_frame_id": LaunchConfiguration("robot_frame_id_wheel_odometry"),
                         }],
             remappings=[
-                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("sub_can", LaunchConfiguration("sub_can")),
                 ("pub_odometry", LaunchConfiguration("pub_wheel_odometry")),
             ],
         ),
@@ -97,14 +103,14 @@ def generate_launch_description():
             namespace="/aiformula_sensing",
             output="screen",
             emulate_tty=True,
-            parameters=[ROS_PARAM_CONFIG,
+            parameters=[*ROS_PARAM_CONFIG_GYRO_ODOMETRY,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
                             "robot_frame_id": LaunchConfiguration("robot_frame_id_gyro_odometry"),
                         }],
             remappings=[
                 ("sub_imu", LaunchConfiguration("sub_imu")),
-                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("sub_can", LaunchConfiguration("sub_can")),
                 ("pub_odometry", LaunchConfiguration("pub_gyro_odometry")),
             ],
         ),
@@ -115,7 +121,7 @@ def generate_launch_description():
                 "ros2 bag play",
                 " --topics ",
                 LaunchConfiguration("sub_imu"),
-                LaunchConfiguration("sub_can_frame"),
+                LaunchConfiguration("sub_can"),
                 " -r ",
                 LaunchConfiguration("rosbag_play_speed"),
                 " -- ",

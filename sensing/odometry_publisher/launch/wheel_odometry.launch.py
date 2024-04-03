@@ -13,9 +13,9 @@ def generate_launch_description():
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     launch_args = (
         DeclareLaunchArgument(
-            "sub_can_frame",
+            "sub_can",
             default_value="/from_can_bus",
-            # default_value="/aiformula_sensing/can/frame",
+            # default_value="/aiformula_sensing/can/vehicle_info",
             description="Can topic name",
         ),
         DeclareLaunchArgument(
@@ -55,7 +55,9 @@ def generate_launch_description():
         ),
     )
 
-    ROS_PARAM_CONFIG = os.path.join(PACKAGE_DIR, "config", "wheel.yaml")
+    ROS_PARAM_CONFIG = (
+        os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
+    )
     nodes = (
         Node(
             package=PACKAGE_NAME,
@@ -64,13 +66,13 @@ def generate_launch_description():
             namespace="/aiformula_sensing",
             output="screen",
             emulate_tty=True,
-            parameters=[ROS_PARAM_CONFIG,
+            parameters=[*ROS_PARAM_CONFIG,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
                             "robot_frame_id": LaunchConfiguration("robot_frame_id"),
                         }],
             remappings=[
-                ("sub_can_frame", LaunchConfiguration("sub_can_frame")),
+                ("sub_can", LaunchConfiguration("sub_can")),
                 ("pub_odometry", LaunchConfiguration("pub_odometry")),
             ],
         ),
@@ -80,7 +82,7 @@ def generate_launch_description():
             cmd=[
                 "ros2 bag play",
                 " --topics ",
-                LaunchConfiguration("sub_can_frame"),
+                LaunchConfiguration("sub_can"),
                 " -r ",
                 LaunchConfiguration("rosbag_play_speed"),
                 " -- ",

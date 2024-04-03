@@ -1,5 +1,5 @@
-#ifndef WHEEL_ODOMETRY_HPP
-#define WHEEL_ODOMETRY_HPP
+#ifndef WHEEL_ODOMETRY_PUBLISHER_HPP
+#define WHEEL_ODOMETRY_PUBLISHER_HPP
 
 // ROS
 #include <tf2_ros/transform_broadcaster.h>
@@ -28,12 +28,12 @@ private:
     void printParam() const;
     void canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg);
 
-    double tire_diameter_;
-    double tire_tread_;
+    double wheel_diameter_;
+    double wheel_tread_;
 
-    rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_frame_sub_;
+    rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_sub_;
 };
 
 }  // namespace aiformula
 
-#endif  // WHEEL_ODOMETRY_HPP
+#endif  // WHEEL_ODOMETRY_PUBLISHER_HPP

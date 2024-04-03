@@ -1,5 +1,5 @@
-#ifndef GYRO_ODOMETRY_HPP
-#define GYRO_ODOMETRY_HPP
+#ifndef GYRO_ODOMETRY_PUBLISHER_HPP
+#define GYRO_ODOMETRY_PUBLISHER_HPP
 
 // ROS
 #include <tf2_ros/transform_broadcaster.h>
@@ -30,14 +30,28 @@ private:
     void printParam() const;
     void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
     void canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg);
+    void publishOdometryCallback();
+    void initializeVariablesForLinearInterpolation(const size_t& prev_imu_idx, double& prev_imu_time,
+                                                   double& current_imu_time, tf2::Quaternion& prev_orientation,
+                                                   tf2::Quaternion& current_orientation, double& yaw_rate_lerp_a,
+                                                   double& yaw_rate_lerp_b) const;
+    void linearlyInterpolateAngleAndRate(const double& current_can_time, const double& prev_imu_time,
+                                         const double& current_imu_time, const tf2::Quaternion& prev_orientation,
+                                         const tf2::Quaternion& current_orientation, const double& yaw_angle_offset,
+                                         const double& yaw_rate_lerp_a, const double& yaw_rate_lerp_b);
 
-    double tire_diameter_;
-    double tire_tread_;
+    int publish_timer_loop_duration_;
+    double wheel_diameter_;
+    double wheel_tread_;
 
     rclcpp::Subscription<sensor_msgs::msg::Imu>::SharedPtr imu_sub_;
-    rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_frame_sub_;
+    rclcpp::Subscription<can_msgs::msg::Frame>::SharedPtr can_sub_;
+    rclcpp::TimerBase::SharedPtr publish_timer_;
+
+    std::vector<sensor_msgs::msg::Imu::SharedPtr> imu_msgs_;
+    std::vector<can_msgs::msg::Frame::SharedPtr> can_msgs_;
 };
 
 }  // namespace aiformula
 
-#endif  // GYRO_ODOMETRY_HPP
+#endif  // GYRO_ODOMETRY_PUBLISHER_HPP

@@ -15,7 +15,7 @@ OdometryPublisher::OdometryPublisher(const std::string& node_name)
 }
 
 void OdometryPublisher::getRosParams() {
-    // launch
+    // From 'launch file'
     odom_frame_id_ = getRosParameter<std::string>(this, "odom_frame_id");
     robot_frame_id_ = getRosParameter<std::string>(this, "robot_frame_id");
 }
@@ -45,7 +45,7 @@ double OdometryPublisher::calcTimeDelta(const builtin_interfaces::msg::Time& msg
     return dt;
 }
 
-void OdometryPublisher::updatePosition(const double& dt, const double& vehicle_linear_velocity) {
+void OdometryPublisher::updatePosition(const double& vehicle_linear_velocity, const double& dt) {
     vehicle_linear_velocity_.x = vehicle_linear_velocity * cos(yaw_angle_);
     vehicle_linear_velocity_.y = vehicle_linear_velocity * sin(yaw_angle_);
     pos_.x += vehicle_linear_velocity_.x * dt;

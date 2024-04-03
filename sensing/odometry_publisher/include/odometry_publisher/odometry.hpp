@@ -1,5 +1,5 @@
-#ifndef ODOMETRY_HPP
-#define ODOMETRY_HPP
+#ifndef ODOMETRY_PUBLISHER_HPP
+#define ODOMETRY_PUBLISHER_HPP
 
 // ROS
 #include <tf2_ros/transform_broadcaster.h>
@@ -25,7 +25,7 @@ public:
 
 protected:
     double calcTimeDelta(const builtin_interfaces::msg::Time& msg_time);
-    void updatePosition(const double& dt, const double& vehicle_linear_velocity);
+    void updatePosition(const double& vehicle_linear_velocity, const double& dt);
     nav_msgs::msg::Odometry createOdometryMsg(const builtin_interfaces::msg::Time& msg_time) const;
     void broadcastTf(const nav_msgs::msg::Odometry& odom);
 
@@ -49,4 +49,4 @@ private:
 
 }  // namespace aiformula
 
-#endif  // ODOMETRY_HPP
+#endif  // ODOMETRY_PUBLISHER_HPP

@@ -1,6 +1,8 @@
 #ifndef WHEEL_HPP
 #define WHEEL_HPP
 
+#include <can_msgs/msg/frame.hpp>
+
 namespace aiformula {
 namespace odometry_publisher {
 
@@ -15,6 +17,19 @@ const double DEGREE_TO_RADIAN = M_PI / 180.0;
 const double RADIAN_TO_DEGREE = 180.0 / M_PI;
 
 const int RPM_ID = 1809;
+
+inline double calcVehicleLinearVelocity(const can_msgs::msg::Frame::SharedPtr& can_msg, const double& wheel_diameter) {
+    const WheelRates<unsigned int> rpm(can_msg->data[4], can_msg->data[0]);
+    const WheelRates<double> vel = rpm * MINUTE_TO_SECOND * wheel_diameter * M_PI;
+    return (vel.left + vel.right) * 0.5;
+}
+
+inline double calcYawRateUsingWheelRpm(const can_msgs::msg::Frame::SharedPtr& can_msg, const double& wheel_diameter,
+                                       const double& wheel_tread) {
+    const WheelRates<unsigned int> rpm(can_msg->data[4], can_msg->data[0]);
+    const WheelRates<double> vel = rpm * MINUTE_TO_SECOND * wheel_diameter * M_PI;
+    return (vel.right - vel.left) / wheel_tread;
+}
 
 }  // namespace odometry_publisher
 }  // namespace aiformula

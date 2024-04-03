@@ -13,27 +13,29 @@ $ ros2 launch odometry_publisher gyro_odometry.launch.py
 ### 機能
 - `wheel_odometry`
     - Subscribe
-        - `/aiformula_sensing/can/frame`
+        - `/aiformula_sensing/can/vehicle_info`
             - CAN情報
             - この中にホイールエンコーダの情報も含まれてる
     - Publish
         - `/aiformula_sensing/wheel_odometry/odom`
             - `odom` to `base_footprint`
     - TF Broadcast
-        - `/tf_static`
+        - `/tf`
             - `odom` to `base_footprint`
 
 - `gyro_odometry`
     - Subscribe
         - `/aiformula_sensing/vectornav/imu`
-        - `/aiformula_sensing/can/frame`
+        - `/aiformula_sensing/can/vehicle_info`
     - Publish
         - `/aiformula_sensing/gyro_odometry/odom`
     - TF Broadcast
-        - `/tf_static`
+        - `/tf`
+    - オドメトリ算出方法
+        - `Imu(t)`, `Imu(t+1)`: `Imu` から取得した時刻 `t`, `t+1` のロボットの Yaw 角
+        - `Encoder(t')`: `t` ~ `t+1` 間の時刻 `t'` にホイールエンコーダから取得した回転数
+        -  ロボットの Yaw 角 を 時刻 `t'` に線形補間し、その角度に `Encoder(t')` だけ進んだとしている
 
 ### ホイールエンコーダー
 - id
-    - 1409 (0x581): CAN open 指令 (SDO送信)
-    - 1537 (0x601): CAN open 指令 (SDO受信)
     - 1809 (0x711): 回転数
