@@ -57,13 +57,14 @@ void GyroOdometryPublisher::publishOdometryCallback() {
     static double prev_can_time = 0.0;
     size_t prev_imu_idx = 0, can_idx = 0;
     for (; prev_imu_idx < imu_msgs_.size() - 1; ++prev_imu_idx) {
-        // Variables for Linear interpolation of 'yaw angle' and 'yaw rate'
-        double prev_imu_time, current_imu_time;
-        tf2::Quaternion prev_orientation, current_orientation;
-        double yaw_rate_lerp_a, yaw_rate_lerp_b;
-        initializeVariablesForLinearInterpolation(prev_imu_idx, prev_imu_time, current_imu_time, prev_orientation,
-                                                  current_orientation, yaw_rate_lerp_a, yaw_rate_lerp_b);
-
+        double current_imu_time = toTimeStampDouble(imu_msgs_[prev_imu_idx + 1]->header.stamp);
+        odometry_publisher::SphericalLinearInterpolator yaw_angle_slerp(
+            toTimeStampDouble(imu_msgs_[prev_imu_idx]->header.stamp), current_imu_time,
+            tf2::impl::toQuaternion(imu_msgs_[prev_imu_idx]->orientation),
+            tf2::impl::toQuaternion(imu_msgs_[prev_imu_idx + 1]->orientation));
+        odometry_publisher::LinearInterpolator yaw_rate_lerp(
+            toTimeStampDouble(imu_msgs_[prev_imu_idx]->header.stamp), current_imu_time,
+            imu_msgs_[prev_imu_idx]->angular_velocity.z, imu_msgs_[prev_imu_idx + 1]->angular_velocity.z);
         while (rclcpp::ok()) {
             if (can_idx == can_msgs_.size()) break;  // Finish when all can messages have been processed.
 
@@ -74,9 +75,8 @@ void GyroOdometryPublisher::publishOdometryCallback() {
             if (prev_can_time) {  // Other than the first can message
                 const double vehicle_linear_velocity =
                     odometry_publisher::calcLinearVelocity(can_msgs_[can_idx], wheel_diameter_);
-                linearlyInterpolateAngleAndRate(current_can_time, prev_imu_time, current_imu_time, prev_orientation,
-                                                current_orientation, yaw_angle_offset, yaw_rate_lerp_a,
-                                                yaw_rate_lerp_b);
+                yaw_angle_ = tf2::impl::getYaw(yaw_angle_slerp.valueAt(current_can_time)) - yaw_angle_offset;
+                yaw_rate_ = yaw_rate_lerp.valueAt(current_can_time);
                 const double dt = current_can_time - prev_can_time;
                 updatePosition(vehicle_linear_velocity, dt);
                 nav_msgs::msg::Odometry odometry = createOdometryMsg(can_msgs_[can_idx]->header.stamp);
@@ -91,29 +91,6 @@ void GyroOdometryPublisher::publishOdometryCallback() {
     // Erase used messages.
     imu_msgs_.erase(imu_msgs_.begin(), imu_msgs_.begin() + prev_imu_idx);
     if (can_idx) can_msgs_.erase(can_msgs_.begin(), can_msgs_.begin() + can_idx);
-}
-
-void GyroOdometryPublisher::initializeVariablesForLinearInterpolation(
-    const size_t& prev_imu_idx, double& prev_imu_time, double& current_imu_time, tf2::Quaternion& prev_orientation,
-    tf2::Quaternion& current_orientation, double& yaw_rate_lerp_a, double& yaw_rate_lerp_b) const {
-    prev_imu_time = toTimeStampDouble(imu_msgs_[prev_imu_idx]->header.stamp);
-    current_imu_time = toTimeStampDouble(imu_msgs_[prev_imu_idx + 1]->header.stamp);
-    prev_orientation = tf2::impl::toQuaternion(imu_msgs_[prev_imu_idx]->orientation);
-    current_orientation = tf2::impl::toQuaternion(imu_msgs_[prev_imu_idx + 1]->orientation);
-    const double prev_yaw_rate = imu_msgs_[prev_imu_idx]->angular_velocity.z;
-    const double current_yaw_rate = imu_msgs_[prev_imu_idx + 1]->angular_velocity.z;
-    yaw_rate_lerp_a = (current_yaw_rate - prev_yaw_rate) / (current_imu_time - prev_imu_time);
-    yaw_rate_lerp_b = prev_yaw_rate - yaw_rate_lerp_a * prev_imu_time;
-}
-
-void GyroOdometryPublisher::linearlyInterpolateAngleAndRate(
-    const double& current_can_time, const double& prev_imu_time, const double& current_imu_time,
-    const tf2::Quaternion& prev_orientation, const tf2::Quaternion& current_orientation, const double& yaw_angle_offset,
-    const double& yaw_rate_lerp_a, const double& yaw_rate_lerp_b) {
-    const double ratio = (current_can_time - prev_imu_time) / (current_imu_time - prev_imu_time);
-    const auto orientation = prev_orientation.slerp(current_orientation, ratio);
-    yaw_angle_ = tf2::impl::getYaw(orientation) - yaw_angle_offset;
-    yaw_rate_ = yaw_rate_lerp_a * current_can_time + yaw_rate_lerp_b;
 }
 
 }  // namespace aiformula

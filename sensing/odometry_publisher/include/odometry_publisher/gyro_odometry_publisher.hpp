@@ -2,8 +2,6 @@
 #define GYRO_ODOMETRY_PUBLISHER_HPP
 
 // ROS
-#include <tf2_ros/transform_broadcaster.h>
-
 #include <rclcpp/rclcpp.hpp>
 
 // ROS msg
@@ -14,6 +12,7 @@
 // Original
 #include "common_cpp/get_ros_parameter.hpp"
 #include "common_cpp/util.hpp"
+#include "odometry_publisher/linear_interporator.hpp"
 #include "odometry_publisher/odometry_publisher.hpp"
 #include "odometry_publisher/wheel.hpp"
 
@@ -31,14 +30,6 @@ private:
     void imuCallback(const sensor_msgs::msg::Imu::SharedPtr msg);
     void canFrameCallback(const can_msgs::msg::Frame::SharedPtr msg);
     void publishOdometryCallback();
-    void initializeVariablesForLinearInterpolation(const size_t& prev_imu_idx, double& prev_imu_time,
-                                                   double& current_imu_time, tf2::Quaternion& prev_orientation,
-                                                   tf2::Quaternion& current_orientation, double& yaw_rate_lerp_a,
-                                                   double& yaw_rate_lerp_b) const;
-    void linearlyInterpolateAngleAndRate(const double& current_can_time, const double& prev_imu_time,
-                                         const double& current_imu_time, const tf2::Quaternion& prev_orientation,
-                                         const tf2::Quaternion& current_orientation, const double& yaw_angle_offset,
-                                         const double& yaw_rate_lerp_a, const double& yaw_rate_lerp_b);
 
     int publish_timer_loop_duration_;
     double wheel_diameter_;
