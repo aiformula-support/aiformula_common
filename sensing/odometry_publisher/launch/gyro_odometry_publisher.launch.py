@@ -1,4 +1,4 @@
-import os
+import os.path as osp
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument, ExecuteProcess
@@ -62,8 +62,8 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = (
-        os.path.join(PACKAGE_DIR, "config", "wheel.yaml"),
-        os.path.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
+        osp.join(PACKAGE_DIR, "config", "wheel.yaml"),
+        osp.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     nodes = (
         Node(
@@ -107,7 +107,7 @@ def generate_launch_description():
             executable="rviz2",
             name="rviz2_gyro_odometry_publisher",
             arguments=[
-                "-d", os.path.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
+                "-d", osp.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )

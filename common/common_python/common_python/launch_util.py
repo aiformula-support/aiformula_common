@@ -2,6 +2,7 @@ from itertools import count
 
 counter = count(0)
 
+
 def get_unique_name(name: str) -> str:
     """Returns a unique name
 
