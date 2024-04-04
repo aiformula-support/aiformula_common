@@ -1,4 +1,4 @@
-import os.path as osp
+import os
 from typing import List, Tuple
 
 
@@ -17,9 +17,9 @@ def add_directory(package_name: str, target_directory: str, data_files: List[Tup
     """
     for (path, directories, filenames) in os.walk(target_directory):
         for filename in filenames:
-            file_path = osp.join(path, filename)
+            file_path = os.path.join(path, filename)
             data_files.append(
-                (osp.join("share", package_name, path), [file_path]))
+                (os.path.join("share", package_name, path), [file_path]))
 
 
 def get_data_files(package_name: str, target_directories: Tuple[str, ...] = ()) -> List[Tuple[str, List[str]]]:
@@ -53,7 +53,7 @@ def get_data_files(package_name: str, target_directories: Tuple[str, ...] = ()) 
     data_files = [
         ('share/ament_index/resource_index/packages',
          ['resource/' + package_name]),
-        (osp.join("share", package_name), ['package.xml']),
+        (os.path.join("share", package_name), ['package.xml']),
     ]
     for target_directory in target_directories:
         add_directory(package_name, target_directory, data_files)
