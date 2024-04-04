@@ -34,6 +34,21 @@ def generate_launch_description():
             description="Gyro odometry topic name.",
         ),
         DeclareLaunchArgument(
+            "odom_frame_id",
+            default_value="odom",
+            description="Frame id of odom",
+        ),
+        DeclareLaunchArgument(
+            "robot_frame_id_wheel_odometry",
+            default_value="base_footprint_wheel_odometry",
+            description="Frame id of the robot following wheel odometry",
+        ),
+        DeclareLaunchArgument(
+            "robot_frame_id_gyro_odometry",
+            default_value="base_footprint_gyro_odometry",
+            description="Frame id of the robot following gyro odometry",
+        ),
+        DeclareLaunchArgument(
             "use_rosbag",
             default_value="false",
             description="If true, play rosbag",
@@ -52,21 +67,6 @@ def generate_launch_description():
             "use_rviz",
             default_value="false",
             description="If true, run rviz2",
-        ),
-        DeclareLaunchArgument(
-            "odom_frame_id",
-            default_value="odom",
-            description="Frame id of odom",
-        ),
-        DeclareLaunchArgument(
-            "robot_frame_id_wheel_odometry",
-            default_value="base_footprint_wheel_odometry",
-            description="Frame id of the robot following wheel odometry",
-        ),
-        DeclareLaunchArgument(
-            "robot_frame_id_gyro_odometry",
-            default_value="base_footprint_gyro_odometry",
-            description="Frame id of the robot following gyro odometry",
         ),
     )
 

@@ -16,12 +16,22 @@ def generate_launch_description():
             "sub_can",
             default_value="/from_can_bus",
             # default_value="/aiformula_sensing/can/vehicle_info",
-            description="Can topic name",
+            description="Topic name of can",
         ),
         DeclareLaunchArgument(
             "pub_odometry",
             default_value="/aiformula_sensing/wheel_odometry_publisher/odom",
-            description="Odometry topic name.",
+            description="Topic name of odometry",
+        ),
+        DeclareLaunchArgument(
+            "odom_frame_id",
+            default_value="odom",
+            description="Frame id of odom",
+        ),
+        DeclareLaunchArgument(
+            "robot_frame_id",
+            default_value="base_footprint",
+            description="Frame id of the robot",
         ),
         DeclareLaunchArgument(
             "use_rosbag",
@@ -42,16 +52,6 @@ def generate_launch_description():
             "use_rviz",
             default_value="false",
             description="If true, run rviz2",
-        ),
-        DeclareLaunchArgument(
-            "odom_frame_id",
-            default_value="odom",
-            description="Frame id of odom",
-        ),
-        DeclareLaunchArgument(
-            "robot_frame_id",
-            default_value="base_footprint",
-            description="Frame id of the robot",
         ),
     )
 

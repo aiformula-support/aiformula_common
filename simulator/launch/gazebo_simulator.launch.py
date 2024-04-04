@@ -2,25 +2,28 @@ import os
 from typing import Tuple
 from launch import LaunchDescription, LaunchContext
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument, OpaqueFunction
+from launch.actions import (
+    DeclareLaunchArgument, OpaqueFunction, IncludeLaunchDescription, ExecuteProcess
+)
 from launch.substitutions import LaunchConfiguration
-from launch.actions import IncludeLaunchDescription, ExecuteProcess
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
 
+
 def get_gzserver(
-        context: LaunchContext,
-        world_name_lc: LaunchConfiguration,
-        vehicle_name_lc: LaunchConfiguration,
-    ) -> Tuple[Node]: 
+    context: LaunchContext,
+    world_name_lc: LaunchConfiguration,
+    vehicle_name_lc: LaunchConfiguration,
+) -> Tuple[Node]:
     world_name = context.perform_substitution(world_name_lc)
     vehicle_name = context.perform_substitution(vehicle_name_lc)
     world_path = os.path.join(get_package_share_directory("simulator"),
                               "worlds", world_name, vehicle_name + ".model")
-    return  (
+    return (
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                get_package_share_directory("gazebo_ros") + "/launch/gzserver.launch.py"
+                get_package_share_directory(
+                    "gazebo_ros") + "/launch/gzserver.launch.py"
             ),
             launch_arguments={
                 "world": world_path,
@@ -28,6 +31,7 @@ def get_gzserver(
             }.items()
         ),
     )
+
 
 def generate_launch_description():
 
@@ -52,7 +56,8 @@ def generate_launch_description():
     nodes = (
         IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                get_package_share_directory("vehicle") + "/launch/extrinsic_tfstatic_broadcaster.launch.py"
+                get_package_share_directory(
+                    "vehicle") + "/launch/extrinsic_tfstatic_broadcaster.launch.py"
             ),
             launch_arguments={
                 "vehicle_name": "ai_car1",
@@ -62,8 +67,8 @@ def generate_launch_description():
             }.items()
         ),
         # ExecuteProcess(
-            # cmd=["export", "GAZEBO_MODEL_PATH=$(ros2 pkg prefix vehicle)/share/vehicle/xacro"],
-            # shell=True),
+        # cmd=["export", "GAZEBO_MODEL_PATH=$(ros2 pkg prefix vehicle)/share/vehicle/xacro"],
+        # shell=True),
         OpaqueFunction(
             function=get_gzserver,
             args=[
@@ -71,9 +76,10 @@ def generate_launch_description():
                 LaunchConfiguration("vehicle_name"),
             ],
         ),
-       IncludeLaunchDescription(
+        IncludeLaunchDescription(
             PythonLaunchDescriptionSource(
-                get_package_share_directory("gazebo_ros") + "/launch/gzclient.launch.py"
+                get_package_share_directory(
+                    "gazebo_ros") + "/launch/gzclient.launch.py"
             ),
         ),
         ExecuteProcess(

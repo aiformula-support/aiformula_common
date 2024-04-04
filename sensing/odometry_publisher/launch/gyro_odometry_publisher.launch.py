@@ -14,20 +14,28 @@ def generate_launch_description():
     launch_args = (
         DeclareLaunchArgument(
             "sub_imu",
-            default_value="/vectornav/imu",
-            # default_value="/aiformula_sensing/vectornav/imu",
-            description="Imu topic name",
+            default_value="/aiformula_sensing/vectornav/imu",
+            description="Topic name of imu",
         ),
         DeclareLaunchArgument(
             "sub_can",
-            default_value="/from_can_bus",
-            # default_value="/aiformula_sensing/can/vehicle_info",
-            description="Can topic name",
+            default_value="/aiformula_sensing/can/vehicle_info",
+            description="Topic name of can",
         ),
         DeclareLaunchArgument(
             "pub_odometry",
             default_value="/aiformula_sensing/gyro_odometry_publisher/odom",
-            description="Odometry topic name.",
+            description="Topic name of odometry",
+        ),
+        DeclareLaunchArgument(
+            "odom_frame_id",
+            default_value="odom",
+            description="Frame id of odom",
+        ),
+        DeclareLaunchArgument(
+            "robot_frame_id",
+            default_value="base_footprint",
+            description="Frame id of the robot",
         ),
         DeclareLaunchArgument(
             "use_rosbag",
@@ -48,16 +56,6 @@ def generate_launch_description():
             "use_rviz",
             default_value="false",
             description="If true, run rviz2",
-        ),
-        DeclareLaunchArgument(
-            "odom_frame_id",
-            default_value="odom",
-            description="Frame id of odom",
-        ),
-        DeclareLaunchArgument(
-            "robot_frame_id",
-            default_value="base_footprint",
-            description="Frame id of the robot",
         ),
     )
 
