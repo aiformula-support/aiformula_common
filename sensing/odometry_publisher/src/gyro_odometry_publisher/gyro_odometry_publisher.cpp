@@ -51,12 +51,14 @@ void GyroOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::SharedP
 }
 
 void GyroOdometryPublisher::publishOdometryCallback() {
-    if (imu_msgs_.size() < 2 || can_msgs_.empty()) return;  // At least two IMU messages are required for interpolation.
+    const auto num_imu_msgs = imu_msgs_.size();
+    const auto num_can_msgs = can_msgs_.size();
+    if (num_imu_msgs < 2 || !num_can_msgs) return;  // At least two IMU messages are required for interpolation.
     static const double yaw_angle_offset = getYaw(imu_msgs_[0]->orientation);
 
     static double prev_can_time = 0.0;
     size_t prev_imu_idx = 0, can_idx = 0;
-    for (; prev_imu_idx < imu_msgs_.size() - 1; ++prev_imu_idx) {
+    for (; prev_imu_idx < num_imu_msgs - 1; ++prev_imu_idx) {
         double current_imu_time = toTimeStampDouble(imu_msgs_[prev_imu_idx + 1]->header.stamp);
         odometry_publisher::SphericalLinearInterpolator yaw_angle_slerp(
             toTimeStampDouble(imu_msgs_[prev_imu_idx]->header.stamp), current_imu_time,
@@ -66,7 +68,7 @@ void GyroOdometryPublisher::publishOdometryCallback() {
             toTimeStampDouble(imu_msgs_[prev_imu_idx]->header.stamp), current_imu_time,
             imu_msgs_[prev_imu_idx]->angular_velocity.z, imu_msgs_[prev_imu_idx + 1]->angular_velocity.z);
         while (rclcpp::ok()) {
-            if (can_idx == can_msgs_.size()) break;  // Finish when all can messages have been processed.
+            if (can_idx == num_can_msgs) break;  // Finish when all can messages have been processed.
 
             const double current_can_time = toTimeStampDouble(can_msgs_[can_idx]->header.stamp);
             if (current_imu_time < current_can_time)
