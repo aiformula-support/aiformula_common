@@ -53,15 +53,10 @@ install(TARGETS gyro_odometry_publisher
 )
 
 install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/config
-    DESTINATION share/${PROJECT_NAME}
-)
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/launch
-    DESTINATION share/${PROJECT_NAME}
-)
-install(
-    DIRECTORY ${CMAKE_CURRENT_SOURCE_DIR}/rviz
+    DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/config
+        ${CMAKE_CURRENT_SOURCE_DIR}/launch
+        ${CMAKE_CURRENT_SOURCE_DIR}/rviz
     DESTINATION share/${PROJECT_NAME}
 )
 
