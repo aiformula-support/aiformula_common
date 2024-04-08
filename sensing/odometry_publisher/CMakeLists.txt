@@ -13,8 +13,8 @@ find_package(common_cpp REQUIRED)
 # wheel_odometry_publisher
 add_executable(wheel_odometry_publisher
     ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry_publisher.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry_publisher/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry_publisher/wheel_odometry_publisher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/wheel_odometry_publisher/wheel_odometry_publisher_node.cpp
 )
 target_include_directories(wheel_odometry_publisher PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
@@ -34,8 +34,8 @@ install(TARGETS wheel_odometry_publisher
 # gyro_odometry_publisher
 add_executable(gyro_odometry_publisher
     ${CMAKE_CURRENT_SOURCE_DIR}/src/odometry_publisher.cpp
-    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry_publisher/main.cpp
     ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry_publisher/gyro_odometry_publisher.cpp
+    ${CMAKE_CURRENT_SOURCE_DIR}/src/gyro_odometry_publisher/gyro_odometry_publisher_node.cpp
 )
 target_include_directories(gyro_odometry_publisher PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
