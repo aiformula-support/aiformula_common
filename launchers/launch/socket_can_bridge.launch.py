@@ -5,10 +5,13 @@ from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import PushRosNamespace
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from ament_index_python.packages import get_package_share_directory
+from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_DIR = get_package_share_directory("ros2_socketcan")
+    _, TOPIC_NAMES = get_frame_ids_and_topic_names()
+
     launch_args = (
         DeclareLaunchArgument(
             "interface", default_value="can0"),
@@ -20,10 +23,6 @@ def generate_launch_description():
             "enable_can_fd", default_value="false"),
         DeclareLaunchArgument(
             "interface", default_value="can0"),
-        DeclareLaunchArgument(
-            "pub_can", default_value="/aiformula_sensing/vehicle_info"),
-        DeclareLaunchArgument(
-            "sub_can", default_value="/aiformula_control/roboteq_controller/reference_signal"),
     )
 
     can_receiver = GroupAction(
@@ -37,7 +36,7 @@ def generate_launch_description():
                     "interface": LaunchConfiguration("interface"),
                     "interval_sec": LaunchConfiguration("receiver_interval_sec"),
                     "enable_can_fd": LaunchConfiguration("enable_can_fd"),
-                    "from_can_bus_topic": LaunchConfiguration("pub_can"),
+                    "from_can_bus_topic": TOPIC_NAMES["sensing"]["input_can_data"],
                 }.items(),
             ),
         ]
@@ -54,7 +53,7 @@ def generate_launch_description():
                     "interface": LaunchConfiguration("interface"),
                     "interval_sec": LaunchConfiguration("sender_timeout_sec"),
                     "enable_can_fd": LaunchConfiguration("enable_can_fd"),
-                    "to_can_bus_topic": LaunchConfiguration("sub_can"),
+                    "to_can_bus_topic": TOPIC_NAMES["control"]["output_can_data"],
                 }.items(),
             ),
         ]

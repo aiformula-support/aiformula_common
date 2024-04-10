@@ -5,7 +5,9 @@ sensing:
       raw_compressed: "/aiformula_sensing/zedx_image_publisher/left_image/raw/compressed"
   input_can_data: "/aiformula_sensing/vehicle_info"
   imu: "/aiformula_sensing/vectornav/imu"
-  odometry: "/aiformula_sensing/gyro_odometry/odom"
+  odometry:
+    gyro: "/aiformula_sensing/gyro_odometry_publisher/odom"
+    wheel: "/aiformula_sensing/wheel_odometry_publisher/odom"
 
 # perception:
 

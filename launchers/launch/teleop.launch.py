@@ -4,22 +4,15 @@ from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
+from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_NAME = "teleop_twist_joy"
     NODE_NAME = "teleop_node"
+    _, TOPIC_NAMES = get_frame_ids_and_topic_names()
+
     launch_args = (
-        DeclareLaunchArgument(
-            "sub_game_pad_output",
-            default_value="/aiformula_control/joy_node/joy",
-            description="Topic name of GamePad output.",
-        ),
-        DeclareLaunchArgument(
-            "pub_speed_command",
-            default_value="/aiformula_control/game_pad/cmd_vel",
-            description="Topic name of speed command.",
-        ),
         DeclareLaunchArgument(
             "game_pad",
             default_value="dualshock4",
@@ -42,8 +35,8 @@ def generate_launch_description():
         namespace="/aiformula_control",
         parameters=[LaunchConfiguration("button_layout_config")],
         remappings=[
-            ("joy", LaunchConfiguration("sub_game_pad_output")),
-            ("cmd_vel", LaunchConfiguration("pub_speed_command")),
+            ("joy", TOPIC_NAMES["control"]["game_pad"]),
+            ("cmd_vel", TOPIC_NAMES["control"]["speed_command"]["game_pad"]),
         ],
     )
 

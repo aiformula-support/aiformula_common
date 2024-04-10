@@ -1,25 +1,17 @@
 import os.path as osp
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
+from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_NAME = "joy"
     NODE_NAME = "joy_node"
-    launch_args = (
-        DeclareLaunchArgument(
-            "pub_game_pad_output",
-            default_value="/aiformula_control/joy_node/joy",
-            description="Topic name of GamePad output.",
-        ),
-    )
+    _, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(
-            "launchers"), "config", "joy.yaml"),
+        osp.join(get_package_share_directory("launchers"), "config", "joy.yaml"),
     )
     joy_node = Node(
         package=PACKAGE_NAME,
@@ -28,11 +20,10 @@ def generate_launch_description():
         namespace="/aiformula_control",
         parameters=[*ROS_PARAM_CONFIG],
         remappings=[
-            ("joy", LaunchConfiguration("pub_game_pad_output")),
+            ("joy", TOPIC_NAMES["control"]["game_pad"]),
         ],
     )
 
     return LaunchDescription([
-        *launch_args,
         joy_node,
     ])

@@ -1,28 +1,13 @@
 from launch import LaunchDescription
 from launch_ros.actions import Node
-from launch.actions import DeclareLaunchArgument
-from launch.substitutions import LaunchConfiguration
+from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_NAME = "zedx_image_publisher"
-    launch_args = (
-        DeclareLaunchArgument(
-            "pub_left_image",
-            default_value="/aiformula_sensing/zedx_image_publisher/left_image_raw",
-            description="Topic name of ZED left camera raw image",
-        ),
-        DeclareLaunchArgument(
-            "pub_left_compressed_image",
-            default_value="/aiformula_sensing/zedx_image_publisher/left_image_raw/compressed",
-            description="Topic name of ZED left camera compressed image",
-        ),
-        DeclareLaunchArgument(
-            "zedx_left_frame_id",
-            default_value="zedx_left_link",
-            description="Frame id of ZED left camera",
-        ),
-    )
+    FRAME_IDS, TOPIC_NAMES = get_frame_ids_and_topic_names()
+
+    launch_args = ()
 
     zedx_image_publisher = Node(
         package=PACKAGE_NAME,
@@ -32,12 +17,11 @@ def generate_launch_description():
         output="screen",
         emulate_tty=True,
         parameters=[{
-            "zedx_left_frame_id": LaunchConfiguration("zedx_left_frame_id"),
+            "zedx_left_frame_id": FRAME_IDS["zedx"]["left"],
         }],
         remappings=[
-            ("pub_left_image", LaunchConfiguration("pub_left_image")),
-            ("pub_left_compressed_image", LaunchConfiguration(
-                "pub_left_compressed_image")),
+            ("pub_left_image", TOPIC_NAMES["sensing"]["zedx"]["left_image"]["raw"]),
+            ("pub_left_compressed_image", TOPIC_NAMES["sensing"]["zedx"]["left_image"]["raw_compressed"]),
         ],
     )
 
