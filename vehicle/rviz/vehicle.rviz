@@ -96,11 +96,11 @@ Visualization Manager:
           Value: true
         wheel_right_link:
           Value: true
-        zedX_left_link:
+        zedx_left_link:
           Value: true
-        zedX_link:
+        zedx_link:
           Value: true
-        zedX_right_link:
+        zedx_right_link:
           Value: true
       Marker Scale: 0.5
       Name: TF
@@ -116,10 +116,10 @@ Visualization Manager:
               {}
             wheel_right_link:
               {}
-            zedX_link:
-              zedX_left_link:
+            zedx_link:
+              zedx_left_link:
                 {}
-              zedX_right_link:
+              zedx_right_link:
                 {}
       Update Interval: 0
       Value: true
@@ -165,16 +165,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        zedX_left_link:
+        zedx_left_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zedX_link:
+        zedx_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        zedX_right_link:
+        zedx_right_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false

@@ -12,7 +12,7 @@
 
   <xacro:property name="BASE_FOOTPRINT" value="base_footprint"/>
   <xacro:property name="BASE" value="base"/>
-  <xacro:property name="ZEDX" value="zedX"/>
+  <xacro:property name="ZEDX" value="zedx"/>
   <xacro:property name="WHEEL_LEFT" value="wheel_left"/>
   <xacro:property name="WHEEL_RIGHT" value="wheel_right"/>
   <xacro:property name="CASTER_BACK" value="caster_back"/>
@@ -26,7 +26,7 @@
     x="0.0" y="0.0" z="${WHEEL_RADIUS}"
     roll="0.0" pitch="0.0" yaw="${180.0*D2R}"/>
 
-  <!-- zedX -->
+  <!-- zedx -->
   <xacro:zed_joint_macro
     camera="${ZEDX}" parent="${BASE}"
     x="0.055" y="0.0" z="0.54"

@@ -18,8 +18,8 @@ def generate_launch_description():
             description="Topic name of ZED left camera compressed image",
         ),
         DeclareLaunchArgument(
-            "zed_left_frame_id",
-            default_value="zedX_left_link",
+            "zedx_left_frame_id",
+            default_value="zedx_left_link",
             description="Frame id of ZED left camera",
         ),
     )
@@ -33,7 +33,7 @@ def generate_launch_description():
             output="screen",
             emulate_tty=True,
             parameters=[{
-                "zed_left_frame_id": LaunchConfiguration("zed_left_frame_id"),
+                "zedx_left_frame_id": LaunchConfiguration("zedx_left_frame_id"),
             }],
             remappings=[
                 ("pub_left_image", LaunchConfiguration("pub_left_image")),

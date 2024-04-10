@@ -35,9 +35,9 @@ def generate_launch_description():
                          "launch/zedx_image_publisher.launch.py"),
             ),
             launch_arguments={
-                "pub_left_image": topic_names["sensing"]["zed"]["left_image"]["raw"],
-                "pub_left_compressed_image": topic_names["sensing"]["zed"]["left_image"]["raw_compressed"],
-                "zed_left_frame_id": frame_ids["zedX"]["left"],
+                "pub_left_image": topic_names["sensing"]["zedx"]["left_image"]["raw"],
+                "pub_left_compressed_image": topic_names["sensing"]["zedx"]["left_image"]["raw_compressed"],
+                "zedx_left_frame_id": frame_ids["zedx"]["left"],
             }.items(),
         ),
 

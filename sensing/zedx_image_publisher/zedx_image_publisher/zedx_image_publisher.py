@@ -10,9 +10,9 @@ class ZedXImagePublisher(Node):
     def __init__(self):
         super().__init__('zedx_image_publisher')
         # get ros parameter
-        self.declare_parameter("zed_left_frame_id", "camera_link")
-        self.zed_left_frame_id = self.get_parameter(
-            "zed_left_frame_id").get_parameter_value().string_value
+        self.declare_parameter("zedx_left_frame_id", "camera_link")
+        self.zedx_left_frame_id = self.get_parameter(
+            "zedx_left_frame_id").get_parameter_value().string_value
 
         # ZEDX
         init_params = sl.InitParameters()
@@ -57,9 +57,9 @@ class ZedXImagePublisher(Node):
             msg.data = compressed_img.tostring()
 
             pub_img.header.stamp = self.get_clock().now().to_msg()
-            pub_img.header.frame_id = self.zed_left_frame_id
+            pub_img.header.frame_id = self.zedx_left_frame_id
             msg.header.stamp = self.get_clock().now().to_msg()
-            msg.header.frame_id = self.zed_left_frame_id
+            msg.header.frame_id = self.zedx_left_frame_id
             self.raw_img_pub_.publish(pub_img)
             self.commpressed_img_pub_.publish(msg)
 

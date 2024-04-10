@@ -1,5 +1,5 @@
 sensing:
-  zed:
+  zedx:
     left_image:
       raw: "/aiformula_sensing/zedx_image_publisher/left_image/raw"
       raw_compressed: "/aiformula_sensing/zedx_image_publisher/left_image/raw/compressed"
