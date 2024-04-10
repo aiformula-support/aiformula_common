@@ -15,13 +15,14 @@ CubicLineFitter::CubicLineFitter(const double& xmin, const double& xmax, const d
 void CubicLineFitter::fitAndExtrapolate(const std::vector<Eigen::Vector3d>& points,
                                         std::vector<Eigen::Vector3d>& extrapolated) const {
     Eigen::Vector4d coefficients;
-    fitPoints(points, coefficients);
+    calcCoefficients(points, coefficients);
 
     const auto y_coords = x_powers_ * coefficients;
     for (int i = 0; i < num_points_; ++i) extrapolated.emplace_back(x_coords_(i), y_coords(i), 0.);
 }
 
-void CubicLineFitter::fitPoints(const std::vector<Eigen::Vector3d>& points, Eigen::Vector4d& coefficients) const {
+void CubicLineFitter::calcCoefficients(const std::vector<Eigen::Vector3d>& points,
+                                       Eigen::Vector4d& coefficients) const {
     const int num_points = static_cast<int>(points.size());
     Eigen::ArrayXd x_coords(num_points);
     Eigen::VectorXd y_coords(num_points);

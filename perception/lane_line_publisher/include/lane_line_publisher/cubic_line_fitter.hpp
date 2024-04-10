@@ -17,7 +17,7 @@ public:
                            std::vector<Eigen::Vector3d>& extrapolated) const;
 
 private:
-    void fitPoints(const std::vector<Eigen::Vector3d>& points, Eigen::Vector4d& coefficients) const;
+    void calcCoefficients(const std::vector<Eigen::Vector3d>& points, Eigen::Vector4d& coefficients) const;
 
     int rank_, num_points_;
     Eigen::ArrayXd x_coords_;

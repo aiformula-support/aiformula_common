@@ -58,7 +58,8 @@ void LaneLinePublisher::findLaneLines(const cv::Mat &mask, const builtin_interfa
     lane_pixel_finder_->findLanePixels(mask, lane_lines);
     if (debug_) publishAnnotatedMask(mask, timestamp, lane_lines);
 
-    for (auto *lane_line : {&lane_lines.left, &lane_lines.right, &lane_lines.center}) {
+    std::vector<LaneLine *> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
+    for (auto *lane_line : lane_line_ptrs) {
         lane_line->toVehicleFrame(camera_matrix_, vehicle_T_camera_);
         lane_line->cropToRoi(xmin_, xmax_, ymin_, ymax_);
         lane_line->respacePoints(spacing_);

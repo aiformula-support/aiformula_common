@@ -4,9 +4,9 @@ namespace aiformula {
 
 ParametrizedPolyline::ParametrizedPolyline(const std::vector<Eigen::Vector3d> &points)
     : points_(points), cumulative_lengths_{0.0} {
-    const auto last_point_it = std::prev(points_.end());
-    for (auto point_it = points_.begin(); point_it != last_point_it; ++point_it) {
-        const auto segment = *std::next(point_it) - *point_it;
+    const auto num_points = static_cast<int>(points.size());
+    for (int i = 0; i < num_points - 1; ++i) {
+        const auto segment = points[i + 1] - points[i];
         normalized_segments_.emplace_back(segment.normalized());
         cumulative_lengths_.emplace_back(cumulative_lengths_.back() + segment.norm());
     }
@@ -19,11 +19,11 @@ Eigen::Vector3d ParametrizedPolyline::pointAt(const double &length) const {
     else if (length > this->length())
         return points_.back() + (length - this->length()) * normalized_segments_.back();
 
-    // To find the segment on which the interpolated point should lie, locate the last point whose cumulative length
-    // is less than `length`.
-    const auto rit =
-        std::lower_bound(cumulative_lengths_.rbegin(), cumulative_lengths_.rend(), length, std::greater<double>());
-    const auto index = std::distance(cumulative_lengths_.begin(), std::next(rit).base());
+    // Locate the segment on which the interpolated point should lie, then interpolate.
+    const auto right_it =
+        std::lower_bound(cumulative_lengths_.begin(), cumulative_lengths_.end(), length, std::less_equal{});
+    const auto left_it = std::prev(right_it);
+    const auto index = std::distance(cumulative_lengths_.begin(), left_it);
     return points_[index] + (length - cumulative_lengths_[index]) * normalized_segments_[index];
 }
 

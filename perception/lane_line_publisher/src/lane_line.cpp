@@ -10,12 +10,9 @@ void LaneLine::toVehicleFrame(const cv::Mat& camera_matrix, const tf2::Transform
 
 void LaneLine::cropToRoi(const double& xmin, const double& xmax, const double& ymin, const double& ymax) {
     std::vector<Eigen::Vector3d> cropped;
-    const auto num_points = static_cast<int>(points.size());
-    for (int i = 0; i < num_points; ++i) {
-        const auto& point = points[i];
+    for (const auto& point : points)
         if (point.x() >= xmin && point.x() <= xmax && point.y() >= ymin && point.y() <= ymax)
             cropped.emplace_back(point);
-    }
     points = cropped;
 }
 
