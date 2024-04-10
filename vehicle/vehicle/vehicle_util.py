@@ -1,5 +1,4 @@
 import os.path as osp
-import sys
 import xacro
 from ament_index_python.packages import get_package_share_directory
 
@@ -20,14 +19,10 @@ def get_intrinsic_param_path(vehicle_name: str) -> str:
     >>> get_intrinsic_param_path("ai_car1")
     /path/to/colcon_ws/install/vehicle/share/vehicle/config/ai_car1.yaml\
     """
-    intrinsic_yaml_path = osp.join(
-        get_package_share_directory("vehicle"), "config", vehicle_name + ".yaml")
-
+    intrinsic_yaml_path = osp.join(get_package_share_directory("vehicle"),
+                                   "config", vehicle_name + ".yaml")
     if not osp.exists(intrinsic_yaml_path):
-        print(
-            f"\033[91m[get_intrinsic_param_path] Error: The file '{intrinsic_yaml_path}' does not exist.\033[0m")
-        sys.exit(1)
-
+        raise FileNotFoundError(intrinsic_yaml_path)
     return intrinsic_yaml_path
 
 
