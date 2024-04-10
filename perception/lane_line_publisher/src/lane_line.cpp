@@ -17,6 +17,7 @@ void LaneLine::cropToRoi(const double& xmin, const double& xmax, const double& y
 }
 
 void LaneLine::respacePoints(const double& spacing) {
+    // At least two points (one segment) are required for respacing.
     if (points.size() < 2) return;
 
     const ParametrizedPolyline polyline(points);
@@ -28,6 +29,9 @@ void LaneLine::respacePoints(const double& spacing) {
 }
 
 void LaneLine::fitPoints(const CubicLineFitter::ConstPtr& fitter) {
+    // At least four points are required for cubic fitting. A lower order model should be considered for less points.
+    if (points.size() < 4) return;
+
     std::vector<Eigen::Vector3d> extrapolated;
     fitter->fitAndExtrapolate(points, extrapolated);
     points = extrapolated;
