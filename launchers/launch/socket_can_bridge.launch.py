@@ -1,6 +1,6 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import DeclareLaunchArgument, IncludeLaunchDescription
+from launch.actions import DeclareLaunchArgument, GroupAction, IncludeLaunchDescription
 from launch.substitutions import LaunchConfiguration
 from launch_ros.actions import PushRosNamespace
 from launch.launch_description_sources import PythonLaunchDescriptionSource
@@ -26,34 +26,42 @@ def generate_launch_description():
             "sub_can", default_value="/aiformula_control/roboteq_controller/reference_signal"),
     )
 
-    nodes = (
-        PushRosNamespace("/aiformula_sensing"),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                osp.join(PACKAGE_DIR, "launch/socket_can_receiver.launch.py"),
+    can_receiver = GroupAction(
+        actions=[
+            PushRosNamespace("/aiformula_sensing"),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    osp.join(PACKAGE_DIR, "launch/socket_can_receiver.launch.py"),
+                ),
+                launch_arguments={
+                    "interface": LaunchConfiguration("interface"),
+                    "interval_sec": LaunchConfiguration("receiver_interval_sec"),
+                    "enable_can_fd": LaunchConfiguration("enable_can_fd"),
+                    "from_can_bus_topic": LaunchConfiguration("pub_can"),
+                }.items(),
             ),
-            launch_arguments={
-                "interface": LaunchConfiguration("interface"),
-                "interval_sec": LaunchConfiguration("receiver_interval_sec"),
-                "enable_can_fd": LaunchConfiguration("enable_can_fd"),
-                "from_can_bus_topic": LaunchConfiguration("pub_can"),
-            }.items(),
-        ),
-
-        PushRosNamespace("/aiformula_control"),
-        IncludeLaunchDescription(
-            PythonLaunchDescriptionSource(
-                osp.join(PACKAGE_DIR, "launch/socket_can_sender.launch.py"),
-            ),
-            launch_arguments={
-                "interface": LaunchConfiguration("interface"),
-                "interval_sec": LaunchConfiguration("sender_timeout_sec"),
-                "enable_can_fd": LaunchConfiguration("enable_can_fd"),
-                "to_can_bus_topic": LaunchConfiguration("sub_can"),
-            }.items(),
-        ),
+        ]
     )
+
+    can_sender = GroupAction(
+        actions=[
+            PushRosNamespace("/aiformula_control"),
+            IncludeLaunchDescription(
+                PythonLaunchDescriptionSource(
+                    osp.join(PACKAGE_DIR, "launch/socket_can_sender.launch.py"),
+                ),
+                launch_arguments={
+                    "interface": LaunchConfiguration("interface"),
+                    "interval_sec": LaunchConfiguration("sender_timeout_sec"),
+                    "enable_can_fd": LaunchConfiguration("enable_can_fd"),
+                    "to_can_bus_topic": LaunchConfiguration("sub_can"),
+                }.items(),
+            ),
+        ]
+    )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        can_receiver,
+        can_sender,
     ])

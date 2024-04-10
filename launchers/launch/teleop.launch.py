@@ -35,20 +35,19 @@ def generate_launch_description():
         ),
     )
 
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable=NODE_NAME,
-            name=NODE_NAME,
-            namespace="/aiformula_control",
-            parameters=[LaunchConfiguration("button_layout_config")],
-            remappings=[
-                ("joy", LaunchConfiguration("sub_game_pad_output")),
-                ("cmd_vel", LaunchConfiguration("pub_speed_command")),
-            ],
-        ),
+    teleop_node = Node(
+        package=PACKAGE_NAME,
+        executable=NODE_NAME,
+        name=NODE_NAME,
+        namespace="/aiformula_control",
+        parameters=[LaunchConfiguration("button_layout_config")],
+        remappings=[
+            ("joy", LaunchConfiguration("sub_game_pad_output")),
+            ("cmd_vel", LaunchConfiguration("pub_speed_command")),
+        ],
     )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        teleop_node,
     ])

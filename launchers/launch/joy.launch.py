@@ -21,19 +21,18 @@ def generate_launch_description():
         osp.join(get_package_share_directory(
             "launchers"), "config", "joy.yaml"),
     )
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable=NODE_NAME,
-            name=NODE_NAME,
-            namespace="/aiformula_control",
-            parameters=[*ROS_PARAM_CONFIG],
-            remappings=[
-                ("joy", LaunchConfiguration("pub_game_pad_output")),
-            ],
-        ),
+    joy_node = Node(
+        package=PACKAGE_NAME,
+        executable=NODE_NAME,
+        name=NODE_NAME,
+        namespace="/aiformula_control",
+        parameters=[*ROS_PARAM_CONFIG],
+        remappings=[
+            ("joy", LaunchConfiguration("pub_game_pad_output")),
+        ],
     )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        joy_node,
     ])

@@ -85,25 +85,24 @@ def generate_launch_description():
         ),
     )
 
-    nodes = (
-        OpaqueFunction(
-            function=get_robot_state_publisher,
-            args=[
-                LaunchConfiguration("vehicle_name"),
-                LaunchConfiguration("use_sim_time"),
-            ],
-        ),
-        OpaqueFunction(
-            function=get_joint_state_publisher,
-            args=[
-                LaunchConfiguration("use_joint_state_publisher"),
-                LaunchConfiguration("use_gui"),
-                LaunchConfiguration("use_sim_time"),
-            ],
-        ),
+    robot_state_publisher = OpaqueFunction(
+        function=get_robot_state_publisher,
+        args=[
+            LaunchConfiguration("vehicle_name"),
+            LaunchConfiguration("use_sim_time"),
+        ],
+    )
+    joint_state_publisher = OpaqueFunction(
+        function=get_joint_state_publisher,
+        args=[
+            LaunchConfiguration("use_joint_state_publisher"),
+            LaunchConfiguration("use_gui"),
+            LaunchConfiguration("use_sim_time"),
+        ],
     )
 
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        robot_state_publisher,
+        joint_state_publisher,
     ])

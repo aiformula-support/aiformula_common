@@ -54,56 +54,55 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = osp.join(PACKAGE_DIR, "config", "vectornav.yaml")
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable="vectornav",
-            name="vectornav",
-            namespace="/aiformula_sensing",
-            parameters=[ROS_PARAM_CONFIG],
-            remappings=[
-                ("vectornav/raw/common", LaunchConfiguration("pub_raw_common")),
-                ("vectornav/raw/time", LaunchConfiguration("pub_raw_time")),
-                ("vectornav/raw/imu", LaunchConfiguration("pub_raw_imu")),
-                ("vectornav/raw/gps", LaunchConfiguration("pub_raw_gps")),
-                ("vectornav/raw/attitude", LaunchConfiguration("pub_raw_attitude")),
-                ("vectornav/raw/ins", LaunchConfiguration("pub_raw_ins")),
-                ("vectornav/raw/gps2", LaunchConfiguration("pub_raw_gps2")),
-            ],
-        ),
-
-        Node(
-            package=PACKAGE_NAME,
-            executable="vn_sensor_msgs",
-            name="vn_sensor_msgs",
-            namespace="/aiformula_sensing",
-            parameters=[ROS_PARAM_CONFIG],
-            remappings=[
-                ("vectornav/raw/common", LaunchConfiguration("pub_raw_common")),
-                ("vectornav/raw/time", LaunchConfiguration("pub_raw_time")),
-                ("vectornav/raw/imu", LaunchConfiguration("pub_raw_imu")),
-                ("vectornav/raw/gps", LaunchConfiguration("pub_raw_gps")),
-                ("vectornav/raw/attitude", LaunchConfiguration("pub_raw_attitude")),
-                ("vectornav/raw/ins", LaunchConfiguration("pub_raw_ins")),
-                ("vectornav/raw/gps2", LaunchConfiguration("pub_raw_gps2")),
-
-                ("vectornav/time_startup", LaunchConfiguration("pub_time_startup")),
-                ("vectornav/time_gps", LaunchConfiguration("pub_time_gps")),
-                ("vectornav/time_syncin", LaunchConfiguration("pub_time_syncin")),
-                ("vectornav/time_pps", LaunchConfiguration("pub_time_pps")),
-                ("vectornav/imu", LaunchConfiguration("pub_imu")),
-                ("vectornav/gnss", LaunchConfiguration("pub_gnss")),
-                ("vectornav/imu_uncompensated",
-                 LaunchConfiguration("pub_imu_uncompensated")),
-                ("vectornav/magnetic", LaunchConfiguration("pub_magnetic")),
-                ("vectornav/temperature", LaunchConfiguration("pub_temperature")),
-                ("vectornav/pressure", LaunchConfiguration("pub_pressure")),
-                ("vectornav/velocity_body", LaunchConfiguration("pub_velocity_body")),
-                ("vectornav/pose", LaunchConfiguration("pub_pose")),
-            ],
-        ),
+    vectornav = Node(
+        package=PACKAGE_NAME,
+        executable="vectornav",
+        name="vectornav",
+        namespace="/aiformula_sensing",
+        parameters=[ROS_PARAM_CONFIG],
+        remappings=[
+            ("vectornav/raw/common", LaunchConfiguration("pub_raw_common")),
+            ("vectornav/raw/time", LaunchConfiguration("pub_raw_time")),
+            ("vectornav/raw/imu", LaunchConfiguration("pub_raw_imu")),
+            ("vectornav/raw/gps", LaunchConfiguration("pub_raw_gps")),
+            ("vectornav/raw/attitude", LaunchConfiguration("pub_raw_attitude")),
+            ("vectornav/raw/ins", LaunchConfiguration("pub_raw_ins")),
+            ("vectornav/raw/gps2", LaunchConfiguration("pub_raw_gps2")),
+        ],
     )
+    vn_sensor_msgs = Node(
+        package=PACKAGE_NAME,
+        executable="vn_sensor_msgs",
+        name="vn_sensor_msgs",
+        namespace="/aiformula_sensing",
+        parameters=[ROS_PARAM_CONFIG],
+        remappings=[
+            ("vectornav/raw/common", LaunchConfiguration("pub_raw_common")),
+            ("vectornav/raw/time", LaunchConfiguration("pub_raw_time")),
+            ("vectornav/raw/imu", LaunchConfiguration("pub_raw_imu")),
+            ("vectornav/raw/gps", LaunchConfiguration("pub_raw_gps")),
+            ("vectornav/raw/attitude", LaunchConfiguration("pub_raw_attitude")),
+            ("vectornav/raw/ins", LaunchConfiguration("pub_raw_ins")),
+            ("vectornav/raw/gps2", LaunchConfiguration("pub_raw_gps2")),
+
+            ("vectornav/time_startup", LaunchConfiguration("pub_time_startup")),
+            ("vectornav/time_gps", LaunchConfiguration("pub_time_gps")),
+            ("vectornav/time_syncin", LaunchConfiguration("pub_time_syncin")),
+            ("vectornav/time_pps", LaunchConfiguration("pub_time_pps")),
+            ("vectornav/imu", LaunchConfiguration("pub_imu")),
+            ("vectornav/gnss", LaunchConfiguration("pub_gnss")),
+            ("vectornav/imu_uncompensated",
+             LaunchConfiguration("pub_imu_uncompensated")),
+            ("vectornav/magnetic", LaunchConfiguration("pub_magnetic")),
+            ("vectornav/temperature", LaunchConfiguration("pub_temperature")),
+            ("vectornav/pressure", LaunchConfiguration("pub_pressure")),
+            ("vectornav/velocity_body", LaunchConfiguration("pub_velocity_body")),
+            ("vectornav/pose", LaunchConfiguration("pub_pose")),
+        ]
+    )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        vectornav,
+        vn_sensor_msgs,
     ])

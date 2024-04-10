@@ -24,25 +24,24 @@ def generate_launch_description():
         ),
     )
 
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable=PACKAGE_NAME,
-            name=PACKAGE_NAME,
-            namespace="/aiformula_sensing",
-            output="screen",
-            emulate_tty=True,
-            parameters=[{
-                "zedx_left_frame_id": LaunchConfiguration("zedx_left_frame_id"),
-            }],
-            remappings=[
-                ("pub_left_image", LaunchConfiguration("pub_left_image")),
-                ("pub_left_compressed_image", LaunchConfiguration(
-                    "pub_left_compressed_image")),
-            ],
-        ),
+    zedx_image_publisher = Node(
+        package=PACKAGE_NAME,
+        executable=PACKAGE_NAME,
+        name=PACKAGE_NAME,
+        namespace="/aiformula_sensing",
+        output="screen",
+        emulate_tty=True,
+        parameters=[{
+            "zedx_left_frame_id": LaunchConfiguration("zedx_left_frame_id"),
+        }],
+        remappings=[
+            ("pub_left_image", LaunchConfiguration("pub_left_image")),
+            ("pub_left_compressed_image", LaunchConfiguration(
+                "pub_left_compressed_image")),
+        ],
     )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        zedx_image_publisher,
     ])

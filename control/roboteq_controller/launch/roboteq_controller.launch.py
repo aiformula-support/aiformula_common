@@ -19,21 +19,20 @@ def generate_launch_description():
         ),
     )
 
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable=PACKAGE_NAME,
-            name=PACKAGE_NAME,
-            namespace="/aiformula_control",
-            output="screen",
-            emulate_tty=True,
-            remappings=[
-                ("sub_speed_command", LaunchConfiguration("sub_speed_command")),
-                ("pub_can", LaunchConfiguration("pub_can")),
-            ],
-        ),
+    motor_controller = Node(
+        package=PACKAGE_NAME,
+        executable=PACKAGE_NAME,
+        name=PACKAGE_NAME,
+        namespace="/aiformula_control",
+        output="screen",
+        emulate_tty=True,
+        remappings=[
+            ("sub_speed_command", LaunchConfiguration("sub_speed_command")),
+            ("pub_can", LaunchConfiguration("pub_can")),
+        ],
     )
+
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        motor_controller,
     ])
