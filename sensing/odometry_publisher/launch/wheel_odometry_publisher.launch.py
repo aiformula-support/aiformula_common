@@ -14,8 +14,7 @@ def generate_launch_description():
     launch_args = (
         DeclareLaunchArgument(
             "sub_can",
-            default_value="/from_can_bus",
-            # default_value="/aiformula_sensing/can/vehicle_info",
+            default_value="/aiformula_sensing/can/vehicle_info",
             description="Topic name of can",
         ),
         DeclareLaunchArgument(
@@ -97,8 +96,7 @@ def generate_launch_description():
             package="rviz2",
             executable="rviz2",
             name="rviz2_wheel_odometry_publisher",
-            arguments=[
-                "-d", osp.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
+            arguments=["-d", osp.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )

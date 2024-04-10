@@ -13,25 +13,23 @@ def generate_launch_description():
     launch_args = (
         DeclareLaunchArgument(
             "sub_imu",
-            default_value="/vectornav/imu",
-            # default_value="/aiformula_sensing/vectornav/imu",
-            description="Imu topic name",
+            default_value="/aiformula_sensing/vectornav/imu",
+            description="Topic name of imu",
         ),
         DeclareLaunchArgument(
             "sub_can",
-            default_value="/from_can_bus",
-            # default_value="/aiformula_sensing/can/vehicle_info",
-            description="Can topic name",
+            default_value="/aiformula_sensing/can/vehicle_info",
+            description="Topic name of can",
         ),
         DeclareLaunchArgument(
             "pub_wheel_odometry",
             default_value="/aiformula_sensing/wheel_odometry_publisher/odom",
-            description="Wheel odometry topic name.",
+            description="Topic name of wheel odometry",
         ),
         DeclareLaunchArgument(
             "pub_gyro_odometry",
             default_value="/aiformula_sensing/gyro_odometry_publisher/odom",
-            description="Gyro odometry topic name.",
+            description="Topic name of gyro odometry",
         ),
         DeclareLaunchArgument(
             "odom_frame_id",
@@ -136,8 +134,7 @@ def generate_launch_description():
             package="rviz2",
             executable="rviz2",
             name="rviz2_wheel_and_gyro_odometry_publishers",
-            arguments=[
-                "-d", osp.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometry_publishers.rviz")],
+            arguments=["-d", osp.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometry_publishers.rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )

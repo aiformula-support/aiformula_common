@@ -104,8 +104,7 @@ def generate_launch_description():
             package="rviz2",
             executable="rviz2",
             name="rviz2_gyro_odometry_publisher",
-            arguments=[
-                "-d", osp.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
+            arguments=["-d", osp.join(PACKAGE_DIR, "rviz", NODE_NAME + ".rviz")],
             condition=IfCondition(LaunchConfiguration("use_rviz")),
         ),
     )
