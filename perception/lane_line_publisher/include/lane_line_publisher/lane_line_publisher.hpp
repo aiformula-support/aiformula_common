@@ -2,10 +2,11 @@
 #define LANE_LINE_PUBLISHER_HPP
 
 #include <cv_bridge/cv_bridge.h>
+#include <pcl_conversions/pcl_conversions.h>
 
 #include <rclcpp/rclcpp.hpp>
 #include <sensor_msgs/msg/image.hpp>
-#include <visualization_msgs/msg/marker_array.hpp>
+#include <sensor_msgs/msg/point_cloud2.hpp>
 
 #include "camera.hpp"
 #include "get_ros_parameter.hpp"
@@ -28,13 +29,11 @@ private:
                        LaneLines& lane_lines) const;
     void publishAnnotatedMask(const cv::Mat& mask, const builtin_interfaces::msg::Time& timestamp,
                               const LaneLines& lane_lines) const;
-    visualization_msgs::msg::Marker createLaneLineMarker(const LaneLine& lane_line, const int& id,
-                                                         const std::array<double, 3>& color) const;
     void publishLaneLines(const LaneLines& lane_lines) const;
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr mask_image_sub_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_mask_image_pub_;
-    rclcpp::Publisher<visualization_msgs::msg::MarkerArray>::SharedPtr lane_lines_pub_;
+    std::vector<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr> lane_line_pubs_;
 
     LanePixelFinder::ConstPtr lane_pixel_finder_;
     CubicLineFitter::ConstPtr cubic_line_fitter_;

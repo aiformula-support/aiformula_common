@@ -13,7 +13,9 @@
 
     <remap from="mask_image"           to="/aiformula_perception/road_detector/mask_image"/>
     <remap from="annotated_mask_image" to="/aiformula_perception/lane_line_publisher/annotated_mask_image"/>
-    <remap from="lane_lines"           to="/aiformula_perception/lane_line_publisher/lane_lines"/>
+    <remap from="lane_lines/left"      to="/aiformula_perception/lane_line_publisher/lane_lines/left"/>
+    <remap from="lane_lines/right"      to="/aiformula_perception/lane_line_publisher/lane_lines/right"/>
+    <remap from="lane_lines/center"      to="/aiformula_perception/lane_line_publisher/lane_lines/center"/>
   </node>
 
   <group if="$(var rviz)">

@@ -5,6 +5,8 @@ add_compile_options(-std=c++17 -Wall -Wextra -Wpedantic -Werror)
 find_package(ament_cmake REQUIRED)
 find_package(rclcpp REQUIRED)
 find_package(cv_bridge REQUIRED)
+find_package(PCL REQUIRED)
+find_package(pcl_conversions REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(visualization_msgs REQUIRED)
 find_package(Eigen3 REQUIRED)
@@ -22,9 +24,13 @@ add_executable(lane_line_publisher
 target_include_directories(lane_line_publisher PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
+target_link_libraries(lane_line_publisher
+  ${PCL_LIBRARIES}
+)
 ament_target_dependencies(lane_line_publisher
   rclcpp
   cv_bridge
+  pcl_conversions
   sensor_msgs
   visualization_msgs
   Eigen3

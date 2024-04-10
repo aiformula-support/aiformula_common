@@ -32,7 +32,9 @@ void LaneLinePublisher::initConnections() {
     const auto queue_size = getRosParameter<int>(this, "lane_line_publisher.queue_size");
     mask_image_sub_ = create_subscription<sensor_msgs::msg::Image>(
         "mask_image", queue_size, std::bind(&LaneLinePublisher::imageCallback, this, std::placeholders::_1));
-    lane_lines_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("lane_lines", queue_size);
+    lane_line_pubs_ = {create_publisher<sensor_msgs::msg::PointCloud2>("lane_lines/left", queue_size),
+                       create_publisher<sensor_msgs::msg::PointCloud2>("lane_lines/right", queue_size),
+                       create_publisher<sensor_msgs::msg::PointCloud2>("lane_lines/center", queue_size)};
 
     if (!debug_) return;
 
@@ -79,50 +81,24 @@ void LaneLinePublisher::publishAnnotatedMask(const cv::Mat &mask, const builtin_
     annotated_mask_image_pub_->publish(std::move(msg));
 }
 
-visualization_msgs::msg::Marker LaneLinePublisher::createLaneLineMarker(const LaneLine &lane_line, const int &id,
-                                                                        const std::array<double, 3> &color) const {
-    visualization_msgs::msg::Marker marker;
-    marker.header.frame_id = vehicle_frame_id_;
-    marker.id = id;
-    marker.action = visualization_msgs::msg::Marker::MODIFY;
-    marker.type = visualization_msgs::msg::Marker::SPHERE_LIST;
-    marker.scale.x = 0.2;
-    marker.scale.y = 0.2;
-    marker.pose.position.x = 0.0;
-    marker.pose.position.y = 0.0;
-    marker.pose.position.z = 0.0;
-    marker.pose.orientation.x = 0.0;
-    marker.pose.orientation.y = 0.0;
-    marker.pose.orientation.z = 0.0;
-    marker.pose.orientation.w = 1.0;
-    marker.color.r = color[0];
-    marker.color.g = color[1];
-    marker.color.b = color[2];
-    marker.color.a = 1.0;
-    for (const auto &point : lane_line.points) {
-        auto &p = marker.points.emplace_back();
-        p.x = point.x();
-        p.y = point.y();
-        p.z = point.z();
-    }
-    return marker;
-}
-
 void LaneLinePublisher::publishLaneLines(const LaneLines &lane_lines) const {
-    visualization_msgs::msg::MarkerArray marker_array;
+    const std::vector<const LaneLine *> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
 
-    int id = 0;
-    auto &marker = marker_array.markers.emplace_back();
-    marker.action = visualization_msgs::msg::Marker::DELETEALL;
-    marker.id = id++;
+    static const int num_lane_lines = 3;
+    for (int i = 0; i < num_lane_lines; ++i) {
+        const auto &lane_line_points = lane_line_ptrs[i]->points;
+        pcl::PointCloud<pcl::PointXYZ> cloud;
+        for (const auto &point : lane_line_points) {
+            auto &p = cloud.points.emplace_back();
+            p.x = point.x();
+            p.y = point.y();
+        }
 
-    static const std::array<double, 3> GREEN = {0.0, 1.0, 0.5};
-    static const std::array<double, 3> BLUE = {0.0, 0.5, 1.0};
-    marker_array.markers.emplace_back(createLaneLineMarker(lane_lines.left, id++, GREEN));
-    marker_array.markers.emplace_back(createLaneLineMarker(lane_lines.right, id++, GREEN));
-    marker_array.markers.emplace_back(createLaneLineMarker(lane_lines.center, id++, BLUE));
-
-    lane_lines_pub_->publish(marker_array);
+        sensor_msgs::msg::PointCloud2 pcl_msg;
+        pcl::toROSMsg(cloud, pcl_msg);
+        pcl_msg.header.frame_id = vehicle_frame_id_;
+        lane_line_pubs_[i]->publish(pcl_msg);
+    }
 }
 
 }  // namespace aiformula
