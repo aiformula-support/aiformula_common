@@ -13,14 +13,14 @@
   <library_effects>
     <effect id="Material-effect">
       <profile_COMMON>
-        <newparam sid="ImphenziaPalette01-256-GradientX4_png-surface">
+        <newparam sid="tire_color_png-surface">
           <surface type="2D">
-            <init_from>ImphenziaPalette01-256-GradientX4_png</init_from>
+            <init_from>tire_color_png</init_from>
           </surface>
         </newparam>
-        <newparam sid="ImphenziaPalette01-256-GradientX4_png-sampler">
+        <newparam sid="tire_color_png-sampler">
           <sampler2D>
-            <source>ImphenziaPalette01-256-GradientX4_png-surface</source>
+            <source>tire_color_png-surface</source>
           </sampler2D>
         </newparam>
         <technique sid="common">
@@ -29,7 +29,7 @@
               <color sid="emission">0 0 0 1</color>
             </emission>
             <diffuse>
-              <texture texture="ImphenziaPalette01-256-GradientX4_png-sampler" texcoord="UVMap"/>
+              <texture texture="tire_color_png-sampler" texcoord="UVMap"/>
             </diffuse>
             <index_of_refraction>
               <float sid="ior">1.45</float>
@@ -40,8 +40,8 @@
     </effect>
   </library_effects>
   <library_images>
-    <image id="ImphenziaPalette01-256-GradientX4_png" name="ImphenziaPalette01-256-GradientX4_png">
-      <init_from>ImphenziaPalette01-256-GradientX4.png</init_from>
+    <image id="tire_color_png" name="tire_color_png">
+      <init_from>tire_color.png</init_from>
     </image>
   </library_images>
   <library_materials>
