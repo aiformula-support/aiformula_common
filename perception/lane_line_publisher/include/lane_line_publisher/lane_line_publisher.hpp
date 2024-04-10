@@ -41,7 +41,7 @@ private:
 
     bool debug_;
     std::string vehicle_frame_id_;
-    double xmin_, xmax_, ymin_, ymax_, spacing_;
+    double xmin_, xmax_, ymin_, ymax_, spacing_;  // [m]
     cv::Mat camera_matrix_;
     tf2::Transform vehicle_T_camera_;
 };

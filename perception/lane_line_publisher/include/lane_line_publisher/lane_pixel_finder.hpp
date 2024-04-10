@@ -19,7 +19,8 @@ private:
     void denoiseMask(const cv::Mat& binary_mask, cv::Mat& denoised) const;
     void searchMask(const cv::Mat& binary_mask, LaneLines& lane_lines) const;
 
-    int min_area_, tolerance_;
+    int min_area_;   // [pix^2]
+    int tolerance_;  // [pix]
 };
 
 }  // namespace aiformula
