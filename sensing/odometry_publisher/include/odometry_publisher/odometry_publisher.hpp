@@ -39,7 +39,7 @@ private:
     void printParam() const;
 
     std::string odom_frame_id_;
-    std::string robot_frame_id_;
+    std::string vehicle_frame_id_;
 
     std::unique_ptr<tf2_ros::TransformBroadcaster> odometry_br_;
     double prev_time_;

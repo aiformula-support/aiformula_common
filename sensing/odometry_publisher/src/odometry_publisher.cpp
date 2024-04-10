@@ -17,7 +17,7 @@ OdometryPublisher::OdometryPublisher(const std::string& node_name)
 void OdometryPublisher::getRosParams() {
     // From 'launch file'
     odom_frame_id_ = getRosParameter<std::string>(this, "odom_frame_id");
-    robot_frame_id_ = getRosParameter<std::string>(this, "robot_frame_id");
+    vehicle_frame_id_ = getRosParameter<std::string>(this, "vehicle_frame_id");
 }
 
 void OdometryPublisher::initValues() {
@@ -30,7 +30,7 @@ void OdometryPublisher::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
     RCLCPP_INFO(this->get_logger(), "(launch)");
     RCLCPP_INFO(this->get_logger(), "  odom_frame_id_  = %s", odom_frame_id_.c_str());
-    RCLCPP_INFO(this->get_logger(), "  robot_frame_id_ = %s", robot_frame_id_.c_str());
+    RCLCPP_INFO(this->get_logger(), "  vehicle_frame_id_ = %s", vehicle_frame_id_.c_str());
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
@@ -56,7 +56,7 @@ nav_msgs::msg::Odometry OdometryPublisher::createOdometryMsg(const builtin_inter
     nav_msgs::msg::Odometry odometry;
     odometry.header.stamp = msg_time;
     odometry.header.frame_id = odom_frame_id_;
-    odometry.child_frame_id = robot_frame_id_;
+    odometry.child_frame_id = vehicle_frame_id_;
     odometry.pose.pose.position = pos_;
     odometry.pose.pose.orientation = toQuaternionMsg(0.0, 0.0, yaw_angle_);
     odometry.twist.twist.linear = vehicle_linear_velocity_;

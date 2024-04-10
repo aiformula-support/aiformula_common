@@ -29,9 +29,9 @@ def generate_launch_description():
             description="Frame id of odom",
         ),
         DeclareLaunchArgument(
-            "robot_frame_id",
+            "vehicle_frame_id",
             default_value="base_footprint",
-            description="Frame id of the robot",
+            description="Frame id of the vehicle",
         ),
         DeclareLaunchArgument(
             "use_rosbag",
@@ -69,7 +69,7 @@ def generate_launch_description():
             parameters=[*ROS_PARAM_CONFIG,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
-                            "robot_frame_id": LaunchConfiguration("robot_frame_id"),
+                            "vehicle_frame_id": LaunchConfiguration("vehicle_frame_id"),
                         }],
             remappings=[
                 ("sub_can", LaunchConfiguration("sub_can")),

@@ -39,14 +39,14 @@ def generate_launch_description():
             description="Frame id of odom",
         ),
         DeclareLaunchArgument(
-            "robot_frame_id_wheel_odometry",
+            "vehicle_frame_id_wheel_odometry",
             default_value="base_footprint_wheel_odometry",
-            description="Frame id of the robot following wheel odometry",
+            description="Frame id of the vehicle following wheel odometry",
         ),
         DeclareLaunchArgument(
-            "robot_frame_id_gyro_odometry",
+            "vehicle_frame_id_gyro_odometry",
             default_value="base_footprint_gyro_odometry",
-            description="Frame id of the robot following gyro odometry",
+            description="Frame id of the vehicle following gyro odometry",
         ),
         DeclareLaunchArgument(
             "use_rosbag",
@@ -88,7 +88,7 @@ def generate_launch_description():
             parameters=[*ROS_PARAM_CONFIG_WHEEL_ODOMETRY,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
-                            "robot_frame_id": LaunchConfiguration("robot_frame_id_wheel_odometry"),
+                            "vehicle_frame_id": LaunchConfiguration("vehicle_frame_id_wheel_odometry"),
                         }],
             remappings=[
                 ("sub_can", LaunchConfiguration("sub_can")),
@@ -106,7 +106,7 @@ def generate_launch_description():
             parameters=[*ROS_PARAM_CONFIG_GYRO_ODOMETRY,
                         {
                             "odom_frame_id": LaunchConfiguration("odom_frame_id"),
-                            "robot_frame_id": LaunchConfiguration("robot_frame_id_gyro_odometry"),
+                            "vehicle_frame_id": LaunchConfiguration("vehicle_frame_id_gyro_odometry"),
                         }],
             remappings=[
                 ("sub_imu", LaunchConfiguration("sub_imu")),

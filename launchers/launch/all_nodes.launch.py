@@ -110,7 +110,7 @@ def generate_launch_description():
                 "sub_can": topic_names["sensing"]["input_can_data"],
                 "pub_odometry": topic_names["sensing"]["odometry"],
                 "odom_frame_id": frame_ids["odom"],
-                "robot_frame_id": frame_ids["base_footprint"],
+                "vehicle_frame_id": frame_ids["base_footprint"],
                 "use_rviz": "true",
             }.items(),
         ),
