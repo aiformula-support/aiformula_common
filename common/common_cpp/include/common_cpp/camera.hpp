@@ -8,7 +8,7 @@
 #include <opencv2/opencv.hpp>
 
 // Original
-#include <get_ros_parameter.hpp>
+#include <common_cpp/get_ros_parameter.hpp>
 
 namespace aiformula {
 
