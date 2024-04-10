@@ -29,7 +29,7 @@ void OdometryPublisher::initValues() {
 void OdometryPublisher::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
     RCLCPP_INFO(this->get_logger(), "(launch)");
-    RCLCPP_INFO(this->get_logger(), "  odom_frame_id_  = %s", odom_frame_id_.c_str());
+    RCLCPP_INFO(this->get_logger(), "  odom_frame_id_    = %s", odom_frame_id_.c_str());
     RCLCPP_INFO(this->get_logger(), "  vehicle_frame_id_ = %s", vehicle_frame_id_.c_str());
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
