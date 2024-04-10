@@ -1,29 +1,14 @@
 <launch>
   <arg name="vehicle_frame_id" default="base_footprint" />
   <arg name="camera_frame_id"  default="zedX_link" />
-  <arg name="queue_size"       default="10" />
-  <arg name="min_area"         default="100"/>
-  <arg name="tolerance"        default="10"/>
-  <arg name="xmin"             default="0.0"/>
-  <arg name="xmax"             default="50.0"/>
-  <arg name="ymin"             default="-25.0"/>
-  <arg name="ymax"             default="25.0"/>
-  <arg name="spacing"          default="1.0"/>
   <arg name="debug"            default="false"/>
   <arg name="rviz"             default="false"/>
 
   <node pkg="lane_line_publisher" exec="lane_line_publisher" name="lane_line_publisher" output="screen">
     <param name="vehicle_frame_id" value="$(var vehicle_frame_id)"/>
     <param name="camera_frame_id"  value="$(var camera_frame_id)"/>
-    <param name="queue_size"       value="$(var queue_size)"/>
-    <param name="min_area"         value="$(var min_area)"/>
-    <param name="tolerance"        value="$(var tolerance)"/>
-    <param name="xmin"             value="$(var xmin)"/>
-    <param name="xmax"             value="$(var xmax)"/>
-    <param name="ymin"             value="$(var ymin)"/>
-    <param name="ymax"             value="$(var ymax)"/>
-    <param name="spacing"          value="$(var spacing)"/>
     <param name="debug"            value="$(var debug)"/>
+    <param from="$(find-pkg-share lane_line_publisher)/config/lane_line_publisher.yaml"/>
     <param from="$(find-pkg-share vehicle)/config/ai_car1.yaml"/>
 
     <remap from="mask_image"           to="/aiformula_perception/road_detector/mask_image"/>

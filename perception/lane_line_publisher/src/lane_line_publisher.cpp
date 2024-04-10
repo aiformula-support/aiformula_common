@@ -11,14 +11,14 @@ LaneLinePublisher::LaneLinePublisher() : Node("lane_line_publisher") {
 void LaneLinePublisher::initMembers() {
     debug_ = getRosParameter<bool>(this, "debug");
     vehicle_frame_id_ = getRosParameter<std::string>(this, "vehicle_frame_id");
-    xmin_ = getRosParameter<double>(this, "xmin");
-    xmax_ = getRosParameter<double>(this, "xmax");
-    ymin_ = getRosParameter<double>(this, "ymin");
-    ymax_ = getRosParameter<double>(this, "ymax");
-    spacing_ = getRosParameter<double>(this, "spacing");
+    xmin_ = getRosParameter<double>(this, "lane_line_publisher.roi.xmin");
+    xmax_ = getRosParameter<double>(this, "lane_line_publisher.roi.xmax");
+    ymin_ = getRosParameter<double>(this, "lane_line_publisher.roi.ymin");
+    ymax_ = getRosParameter<double>(this, "lane_line_publisher.roi.ymax");
+    spacing_ = getRosParameter<double>(this, "lane_line_publisher.spacing");
     const auto camera_frame_id = getRosParameter<std::string>(this, "camera_frame_id");
-    const auto min_area = getRosParameter<int>(this, "min_area");
-    const auto tolerance = getRosParameter<int>(this, "tolerance");
+    const auto min_area = getRosParameter<int>(this, "lane_pixel_finder.min_area");
+    const auto tolerance = getRosParameter<int>(this, "lane_pixel_finder.tolerance");
 
     getCameraParams(this, "zedX.LEFT_CAM_SVGA", camera_matrix_);
     camera_matrix_ = camera_matrix_.inv();
@@ -29,7 +29,7 @@ void LaneLinePublisher::initMembers() {
 }
 
 void LaneLinePublisher::initConnections() {
-    const auto queue_size = getRosParameter<int>(this, "queue_size");
+    const auto queue_size = getRosParameter<int>(this, "lane_line_publisher.queue_size");
     mask_image_sub_ = create_subscription<sensor_msgs::msg::Image>(
         "mask_image", queue_size, std::bind(&LaneLinePublisher::imageCallback, this, std::placeholders::_1));
     lane_lines_pub_ = create_publisher<visualization_msgs::msg::MarkerArray>("lane_lines", queue_size);
