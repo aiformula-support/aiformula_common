@@ -8,7 +8,6 @@ Panels:
         - /TF1/Frames1
         - /TF1/Tree1
         - /RobotModel1
-        - /RobotModel1/Links1
       Splitter Ratio: 0.5
     Tree Height: 595
   - Class: rviz_common/Selection
@@ -96,11 +95,11 @@ Visualization Manager:
           Value: true
         wheel_right_link:
           Value: true
-        zedX_left_link:
+        zedx_left_link:
           Value: true
-        zedX_link:
+        zedx_link:
           Value: true
-        zedX_right_link:
+        zedx_right_link:
           Value: true
       Marker Scale: 0.5
       Name: TF
@@ -116,10 +115,10 @@ Visualization Manager:
               {}
             wheel_right_link:
               {}
-            zedX_link:
-              zedX_left_link:
+            zedx_link:
+              zedx_left_link:
                 {}
-              zedX_right_link:
+              zedx_right_link:
                 {}
       Update Interval: 0
       Value: true
@@ -133,7 +132,7 @@ Visualization Manager:
         Durability Policy: Volatile
         History Policy: Keep Last
         Reliability Policy: Reliable
-        Value: /robot_description
+        Value: /aiformula_sensing/robot_description
       Enabled: true
       Links:
         All Links Enabled: true
@@ -165,16 +164,16 @@ Visualization Manager:
           Show Axes: false
           Show Trail: false
           Value: true
-        zedX_left_link:
+        zedx_left_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
-        zedX_link:
+        zedx_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
           Value: true
-        zedX_right_link:
+        zedx_right_link:
           Alpha: 1
           Show Axes: false
           Show Trail: false
@@ -260,5 +259,5 @@ Window Geometry:
   Views:
     collapsed: true
   Width: 1191
-  X: 885
+  X: 729
   Y: 1308

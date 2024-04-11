@@ -28,6 +28,7 @@ def get_robot_state_publisher(
             package="robot_state_publisher",
             executable="robot_state_publisher",
             name="robot_state_publisher",
+            namespace="/aiformula_sensing",
             parameters=[{
                 "robot_description": robot_description,
                 "use_sim_time": use_sim_time_lc,
@@ -50,6 +51,7 @@ def get_joint_state_publisher(
             package=node_name,
             executable=node_name,
             name=node_name,
+            namespace="/aiformula_sensing",
             parameters=[{
                 "use_sim_time": use_sim_time_lc,
             }],
@@ -83,25 +85,24 @@ def generate_launch_description():
         ),
     )
 
-    nodes = (
-        OpaqueFunction(
-            function=get_robot_state_publisher,
-            args=[
-                LaunchConfiguration("vehicle_name"),
-                LaunchConfiguration("use_sim_time"),
-            ],
-        ),
-        OpaqueFunction(
-            function=get_joint_state_publisher,
-            args=[
-                LaunchConfiguration("use_joint_state_publisher"),
-                LaunchConfiguration("use_gui"),
-                LaunchConfiguration("use_sim_time"),
-            ],
-        ),
+    robot_state_publisher = OpaqueFunction(
+        function=get_robot_state_publisher,
+        args=[
+            LaunchConfiguration("vehicle_name"),
+            LaunchConfiguration("use_sim_time"),
+        ],
+    )
+    joint_state_publisher = OpaqueFunction(
+        function=get_joint_state_publisher,
+        args=[
+            LaunchConfiguration("use_joint_state_publisher"),
+            LaunchConfiguration("use_gui"),
+            LaunchConfiguration("use_sim_time"),
+        ],
     )
 
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        robot_state_publisher,
+        joint_state_publisher,
     ])

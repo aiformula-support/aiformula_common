@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    zedX:  # SN42356620.conf
+    zedx:  # SN42356620.conf
       LEFT_CAM_FHD1200:
         size: { width: 1920, height: 1200 } # [pix]
         focal_length: { x: 738.254, y: 737.734 } # [pix]

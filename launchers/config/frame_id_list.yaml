@@ -1,0 +1,12 @@
+map: "map"
+odom: "odom"
+base_footprint: "base_footprint"
+base: "base_link"
+caster_back: "caster_back_link"
+wheel:
+  left:  "wheel_left_link"
+  right: "wheel_right_link"
+zedx:
+  center: "zedx_link"
+  left:   "zedx_left_link"
+  right:  "zedx_right_link"
