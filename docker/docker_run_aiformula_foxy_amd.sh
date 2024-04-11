@@ -13,6 +13,7 @@ docker run -it \
     -e QT_X11_NO_MITSHM=1 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
     -v /dev:/dev \
+    -v /media:/media \
     -u ${USER_NAME} \
     -w /home/${USER_NAME}/workspace/ros \
     --gpus all \
