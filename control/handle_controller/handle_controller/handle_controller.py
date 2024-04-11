@@ -7,22 +7,29 @@ from sensor_msgs.msg import Joy
 class JoyTransFormer(Node): 
     def __init__(self):
         super().__init__('handle_controller') 
+        #self.publisher = self.create_publisher(Twist,'aiformula_controller/handle_controller/cmd_vel', 10)
         self.publisher = self.create_publisher(Twist,'cmd_vel', 10)
         self.subscription = self.create_subscription(Joy,'joy', self.listener_callback, 10)
         self.vel = Twist()
+        self.max_vel = 2.0
+        self.max_angular = 3.0
 
     def listener_callback(self, Joy): 
         accel_raw = Joy.axes[2]
-        accel = accel_raw + 1.0
-        if accel > 0.1:
-            self.vel.linear.x  = 2*accel
-            stearing = Joy.axes[0]
-            self.vel.angular.z  = -3*stearing
-            
+        accel = accel_raw + 1.0  #joy setting begin -1.0 range -1.0 ~ 1.0   
+        stearing = Joy.axes[0]
         brake_raw = Joy.axes[3]
         brake = brake_raw + 1.0
+                 
+        if accel > 0.1:
+            self.vel.linear.x  = self.max_vel*accel
+            self.vel.angular.z  = self.max_angular*stearing
 
-        if brake > 0.1:
+        elif brake > 0.1:
+            self.vel.linear.x  = 0.0
+            self.vel.angular.z  = 0.0
+
+        else:
             self.vel.linear.x  = 0.0
             self.vel.angular.z  = 0.0
 

@@ -56,6 +56,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         ros-${ROS_DISTRO}-joint-state-publisher* \
         python3-colcon-common-extensions \
         ros-${ROS_DISTRO}-can-msgs \
+        ros-${ROS_DISTRO}-rqt* \
         python3-colcon-mixin \
         python3-rosdep \
         python3-vcstool && \
@@ -97,13 +98,24 @@ RUN sudo echo ${USER_NAME}
 
 ENV TERM=xterm-256color
 
-# install yolop
-WORKDIR /home/${USER_NAME}/workspace
-RUN git clone https://github.com/hustvl/YOLOP.git && \
-    sed -i '/^scipy$/d' ./YOLOP/requirements.txt && \
-    pip3 install -r ./YOLOP/requirements.txt
+RUN mkdir -pv ${HOME}/workspace/ros/src
 
-RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> /home/${USER_NAME}/.bashrc && \
-    echo "source /home/${USER_NAME}/workspace/install/setup.bash" >> /home/${USER_NAME}/.bashrc
+# yolop
+RUN git clone https://github.com/hustvl/YOLOP.git ${HOME}/workspace/YOLOP && \
+    sed -i '/^scipy$/d' ${HOME}/workspace/YOLOP/requirements.txt && \
+    pip3 install -r ${HOME}/workspace/YOLOP/requirements.txt
+# ros2_socketcan
+RUN git clone https://github.com/autowarefoundation/ros2_socketcan.git ${HOME}/workspace/ros/src/ros2_socketcan
+# vectornav
+RUN git clone -b ros2 https://github.com/dawonn/vectornav.git ${HOME}/workspace/ros/src/vectornav && \
+    sed -i 's/tf2_geometry_msgs\.hpp/tf2_geometry_msgs.h/g' ${HOME}/workspace/ros/src/vectornav/vectornav/src/vn_sensor_msgs.cc
+
+RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
+    echo "source ${HOME}/workspace/ros/install/setup.bash" >> ${HOME}/.bashrc && \
+    echo "export PATH=\${PATH}:${HOME}/workspace/ros/src/EC7D_AIformula_Control/launchers/shellscript" >> ${HOME}/.bashrc
+
+RUN echo "alias cb='cd ${HOME}/workspace/ros && colcon build --symlink-install --packages-up-to'" >> ${HOME}/.bash_aliases && \
+    echo "alias cbcc='cd ${HOME}/workspace/ros && colcon build --cmake-clean-cache --symlink-install --packages-up-to'" >> ${HOME}/.bash_aliases && \
+    echo "alias cc='rm -rf ${HOME}/workspace/ros/build ${HOME}/workspace/ros/install ${HOME}/workspace/ros/log'" >> ${HOME}/.bash_aliases
 
 CMD ["bash"]

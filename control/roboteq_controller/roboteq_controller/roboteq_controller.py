@@ -21,8 +21,10 @@ class MinimalPublisher(Node):
         self.diameter = 0.248
         self.tread = 0.6
         self.gear_ratio = 1
+        timer = 1/100
+        self.timer = self.create_timer(timer, self.callback)
 
-    def callback(self, msg):
+    def cmd_callback(self, msg):
         self.vel = msg
         self.cmd_linear_x = self.vel.linear.x
         self.cmd_angular_z = self.vel.angular.z
@@ -65,12 +67,7 @@ def main(args=None):
     rclpy.init(args=args)
 
     minimal_publisher = MinimalPublisher()
-
     rclpy.spin(minimal_publisher)
-
-    # Destroy the node explicitly
-    # (optional - otherwise it will be done automatically
-    # when the garbage collector destroys the node object)
     minimal_publisher.destroy_node()
     rclpy.shutdown()
 
