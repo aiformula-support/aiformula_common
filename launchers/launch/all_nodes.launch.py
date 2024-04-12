@@ -47,8 +47,8 @@ def generate_launch_description():
     )
     motor_controller = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("roboteq_controller"),
-                     "launch/roboteq_controller.launch.py"),
+            osp.join(get_package_share_directory("motor_controller"),
+                     "launch/motor_controller.launch.py"),
         ),
     )
     can_receiver_and_sender = IncludeLaunchDescription(

@@ -21,8 +21,6 @@ def generate_launch_description():
             "sender_timeout_sec", default_value="0.01"),
         DeclareLaunchArgument(
             "enable_can_fd", default_value="false"),
-        DeclareLaunchArgument(
-            "interface", default_value="can0"),
     )
 
     can_receiver = GroupAction(

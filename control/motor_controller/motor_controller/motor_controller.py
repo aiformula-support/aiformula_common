@@ -19,13 +19,13 @@ class MotorController(Node):
         self.tread = self.get_parameter('wheel.tread').get_parameter_value().double_value
         self.diameter = self.get_parameter('wheel.diameter').get_parameter_value().double_value
         self.gear_ratio = self.get_parameter('wheel.gear_ratio').get_parameter_value().double_value
-        self.publish_timer_loop_duration = self.get_parameter(
+        publish_timer_loop_duration = self.get_parameter(
             'publish_timer_loop_duration').get_parameter_value().double_value
 
         buffer_size = 10
         self.twist_sub = self.create_subscription(Twist, 'sub_speed_command', self.twist_callback, buffer_size)
         self.can_pub = self.create_publisher(Frame, 'pub_can', buffer_size)
-        self.publish_timer = self.create_timer(self.publish_timer_loop_duration, self.publish_canframe_callback)
+        self.publish_timer = self.create_timer(publish_timer_loop_duration, self.publish_canframe_callback)
         self.frame_msg = Frame()
 
     def twist_callback(self, msg):

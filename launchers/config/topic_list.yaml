@@ -16,7 +16,7 @@ control:
   speed_command:
     game_pad: "/aiformula_control/game_pad/cmd_vel"
     handle_controller: "/aiformula_control/handle_controller/cmd_vel"
-  output_can_data: "/aiformula_control/roboteq_controller/reference_signal"
+  output_can_data: "/aiformula_control/motor_controller/reference_signal"
 
 # planning:
 
