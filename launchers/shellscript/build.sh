@@ -12,7 +12,7 @@ TARGET_PACKEGES=(
     zedx_image_publisher
 
     # control
-    roboteq_controller
+    motor_controller
 
     # external repository
     vectornav
