@@ -20,7 +20,7 @@ def generate_launch_description():
     )
     zedx_image_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("zedx_image_publisher"),
+            osp.join(get_package_share_directory("launchers"),
                      "launch/zedx_image_publisher.launch.py"),
         ),
     )
@@ -70,10 +70,10 @@ def generate_launch_description():
     return LaunchDescription([
         tf_static_publisher,
         zedx_image_publisher,
-        vectornav,
-        joy_node,
-        teleop_node,
-        motor_controller,
-        can_receiver_and_sender,
-        gyro_odometry_publisher,
+        # vectornav,
+        # joy_node,
+        # teleop_node,
+        # motor_controller,
+        # can_receiver_and_sender,
+        # gyro_odometry_publisher,
     ])
