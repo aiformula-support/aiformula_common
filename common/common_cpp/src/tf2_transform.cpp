@@ -1,4 +1,4 @@
-#include "tf2_transform.hpp"
+#include "common_cpp/tf2_transform.hpp"
 
 namespace aiformula {
 
@@ -10,7 +10,7 @@ namespace aiformula {
  * @param[in] src_frame_id Source frame ID.
  * @return Tf2 transformation from source to destination frame.
  *
- * @note Usage: `auto vehicle_T_camera = getTf2Transform(this, "base_link", "zedX_left_link");`
+ * @note Usage: `auto vehicle_T_camera = getTf2Transform(this, "base_link", "zedx_left_link");`
  */
 tf2::Transform getTf2Transform(rclcpp::Node* node_ptr, const std::string& dst_frame_id,
                                const std::string& src_frame_id) {
@@ -26,8 +26,8 @@ tf2::Transform getTf2Transform(rclcpp::Node* node_ptr, const std::string& dst_fr
         stamped_tf_dst_T_src =
             tf_buffer.lookupTransform(dst_frame_id, src_frame_id, tf2::TimePointZero, tf2::durationFromSec(1.0));
     } catch (const tf2::TransformException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "[%s] Could not transform %s to %s: %s !", __func__, dst_frame_id.c_str(),
-                     src_frame_id.c_str(), e.what());
+        RCLCPP_ERROR(node_ptr->get_logger(), "[%s] Could not transform '%s' to '%s': %s !", __func__,
+                     dst_frame_id.c_str(), src_frame_id.c_str(), e.what());
         rclcpp::shutdown();
         exit(1);
     }

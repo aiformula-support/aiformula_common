@@ -16,7 +16,9 @@ from vehicle.vehicle_util import convert_xacro_to_urdf
 if __name__ == "__main__":
 
     parser = ArgumentParser(description="Xacro to URDF Converter")
-    parser.add_argument("xacro_path", type=str, help="Path to the input Xacro file")
-    parser.add_argument("urdf_path", type=str, help="Path to the output URDF file")
+    parser.add_argument("xacro_path", type=str,
+                        help="Path to the input Xacro file")
+    parser.add_argument("urdf_path", type=str,
+                        help="Path to the output URDF file")
     args = parser.parse_args()
     convert_xacro_to_urdf(args.xacro_path, args.urdf_path)

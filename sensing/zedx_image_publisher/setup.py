@@ -1,4 +1,5 @@
 from setuptools import setup
+from common_python.setup_util import get_data_files
 
 package_name = 'zedx_image_publisher'
 
@@ -6,11 +7,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=[package_name],
-    data_files=[
-        ('share/ament_index/resource_index/packages',
-            ['resource/' + package_name]),
-        ('share/' + package_name, ['package.xml']),
-    ],
+    data_files=get_data_files(package_name, ("launch",)),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='masayaokada',

@@ -4,7 +4,7 @@ USER_NAME=aiformula
 HOST_NAME=aiformula
 
 docker run -it \
-    -v ${SCRIPT_DIR}/..:/home/${USER_NAME}/workspace/src \
+    -v ${SCRIPT_DIR}/..:/home/${USER_NAME}/workspace/ros/src/EC7D_AIformula_Control \
     --add-host ${HOST_NAME}:127.0.0.1 \
     --hostname ${HOST_NAME} \
     --ipc host \
@@ -12,8 +12,10 @@ docker run -it \
     -e DISPLAY=$DISPLAY \
     -e QT_X11_NO_MITSHM=1 \
     -v /tmp/.X11-unix:/tmp/.X11-unix \
+    -v /dev:/dev \
+    -v /media:/media \
     -u ${USER_NAME} \
-    -w /home/${USER_NAME} \
+    -w /home/${USER_NAME}/workspace/ros \
     --gpus all \
     --privileged \
     --net host \

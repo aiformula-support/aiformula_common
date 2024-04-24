@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    zedX:  # SN42356620.conf
+    zedx:  # SN42356620.conf
       LEFT_CAM_FHD1200:
         size: { width: 1920, height: 1200 } # [pix]
         focal_length: { x: 738.254, y: 737.734 } # [pix]
@@ -31,12 +31,12 @@
         focal_length: { x: 369.4545, y: 369.1465 } # [pix]
         center_point: { x: 497.2535, y: 300.6885 } # [pix]
 
-      LEFT_CAM_SVGA:
+      LEFT_CAM_VGA:
         size: { width: 640, height: 480 } # [pix]
         focal_length: { x: 351.250000, y: 351.250000 } # [pix]
         center_point: { x: 334.250000, y: 186.250000 } # [pix]
 
-      RIGHT_CAM_SVGA:
+      RIGHT_CAM_VGA:
         size: { width: 640, height: 480 } # [pix]
         focal_length: { x: 351.250000, y: 351.250000 } # [pix]
         center_point: { x: 334.250000, y: 186.250000 } # [pix]
