@@ -1,11 +1,10 @@
 sensing:
   zedx:
     left_image:
-      raw: "/aiformula_sensing/zedx_image_publisher/left_image/raw"
-      raw_compressed: "/aiformula_sensing/zedx_image_publisher/left_image/raw/compressed"
+      undistorted: "/aiformula_sensing/zed_node/left_image/undistorted"
     right_image:
-      raw: "/aiformula_sensing/zedx_image_publisher/right_image/raw"
-      raw_compressed: "/aiformula_sensing/zedx_image_publisher/right_image/raw/compressed"
+      undistorted: "/aiformula_sensing/zed_node/right_image/undistorted"
+    imu: "/aiformula_sensing/zed_node/imu"
   input_can_data: "/aiformula_sensing/vehicle_info"
   imu: "/aiformula_sensing/vectornav/imu"
   odometry:

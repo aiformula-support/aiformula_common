@@ -18,7 +18,7 @@
     <link name="${camera}_camera_link" />
 
     <!-- Center frame -->  
-    <!-- camera_center_frame is used frame id for stereo camera -->  
+    <!-- camera_center_frame is used in frame id for stereo camera -->  
     <joint name="${camera}_camera_center_joint" type="fixed">
       <parent link="${camera}_camera_link"/>
       <child link="${camera}_camera_center"/>

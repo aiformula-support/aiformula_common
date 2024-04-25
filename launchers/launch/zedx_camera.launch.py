@@ -16,9 +16,8 @@ from launch_ros.actions import Node
 from common_python.launch_util import get_frame_ids_and_topic_names, check_zedx_available_fps
 
 
-def get_zedx_image_publisher(context):
+def get_zed_node(context):
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
-    # Launch configuration variables
     grab_resolution_val = LaunchConfiguration("grab_resolution").perform(context)
     grab_frame_rate_val = LaunchConfiguration("grab_frame_rate").perform(context)
     is_valid_fps = check_zedx_available_fps(grab_resolution_val, grab_frame_rate_val)
@@ -28,7 +27,7 @@ def get_zedx_image_publisher(context):
             package="zed_wrapper",
             namespace="/aiformula_sensing",
             executable="zed_wrapper",
-            name="zedx_image_publisher",
+            name="zed_node",
             output="screen",
             condition=IfCondition(str(is_valid_fps)),
             parameters=[
@@ -44,9 +43,11 @@ def get_zedx_image_publisher(context):
             ],
             remappings=[
                 ("~/left/image_rect_color",
-                 TOPIC_NAMES["sensing"]["zedx"]["left_image"]["raw"]),
-                ("~/right_raw/image_rect_color",
-                 TOPIC_NAMES["sensing"]["zedx"]["right_image"]["raw"]),
+                 TOPIC_NAMES["sensing"]["zedx"]["left_image"]["undistorted"]),
+                ("~/right/image_rect_color",
+                 TOPIC_NAMES["sensing"]["zedx"]["right_image"]["undistorted"]),
+                ("~/imu/data",
+                 TOPIC_NAMES["sensing"]["zedx"]["imu"]),
             ],
         ),
     )
@@ -71,15 +72,15 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "config_common_path",
             default_value=osp.join(get_package_share_directory("vehicle"), "config", "zedx", "common.yaml"),
-            description="Path to the YAML configuration common file for the camera."),
+            description="Path to the common YAML configuration file."),
         DeclareLaunchArgument(
             "config_camera_path",
             default_value=osp.join(get_package_share_directory("vehicle"), "config", "zedx", "zedx.yaml"),
-            description="Path to the YAML configuration zedx file for the camera."),
+            description="Path to the zedx YAML configuration file for the camera."),
     )
-    zedx_image_publisher = OpaqueFunction(function=get_zedx_image_publisher)
+    zed_node = OpaqueFunction(function=get_zed_node)
     return LaunchDescription([
         SetEnvironmentVariable(name="RCUTILS_COLORIZED_OUTPUT", value="1"),
         *launch_args,
-        zedx_image_publisher,
+        zed_node,
     ])

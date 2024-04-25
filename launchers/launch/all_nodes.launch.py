@@ -18,10 +18,10 @@ def generate_launch_description():
             "use_sim_time": "false",
         }.items(),
     )
-    zedx_image_publisher = IncludeLaunchDescription(
+    zed_node = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("launchers"),
-                     "launch/zedx_image_publisher.launch.py"),
+                     "launch/zedx_camera.launch.py"),
         ),
     )
     # --- IMU, GNSS --- #
@@ -69,7 +69,7 @@ def generate_launch_description():
 
     return LaunchDescription([
         tf_static_publisher,
-        zedx_image_publisher,
+        zed_node,
         vectornav,
         joy_node,
         teleop_node,

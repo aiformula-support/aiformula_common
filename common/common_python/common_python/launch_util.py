@@ -52,7 +52,7 @@ def get_frame_ids_and_topic_names() -> List[dict]:
 
 def check_zedx_available_fps(grab_resolution, grab_frame_rate):
 
-    with open(osp.join(get_package_share_directory("vehicle"), "config/zedx/resolution_fps.yaml"), "r") as yml:
+    with open(osp.join(get_package_share_directory("vehicle"), "config/zedx/check_fps.yaml"), "r") as yml:
         params = yaml.safe_load(yml)
 
     if (grab_resolution == 'HD1200' or grab_resolution == 'HD1080'):
