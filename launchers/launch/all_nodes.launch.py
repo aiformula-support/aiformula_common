@@ -70,10 +70,10 @@ def generate_launch_description():
     return LaunchDescription([
         tf_static_publisher,
         zedx_image_publisher,
-        # vectornav,
-        # joy_node,
-        # teleop_node,
-        # motor_controller,
-        # can_receiver_and_sender,
-        # gyro_odometry_publisher,
+        vectornav,
+        joy_node,
+        teleop_node,
+        motor_controller,
+        can_receiver_and_sender,
+        gyro_odometry_publisher,
     ])

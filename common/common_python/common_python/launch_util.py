@@ -56,21 +56,20 @@ def check_zedx_available_fps(grab_resolution, grab_frame_rate):
         params = yaml.safe_load(yml)
 
     if (grab_resolution == 'HD1200' or grab_resolution == 'HD1080'):
-        if grab_frame_rate in params["ZEDX_CAMERA"]["GRAB_FPS_HD"]:
-            return True
+        avairable_fps = params["ZEDX_CAMERA"]["GRAB_FPS_HD"]
 
     elif (grab_resolution == 'SVGA'):
-        if grab_frame_rate in params["ZEDX_CAMERA"]["GRAB_FPS_SVGA"]:
-            return True
+        avairable_fps = params["ZEDX_CAMERA"]["GRAB_FPS_SVGA"]
 
     else:
         print("\033[31m" + grab_resolution + " is unexpected resolution name" + "\033[0m")
-        print("\033[31m" + "Not Machting Resolition and Frame Rate!" + "\033[0m")
         print("\033[31m" + "You should select in " + str(params["ZEDX_CAMERA"]["RESOLUTION"]) + "\033[0m")
         return False
 
-    print("\033[31m" + grab_resolution + " " + grab_frame_rate + "fps is unexpected" + "\033[0m")
-    print("\033[31m" + "Not Machting Resolition and Frame Rate!" + "\033[0m")
-    print("\033[31m" + "HD1200 and HD1080 select fps:[60, 30, 15]" + "\033[0m")
-    print("\033[31m" + "SVGA select fps:[120 ,60, 30, 15]" + "\033[0m")
-    return False
+    if grab_frame_rate in avairable_fps:
+        return True
+
+    else:
+        avairable_fps_str = ', '.join(str(fps) for fps in avairable_fps)
+        print("\033[31m" + f"{grab_resolution}:  Please select a fps from {avairable_fps_str}" + "\033[0m")
+        return False

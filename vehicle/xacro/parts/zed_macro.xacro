@@ -13,24 +13,25 @@
   <xacro:macro name="zed_link_macro"
                params="camera
                        size_x size_y size_z roll pitch yaw">
-    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/realsense_r200.dae"/>
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/zedx.stl"/>
 
     <link name="${camera}_camera_link" />
 
     <!-- Center frame -->  
+    <!-- camera_center_frame is used frame id for stereo camera -->  
     <joint name="${camera}_camera_center_joint" type="fixed">
       <parent link="${camera}_camera_link"/>
       <child link="${camera}_camera_center"/>
     </joint>
     <link name="${camera}_camera_center">
       <visual>
-        <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0  0.0 ${-size_z*0.5}" rpy="0.0  0.0  0.0"/>
         <geometry>
           <mesh filename="${MESH_FILE}"/>
         </geometry>
       </visual>
       <collision>
-        <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="0.0 0.0 0.0"/>
+        <origin xyz="0.0  0.0 ${-size_z*0.5}" rpy="0.0  0.0  0.0"/>
         <geometry>
           <box size="${size_x} ${size_y} ${size_z}"/>
         </geometry>
