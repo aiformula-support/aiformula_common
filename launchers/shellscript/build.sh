@@ -9,7 +9,7 @@ TARGET_PACKEGES=(
 
     # sensing
     odometry_publisher
-    zedx_image_publisher
+    zed_wrapper
 
     # control
     motor_controller

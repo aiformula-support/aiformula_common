@@ -3,9 +3,9 @@
   <xacro:macro name="zed_joint_macro"
                params="camera parent
                        x y z roll pitch yaw">
-    <joint name="${camera}_joint" type="fixed">
+    <joint name="${camera}_camera_joint" type="fixed">
       <parent link="${parent}_link"/>
-      <child  link="${camera}_link"/>
+      <child  link="${camera}_camera_link"/>
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
     </joint>
   </xacro:macro>
@@ -13,35 +13,60 @@
   <xacro:macro name="zed_link_macro"
                params="camera
                        size_x size_y size_z roll pitch yaw">
-    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/realsense_r200.dae"/>
-    <link name="${camera}_link">
+    <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/zedx.stl"/>
+
+    <link name="${camera}_camera_link" />
+
+    <!-- Center frame -->  
+    <!-- camera_center_frame is used in frame id for stereo camera -->  
+    <joint name="${camera}_camera_center_joint" type="fixed">
+      <parent link="${camera}_camera_link"/>
+      <child link="${camera}_camera_center"/>
+    </joint>
+    <link name="${camera}_camera_center">
       <visual>
-        <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="${roll} ${pitch} ${yaw}"/>
+        <origin xyz="0.0  0.0 ${-size_z*0.5}" rpy="0.0  0.0  0.0"/>
         <geometry>
           <mesh filename="${MESH_FILE}"/>
         </geometry>
       </visual>
       <collision>
-        <origin xyz="${-size_x*0.5} ${-size_y*0.5} ${-size_z*0.5}" rpy="${roll} ${pitch} ${yaw}"/>
+        <origin xyz="0.0  0.0 ${-size_z*0.5}" rpy="0.0  0.0  0.0"/>
         <geometry>
           <box size="${size_x} ${size_y} ${size_z}"/>
         </geometry>
       </collision>
     </link>
 
+    <!-- Left frame -->  
     <xacro:property name="BASE_LINE" value="0.120005"/>
-    <joint name="${camera}_left_joint" type="fixed">
-      <parent link="${camera}_link"/>
-      <child link="${camera}_left_link"/>
-      <origin xyz="${-BASE_LINE*0.5}  0.0  0.0" rpy="0.0  0.0  0.0"/>
+    <joint name="${camera}_left_camera_joint" type="fixed">
+      <parent link="${camera}_camera_center"/>
+      <child link="${camera}_left_camera_frame"/>
+      <origin xyz="0.0 ${BASE_LINE*0.5}  0.0" rpy="0.0  0.0  0.0"/>
     </joint>
-    <link name="${camera}_left_link"/>
+    <link name="${camera}_left_camera_frame" />
 
-    <joint name="${camera}_right_joint" type="fixed">
-      <parent link="${camera}_link"/>
-      <child link="${camera}_right_link"/>
-      <origin xyz="${BASE_LINE*0.5}  0.0  0.0" rpy="0.0  0.0  0.0"/>
+    <joint name="${camera}_left_camera_optical_joint" type="fixed">
+      <parent link="${camera}_left_camera_frame"/>
+      <child link="${camera}_left_camera_optical_frame"/>
+      <origin xyz="0.0  0.0  0.0" rpy="${roll} ${pitch} ${yaw}"/>
     </joint>
-    <link name="${camera}_right_link"/>
+    <link name="${camera}_left_camera_optical_frame"/>
+
+    <!-- Right frame -->  
+    <joint name="${camera}_right_camera_joint" type="fixed">
+      <parent link="${camera}_camera_center"/>
+      <child link="${camera}_right_camera_frame"/>
+      <origin xyz="0.0 ${-BASE_LINE*0.5} 0.0" rpy="0.0  0.0  0.0"/>
+    </joint>
+    <link name="${camera}_right_camera_frame"/>
+
+    <joint name="${camera}_right_camera_optical_joint" type="fixed">
+      <parent link="${camera}_right_camera_frame"/>
+      <child link="${camera}_right_camera_optical_frame"/>
+      <origin xyz="0.0  0.0  0.0" rpy="${roll} ${pitch} ${yaw}"/>
+    </joint>
+    <link name="${camera}_right_camera_optical_frame" />
   </xacro:macro>  
 </robot>

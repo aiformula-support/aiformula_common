@@ -7,6 +7,6 @@ wheel:
   left:  "wheel_left_link"
   right: "wheel_right_link"
 zedx:
-  center: "zedx_link"
-  left:   "zedx_left_link"
-  right:  "zedx_right_link"
+  center: "zed_camera_center"
+  left:   "zed_left_camera_optical_frame"
+  right:  "zed_right_camera_optical_frame"
