@@ -1,7 +1,10 @@
 ## Vehicle
+This package provides robot parameters.
 
-* intrinsic param 
-* extrinsic param
+| param | location |
+| ---- | ---- |
+| intrinsic | `/config` |
+| extrinsic | `/xacro` |
 
 ### Running Example:
 To start extrinsic tf publisher

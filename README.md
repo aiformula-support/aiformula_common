@@ -44,6 +44,13 @@ To start docker:
   ./docker_run_aiformula_foxy_amd.sh
   ```
 
+### Vehicle setup
+To connect can interface, imu sensor and camera
+```bash
+cd ~/ros2_ws/src/EC7D_AIformula_Control/launchers/shellscript/
+./init_sensors.sh
+```
+
 ### Running the Example
 To start all nodes of aiformula:\
 **Note:** This command launches the following nodes: camera data, imu data, can data, motor controller, tf, joy.

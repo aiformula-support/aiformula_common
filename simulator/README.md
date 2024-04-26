@@ -8,7 +8,7 @@ This package provides a simulator for AIFormula.
 * camera data
 * odometry data
 
-You can control the mobility of the simulator topic: `/aiformula_control/cmd_vel`
+You can control the mobility of the simulator topic: `/cmd_vel`
 
 ### Running Example
 To start simulator:
