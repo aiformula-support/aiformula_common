@@ -24,12 +24,10 @@ add_executable(lane_line_publisher
 target_include_directories(lane_line_publisher PRIVATE
   $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
 )
-target_link_libraries(lane_line_publisher
-  ${PCL_LIBRARIES}
-)
 ament_target_dependencies(lane_line_publisher
   rclcpp
   cv_bridge
+  PCL
   pcl_conversions
   sensor_msgs
   visualization_msgs
