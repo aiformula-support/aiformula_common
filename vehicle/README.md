@@ -2,9 +2,9 @@
 This package provides robot parameters.
 
 | param | location |
-| ---- | ---- |
-| intrinsic | `/config` |
-| extrinsic | `/xacro` |
+| :---: | :------- |
+| intrinsic | config |
+| extrinsic | xacro |
 
 ### Running Example:
 To start extrinsic tf publisher
