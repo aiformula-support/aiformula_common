@@ -29,6 +29,7 @@ Clone this repository and build:\
   mkdir -p ~/ros2_ws/src/ # create your workspace if it does not exist
   cd ~/ros2_ws/src/ #use your current ros2 workspace folder
   git clone --recursive https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control.git
+  sed -i 's/tf2_geometry_msgs\.hpp/tf2_geometry_msgs.h/g' ~/ros2_ws/src//EC7D_AIformula_Control/sensing/vectornav/vectornav/src/vn_sensor_msgs.cc
   cd ..
   sudo apt update
   rosdep install --from-paths src --ignore-src -r -y # install dependencies
