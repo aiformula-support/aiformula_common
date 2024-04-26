@@ -32,8 +32,7 @@ Clone this repository and build:\
   sed -i 's/tf2_geometry_msgs\.hpp/tf2_geometry_msgs.h/g' ~/ros2_ws/src/EC7D_AIformula_Control/sensing/vectornav/vectornav/src/vn_sensor_msgs.cc
   cd ..
   sudo apt update
-  rosdep install --from-paths src --ignore-src -r -y # install dependencies
-  colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc) # build the workspace
+  colcon build --symlink-install  # build the workspace
   source ~/ros2_ws/install/local_setup.bash
   ```
 
