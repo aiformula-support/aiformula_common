@@ -1,3 +1,21 @@
-# It takes a long time (about two and a half minutes) only when launching gazebo_simulator.launch.py `for the first time` !
+## Simulator
+
+This package provides a simulator for AIFormula.
+
+![simulator_readme](https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control/assets/113084733/4911f1eb-dbe8-48d8-8373-0b9f52ea1f73)
+
+#### Acquirable data：
+* camera data
+* odometry data
+
+You can control the mobility of the simulator topic: `/aiformula_control/cmd_vel`
+
+### Running Example
+To start simulator:
+  ```bash
+  ros2 launch simulator gazebo_simulator.launch.py
+  ```
+
+## It takes a long time (about two and a half minutes) only when launching gazebo_simulator.launch.py `for the first time` !
 - Once the world file is loaded into gazebo, it is cached under `~/.gazebo/model`
 - After the second time, it does not take long because the cache can be used.
