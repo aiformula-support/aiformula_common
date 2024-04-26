@@ -7,14 +7,14 @@ namespace aiformula {
 
 class ParametrizedPolyline {
 public:
-    explicit ParametrizedPolyline(const std::vector<Eigen::Vector3d> &points);
+    explicit ParametrizedPolyline(const std::vector<Eigen::Vector3d>& points);
     ~ParametrizedPolyline() = default;
 
-    const std::vector<Eigen::Vector3d> &points() const { return points_; }
-    const double &length() const { return cumulative_lengths_.back(); }
+    const std::vector<Eigen::Vector3d>& points() const { return points_; }
+    const double& length() const { return cumulative_lengths_.back(); }
 
-    Eigen::Vector3d pointAt(const double &length) const;
-    void pointsAt(const std::vector<double> &lengths, std::vector<Eigen::Vector3d> &points) const;
+    Eigen::Vector3d pointAt(const double& length) const;
+    void pointsAt(const std::vector<double>& lengths, std::vector<Eigen::Vector3d>& points) const;
 
 private:
     std::vector<Eigen::Vector3d> points_;

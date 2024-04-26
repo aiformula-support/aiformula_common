@@ -56,13 +56,13 @@ void LaneLinePublisher::imageCallback(const sensor_msgs::msg::Image::SharedPtr m
     publishLaneLines(lane_lines, msg->header.stamp);
 }
 
-void LaneLinePublisher::findLaneLines(const cv::Mat &mask, const builtin_interfaces::msg::Time &timestamp,
-                                      LaneLines &lane_lines) const {
+void LaneLinePublisher::findLaneLines(const cv::Mat& mask, const builtin_interfaces::msg::Time& timestamp,
+                                      LaneLines& lane_lines) const {
     lane_pixel_finder_->findLanePixels(mask, lane_lines);
     if (debug_) publishAnnotatedMask(mask, timestamp, lane_lines);
 
-    std::vector<LaneLine *> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
-    for (auto *lane_line : lane_line_ptrs) {
+    std::vector<LaneLine*> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
+    for (auto* lane_line : lane_line_ptrs) {
         lane_line->toVehicleFrame(camera_matrix_, vehicle_T_camera_);
         lane_line->cropToRoi(xmin_, xmax_, ymin_, ymax_);
         lane_line->respacePoints(spacing_);
@@ -70,8 +70,8 @@ void LaneLinePublisher::findLaneLines(const cv::Mat &mask, const builtin_interfa
     }
 }
 
-void LaneLinePublisher::publishAnnotatedMask(const cv::Mat &mask, const builtin_interfaces::msg::Time &timestamp,
-                                             const LaneLines &lane_lines) const {
+void LaneLinePublisher::publishAnnotatedMask(const cv::Mat& mask, const builtin_interfaces::msg::Time& timestamp,
+                                             const LaneLines& lane_lines) const {
     cv_bridge::CvImage cv_img;
     cv_img.header.stamp = timestamp;
     cv_img.encoding = "bgr8";
@@ -82,16 +82,16 @@ void LaneLinePublisher::publishAnnotatedMask(const cv::Mat &mask, const builtin_
     annotated_mask_image_pub_->publish(std::move(msg));
 }
 
-void LaneLinePublisher::publishLaneLines(const LaneLines &lane_lines,
-                                         const builtin_interfaces::msg::Time &timestamp) const {
-    const std::vector<const LaneLine *> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
+void LaneLinePublisher::publishLaneLines(const LaneLines& lane_lines,
+                                         const builtin_interfaces::msg::Time& timestamp) const {
+    const std::vector<const LaneLine*> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
 
     static const int num_lane_lines = 3;
     for (int i = 0; i < num_lane_lines; ++i) {
-        const auto &lane_line_points = lane_line_ptrs[i]->points;
+        const auto& lane_line_points = lane_line_ptrs[i]->points;
         pcl::PointCloud<pcl::PointXYZ> cloud;
-        for (const auto &point : lane_line_points) {
-            auto &p = cloud.points.emplace_back();
+        for (const auto& point : lane_line_points) {
+            auto& p = cloud.points.emplace_back();
             p.x = point.x();
             p.y = point.y();
         }

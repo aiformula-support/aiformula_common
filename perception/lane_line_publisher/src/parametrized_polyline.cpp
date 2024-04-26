@@ -2,7 +2,7 @@
 
 namespace aiformula {
 
-ParametrizedPolyline::ParametrizedPolyline(const std::vector<Eigen::Vector3d> &points)
+ParametrizedPolyline::ParametrizedPolyline(const std::vector<Eigen::Vector3d>& points)
     : points_(points), cumulative_lengths_{0.0} {
     const auto num_points = static_cast<int>(points.size());
     for (int i = 0; i < num_points - 1; ++i) {
@@ -12,7 +12,7 @@ ParametrizedPolyline::ParametrizedPolyline(const std::vector<Eigen::Vector3d> &p
     }
 }
 
-Eigen::Vector3d ParametrizedPolyline::pointAt(const double &length) const {
+Eigen::Vector3d ParametrizedPolyline::pointAt(const double& length) const {
     // Handle extrapolation cases first.
     if (length < 0.0)
         return points_.front() + length * normalized_segments_.front();
@@ -27,9 +27,9 @@ Eigen::Vector3d ParametrizedPolyline::pointAt(const double &length) const {
     return points_[index] + (length - cumulative_lengths_[index]) * normalized_segments_[index];
 }
 
-void ParametrizedPolyline::pointsAt(const std::vector<double> &lengths, std::vector<Eigen::Vector3d> &points) const {
+void ParametrizedPolyline::pointsAt(const std::vector<double>& lengths, std::vector<Eigen::Vector3d>& points) const {
     std::transform(lengths.begin(), lengths.end(), std::back_inserter(points),
-                   [this](const auto &length) { return this->pointAt(length); });
+                   [this](const auto& length) { return this->pointAt(length); });
 }
 
 }  // namespace aiformula
