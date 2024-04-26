@@ -13,48 +13,49 @@ each implementation must be defined separately.
 
 // Declaration ==========================================================================================
 template <typename T>
-T getParameterAsType(rclcpp::Node* node_ptr, const std::string& param_name);
+T getParameterAsType(rclcpp::Node* const node_ptr, const std::string& param_name);
 
 // Implementation =======================================================================================
 template <>
-inline bool getParameterAsType<bool>(rclcpp::Node* node_ptr, const std::string& param_name) {
+inline bool getParameterAsType<bool>(rclcpp::Node* const node_ptr, const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_bool();
 }
 
 template <>
-inline int getParameterAsType<int>(rclcpp::Node* node_ptr, const std::string& param_name) {
+inline int getParameterAsType<int>(rclcpp::Node* const node_ptr, const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_int();
 }
 
 template <>
-inline double getParameterAsType<double>(rclcpp::Node* node_ptr, const std::string& param_name) {
+inline double getParameterAsType<double>(rclcpp::Node* const node_ptr, const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_double();
 }
 
 template <>
-inline std::string getParameterAsType<std::string>(rclcpp::Node* node_ptr, const std::string& param_name) {
+inline std::string getParameterAsType<std::string>(rclcpp::Node* const node_ptr, const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_string();
 }
 
 template <>
-inline std::vector<bool> getParameterAsType<std::vector<bool>>(rclcpp::Node* node_ptr, const std::string& param_name) {
+inline std::vector<bool> getParameterAsType<std::vector<bool>>(rclcpp::Node* const node_ptr,
+                                                               const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_bool_array();
 }
 
 template <>
-inline std::vector<long int> getParameterAsType<std::vector<long int>>(rclcpp::Node* node_ptr,
+inline std::vector<long int> getParameterAsType<std::vector<long int>>(rclcpp::Node* const node_ptr,
                                                                        const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_integer_array();
 }
 
 template <>
-inline std::vector<double> getParameterAsType<std::vector<double>>(rclcpp::Node* node_ptr,
+inline std::vector<double> getParameterAsType<std::vector<double>>(rclcpp::Node* const node_ptr,
                                                                    const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_double_array();
 }
 
 template <>
-inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(rclcpp::Node* node_ptr,
+inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(rclcpp::Node* const node_ptr,
                                                                              const std::string& param_name) {
     return node_ptr->get_parameter(param_name).as_string_array();
 }
@@ -70,7 +71,7 @@ inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(rcl
  * @note Usage: `double ret = getRosParameter<double>(this, "test.value");`
  */
 template <typename T>
-T getRosParameter(rclcpp::Node* node_ptr, const std::string& param_name) {
+T getRosParameter(rclcpp::Node* const node_ptr, const std::string& param_name) {
     if (!node_ptr->has_parameter(param_name)) {
         node_ptr->declare_parameter(param_name);
     }

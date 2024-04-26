@@ -12,7 +12,7 @@
 
 namespace aiformula {
 
-void getCameraParams(rclcpp::Node* node_ptr, const std::string& camera_name, cv::Mat& camera_matrix,
+void getCameraParams(rclcpp::Node* const node_ptr, const std::string& camera_name, cv::Mat& camera_matrix,
                      cv::Size* image_size = nullptr);
 
 }  // namespace aiformula
