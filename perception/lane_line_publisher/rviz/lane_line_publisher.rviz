@@ -153,11 +153,11 @@ Visualization Manager:
           Value: false
         wheel_right_link:
           Value: false
-        zedX_left_link:
+        zedx_left_link:
           Value: false
-        zedX_link:
+        zedx_link:
           Value: false
-        zedX_right_link:
+        zedx_right_link:
           Value: false
       Marker Scale: 5
       Name: TF
@@ -173,10 +173,10 @@ Visualization Manager:
               {}
             wheel_right_link:
               {}
-            zedX_link:
-              zedX_left_link:
+            zedx_link:
+              zedx_left_link:
                 {}
-              zedX_right_link:
+              zedx_right_link:
                 {}
       Update Interval: 0
       Value: true

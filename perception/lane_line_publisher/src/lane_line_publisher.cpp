@@ -17,10 +17,11 @@ void LaneLinePublisher::initMembers() {
     ymax_ = getRosParameter<double>(this, "lane_line_publisher.roi.ymax");
     spacing_ = getRosParameter<double>(this, "lane_line_publisher.spacing");
     const auto camera_frame_id = getRosParameter<std::string>(this, "camera_frame_id");
+    const auto camera_name = getRosParameter<std::string>(this, "camera_name");
     const auto min_area = getRosParameter<int>(this, "lane_pixel_finder.min_area");
     const auto tolerance = getRosParameter<int>(this, "lane_pixel_finder.tolerance");
 
-    getCameraParams(this, "zedX.LEFT_CAM_SVGA", camera_matrix_);
+    getCameraParams(this, camera_name, camera_matrix_);
     camera_matrix_ = camera_matrix_.inv();
     vehicle_T_camera_ = getTf2Transform(this, vehicle_frame_id_, camera_frame_id);
 

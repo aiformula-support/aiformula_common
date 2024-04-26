@@ -8,8 +8,8 @@
 #include <sensor_msgs/msg/image.hpp>
 #include <sensor_msgs/msg/point_cloud2.hpp>
 
-#include "camera.hpp"
-#include "get_ros_parameter.hpp"
+#include "common_cpp/camera.hpp"
+#include "common_cpp/get_ros_parameter.hpp"
 #include "lane_line_publisher/lane_line.hpp"
 #include "lane_line_publisher/lane_pixel_finder.hpp"
 

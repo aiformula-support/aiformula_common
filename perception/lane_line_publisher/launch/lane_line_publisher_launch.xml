@@ -1,12 +1,14 @@
 <launch>
   <arg name="vehicle_frame_id" default="base_footprint" />
-  <arg name="camera_frame_id"  default="zedX_left_link" />
+  <arg name="camera_frame_id"  default="zedx_left_link" />
+  <arg name="camera_name"      default="zedx.LEFT_CAM_VGA" />
   <arg name="debug"            default="false"/>
   <arg name="rviz"             default="false"/>
 
   <node pkg="lane_line_publisher" exec="lane_line_publisher" name="lane_line_publisher" output="screen">
     <param name="vehicle_frame_id" value="$(var vehicle_frame_id)"/>
     <param name="camera_frame_id"  value="$(var camera_frame_id)"/>
+    <param name="camera_name"      value="$(var camera_name)"/>
     <param name="debug"            value="$(var debug)"/>
     <param from="$(find-pkg-share lane_line_publisher)/config/lane_line_publisher.yaml"/>
     <param from="$(find-pkg-share vehicle)/config/ai_car1.yaml"/>
