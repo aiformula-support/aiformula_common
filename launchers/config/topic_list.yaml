@@ -6,7 +6,8 @@ sensing:
       undistorted: "/aiformula_sensing/zed_node/right_image/undistorted"
     imu: "/aiformula_sensing/zed_node/imu"
   input_can_data: "/aiformula_sensing/vehicle_info"
-  imu: "/aiformula_sensing/vectornav/imu"
+  vectornav:
+    imu: "/aiformula_sensing/vectornav/imu"
   odometry:
     gyro: "/aiformula_sensing/gyro_odometry_publisher/odom"
     wheel: "/aiformula_sensing/wheel_odometry_publisher/odom"
