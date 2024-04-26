@@ -10,7 +10,7 @@ namespace aiformula {
  * @param[in] camera_matrix Camera Matris
  * @param[in] image_size Image Size
  *
- * @note Usage: `getCameraParams(this, "zedx.LEFT_CAM_FHD", camera_matrix, &image_size);`
+ * @note Usage: `getCameraParams(this, "zedx", camera_matrix, &image_size);`
  */
 void getCameraParams(rclcpp::Node* node_ptr, const std::string& camera_name, cv::Mat& camera_matrix,
                      cv::Size* image_size) {
