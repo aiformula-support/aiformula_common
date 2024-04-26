@@ -6,7 +6,7 @@
   <name>lane_line_publisher</name>
   <version>0.0.0</version>
   <description>The lane_line_publisher package</description>
-  <maintainer email="user@todo.todo">user</maintainer>
+  <maintainer email="kota_sakazaki@jp.honda">Kota Sakazaki</maintainer>
   <license>todo</license>
 
   <buildtool_depend>ament_cmake</buildtool_depend>
