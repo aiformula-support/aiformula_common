@@ -1,3 +1,7 @@
 [submodule "sensing/zed-ros2-wrapper"]
 	path = sensing/zed-ros2-wrapper
 	url = https://github.com/stereolabs/zed-ros2-wrapper.git
+[submodule "sensing/vectornav"]
+	path = sensing/vectornav
+	url = https://github.com/dawonn/vectornav.git
+	branch = ros2
