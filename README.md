@@ -1,9 +1,4 @@
 # EC7D_AIformula_Control
-
-ROS2 packages for AI Formula developper.
-ROS2 Foxy Fitzroy (Ubuntu 20.04)
-
-## About AI Formula
 AI Formula is a technical challenge where robot car drives autonomously in mission course. 
 In purpose, it can acquire the necessary technology for next-generation mobility research. through, autonomous racing competing speed and intelligence in the real world.\
 This package is the foundation of the AIFormula system.
@@ -20,13 +15,13 @@ Functions to be provided in this package:
 * planning   (coming soon)
 * control    (coming soon)
 
+## Dependncy
+ROS2 Foxy (Ubuntu 20.04)
+
 ## Getiing Start
-To start all node of aiformula:\
-**Note:** please need to conect all interfaces
-```
-ros2 launch launchers all_node.launch
-```
-## install
+
+### installation
+* **Local Environment:**\
 Install aiformula package and build :\
 **Note** This package contains submodules, if the build of a submodule fails, please refer to original packages.
 ```
@@ -38,10 +33,16 @@ sudo apt update
 rosdep install --from-paths src --ignore-src -r -y # install dependencies
 colcon build --symlink-install --cmake-args=-DCMAKE_BUILD_TYPE=Release --parallel-workers $(nproc) # build the workspace
 ```
-## docker
-To start docker: \
+* **Docker Environment:**\
+To start docker:
 ```
 cd ~/ros2_ws/src/EC7D_AIformula_Control/docker
 ./docker_build_aiformula_foxy_amd.sh
 ./docker_run_aiformula_foxy_amd.sh
+```
+### Running the Example
+To start all node of aiformula:\
+**Note:** To start node of camera data, imu data, can data, motor controller, tf, joy
+```
+ros2 launch launchers all_node.launch
 ```
