@@ -28,7 +28,7 @@ Clone this repository and build:\
   ```bash
   mkdir -p ~/ros2_ws/src/ # create your workspace if it does not exist
   cd ~/ros2_ws/src/ #use your current ros2 workspace folder
-  git clone  --recursive https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control.git
+  git clone --recursive https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control.git
   cd ..
   sudo apt update
   rosdep install --from-paths src --ignore-src -r -y # install dependencies
@@ -47,5 +47,5 @@ To start docker:
 To start all nodes of aiformula:\
 **Note:** This command launches the following nodes: camera data, imu data, can data, motor controller, tf, joy.
 ```bash
-ros2 launch launchers all_node.launch
+ros2 launch launchers all_nodes.launch.py
 ```
