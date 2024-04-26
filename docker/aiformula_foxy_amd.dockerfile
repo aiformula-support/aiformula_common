@@ -57,6 +57,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         python3-colcon-common-extensions \
         ros-${ROS_DISTRO}-can-msgs \
         ros-${ROS_DISTRO}-rqt* \
+        ros-${ROS_DISTRO}-simple-launch \
         python3-colcon-mixin \
         python3-rosdep \
         python3-vcstool && \
