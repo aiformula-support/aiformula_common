@@ -12,7 +12,7 @@
 
 namespace aiformula {
 
-tf2::Transform getTf2Transform(rclcpp::Node* node_ptr, const std::string& dst_frame_id,
+tf2::Transform getTf2Transform(rclcpp::Node* const node_ptr, const std::string& dst_frame_id,
                                const std::string& src_frame_id);
 bool pixelToPoint(const cv::Point2f& pixel, const cv::Mat& invert_camera_matrix, const tf2::Transform& vehicle_T_camera,
                   tf2::Vector3& vehicle_point);
