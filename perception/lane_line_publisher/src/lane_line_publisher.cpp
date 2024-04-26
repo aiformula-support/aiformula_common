@@ -53,7 +53,7 @@ void LaneLinePublisher::imageCallback(const sensor_msgs::msg::Image::SharedPtr m
 
     LaneLines lane_lines;
     findLaneLines(cv_img->image, msg->header.stamp, lane_lines);
-    publishLaneLines(lane_lines);
+    publishLaneLines(lane_lines, msg->header.stamp);
 }
 
 void LaneLinePublisher::findLaneLines(const cv::Mat &mask, const builtin_interfaces::msg::Time &timestamp,
@@ -82,7 +82,8 @@ void LaneLinePublisher::publishAnnotatedMask(const cv::Mat &mask, const builtin_
     annotated_mask_image_pub_->publish(std::move(msg));
 }
 
-void LaneLinePublisher::publishLaneLines(const LaneLines &lane_lines) const {
+void LaneLinePublisher::publishLaneLines(const LaneLines &lane_lines,
+                                         const builtin_interfaces::msg::Time &timestamp) const {
     const std::vector<const LaneLine *> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
 
     static const int num_lane_lines = 3;
@@ -97,6 +98,7 @@ void LaneLinePublisher::publishLaneLines(const LaneLines &lane_lines) const {
 
         sensor_msgs::msg::PointCloud2 pcl_msg;
         pcl::toROSMsg(cloud, pcl_msg);
+        pcl_msg.header.stamp = timestamp;
         pcl_msg.header.frame_id = vehicle_frame_id_;
         lane_line_pubs_[i]->publish(pcl_msg);
     }

@@ -29,7 +29,7 @@ private:
                        LaneLines& lane_lines) const;
     void publishAnnotatedMask(const cv::Mat& mask, const builtin_interfaces::msg::Time& timestamp,
                               const LaneLines& lane_lines) const;
-    void publishLaneLines(const LaneLines& lane_lines) const;
+    void publishLaneLines(const LaneLines& lane_lines, const builtin_interfaces::msg::Time& timestamp) const;
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr mask_image_sub_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_mask_image_pub_;
