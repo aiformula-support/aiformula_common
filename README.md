@@ -4,20 +4,21 @@ AI Formula is a technical challenge in which robot cars drive autonomously on a 
 ![AIFormula_run](https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control/assets/113084733/df02c1ec-0556-4c77-a834-ebc2fe192ac5)
 
 Functions to be provided in this package:
-* camera data
-* imu data
-* motor controller
-* vehicle
+* common  (Include tools and function)
+* control  (Control motor)
+* launchers  (Manages launch files each node and shell) 
+* sensing  (Include sensor packages)
+* vehicle  (Include intrinsic and extrinsic params)
 * simulator
+* docker
 * perception (coming soon)
 * planning   (coming soon)
-* control    (coming soon)
 
 ## Dependencies
 * ROS2 Foxy (Ubuntu 20.04)
 * [ZED ROS2 wrapper](https://github.com/stereolabs/zed-ros2-wrapper)
 * [VectorNav](https://github.com/dawonn/vectornav)
-
+* [ros2_socketcan](https://github.com/autowarefoundation/ros2_socketcan.git)
 ## Getting Started
 
 ### Installation
@@ -45,7 +46,7 @@ To start docker:
   ```
 
 ### Vehicle setup
-To connect can interface, imu sensor and camera
+To connect can, and device
 ```bash
 cd ~/ros2_ws/src/EC7D_AIformula_Control/launchers/shellscript/
 ./init_sensors.sh
