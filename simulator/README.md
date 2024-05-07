@@ -17,9 +17,10 @@ To start simulator:
   ```
 
 ### If you want to use a gamepad in the simulator
-* Change the value of `control/speed_command/game_pad` from `"/aiformula_control/game_pad/cmd_vel"` to `"/cmd_vel"` in `launchers/config/topic_list.yaml`
+- To start `joy.launch.py` and `teleop.launch.py` in launchers package.  
+\- Change the value of `control/speed_command/game_pad` from `"/aiformula_control/game_pad/cmd_vel"`
+to `"/cmd_vel"` in `launchers/config/topic_list.yaml`
   
-
 
 ### It takes a long time (about two and a half minutes) only when launching gazebo_simulator.launch.py `for the first time` !
 - Once the world file is loaded into gazebo, it is cached under `~/.gazebo/model`
