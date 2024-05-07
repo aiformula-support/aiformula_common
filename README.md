@@ -41,7 +41,8 @@ Clone this repository and build:\
 * **Docker Environment:**\
 To start docker:
   ```bash
-  cd ~/ros2_ws/src/EC7D_AIformula_Control/docker
+  git clone https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control.git
+  cd ./EC7D_AIformula_Control/docker
   ./docker_build_aiformula_foxy_amd.sh
   ./docker_run_aiformula_foxy_amd.sh
   ```
