@@ -16,6 +16,7 @@ Functions to be provided in this package:
 
 ## Dependencies
 * ROS2 Foxy (Ubuntu 20.04)
+* ZED SDK
 * [ZED ROS2 wrapper](https://github.com/stereolabs/zed-ros2-wrapper)
 * [VectorNav](https://github.com/dawonn/vectornav)
 * [ros2_socketcan](https://github.com/autowarefoundation/ros2_socketcan.git)
