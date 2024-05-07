@@ -17,9 +17,7 @@ To start simulator:
   ```
 
 ### If you want to use a gamepad in the simulator
-- To start `joy.launch.py` and `teleop.launch.py` in launchers package.
-- Remapping in `teleop.launch.py`\
-`/aiformula_control/handle_controller/cmd_vel` -> `cmd_vel`
+* Change the value of `control/speed_command/game_pad` from `"/aiformula_control/game_pad/cmd_vel"` to `"/cmd_vel"` in `launchers/config/topic_list.yaml`
   
 
 

@@ -4,10 +4,10 @@ AI Formula is a technical challenge in which robot cars drive autonomously on a 
 ![AIFormula_run](https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control/assets/113084733/df02c1ec-0556-4c77-a834-ebc2fe192ac5)
 
 Functions to be provided in this package:
-* common  (Include tools and function)
+* common  (Util libraries for c++ and python)
 * control  (Control motor)
-* launchers  (Manages launch files each node and shell) 
-* sensing  (Include sensor packages)
+* launchers  (Manage launch and shell files for each package) 
+* sensing  (Camera, Imu)
 * vehicle  (Include intrinsic and extrinsic params)
 * simulator
 * docker
@@ -31,8 +31,8 @@ Clone this repository and build:\
   cd ~/ros2_ws/src/ #use your current ros2 workspace folder
   git clone --recursive https://github.com/honda-hgrx-idcs/EC7D_AIformula_Control.git
   sed -i 's/tf2_geometry_msgs\.hpp/tf2_geometry_msgs.h/g' ~/ros2_ws/src/EC7D_AIformula_Control/sensing/vectornav/vectornav/src/vn_sensor_msgs.cc
+  git clone https://github.com/autowarefoundation/ros2_socketcan.git
   cd ..
-  sudo apt update
   colcon build --symlink-install  # build the workspace
   source ~/ros2_ws/install/local_setup.bash
   ```
