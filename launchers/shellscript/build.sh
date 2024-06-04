@@ -11,6 +11,9 @@ TARGET_PACKEGES=(
     odometry_publisher
     zed_wrapper
 
+    # perception
+    lane_line_publisher
+
     # control
     motor_controller
 
