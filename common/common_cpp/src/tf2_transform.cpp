@@ -10,9 +10,9 @@ namespace aiformula {
  * @param[in] src_frame_id Source frame ID.
  * @return Tf2 transformation from source to destination frame.
  *
- * @note Usage: `auto vehicle_T_camera = getTf2Transform(this, "base_link", "zedx_left_link");`
+ * @note Usage: `auto vehicle_T_camera = getTf2Transform(this, "base_link", "zed_left_camera_optical_frame");`
  */
-tf2::Transform getTf2Transform(rclcpp::Node* node_ptr, const std::string& dst_frame_id,
+tf2::Transform getTf2Transform(rclcpp::Node* const node_ptr, const std::string& dst_frame_id,
                                const std::string& src_frame_id) {
     static tf2_ros::Buffer tf_buffer(node_ptr->get_clock());
     static tf2_ros::TransformListener tf_listener(tf_buffer);

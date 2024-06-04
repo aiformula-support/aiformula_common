@@ -3,24 +3,25 @@ import xacro
 from ament_index_python.packages import get_package_share_directory
 
 
-def get_intrinsic_param_path(vehicle_name: str) -> str:
-    """Returns the intrinsic yaml path of `vehicle_name`
+def get_zed_intrinsic_param_path(serial_number: str, resolution: str) -> str:
+    """Returns the zed intrinsic yaml path for the given `serial_number`
 
     Parameters:
     ----------
-    `vehicle_name`: Vehicle name
+    `serial_number`: Zed Serial Number
+    `resolution`
 
     Returns:
     ----------
-    the intrinsic yaml path of `vehicle_name`
+    the intrinsic yaml path for given `serial_number`
 
     Examples:
     ----------
-    >>> get_intrinsic_param_path("ai_car1")
-    /path/to/colcon_ws/install/vehicle/share/vehicle/config/ai_car1.yaml\
+    >>> get_zed_intrinsic_param_path("SN48442725", "HD1080")
+    /path/to/colcon_ws/install/vehicle/share/vehicle/config/zedx/camera_params/SN48442725/HD1080.yaml\
     """
     intrinsic_yaml_path = osp.join(get_package_share_directory("vehicle"),
-                                   "config", vehicle_name + ".yaml")
+                                   "config/zedx/camera_params/", serial_number, "intrinsic_" + resolution + ".yaml")
     if not osp.exists(intrinsic_yaml_path):
         raise FileNotFoundError(intrinsic_yaml_path)
     return intrinsic_yaml_path

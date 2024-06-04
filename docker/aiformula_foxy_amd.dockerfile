@@ -57,6 +57,7 @@ RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
         python3-colcon-common-extensions \
         ros-${ROS_DISTRO}-can-msgs \
         ros-${ROS_DISTRO}-rqt* \
+        ros-${ROS_DISTRO}-simple-launch \
         python3-colcon-mixin \
         python3-rosdep \
         python3-vcstool && \
@@ -106,9 +107,6 @@ RUN git clone https://github.com/hustvl/YOLOP.git ${HOME}/workspace/YOLOP && \
     pip3 install -r ${HOME}/workspace/YOLOP/requirements.txt
 # ros2_socketcan
 RUN git clone https://github.com/autowarefoundation/ros2_socketcan.git ${HOME}/workspace/ros/src/ros2_socketcan
-# vectornav
-RUN git clone -b ros2 https://github.com/dawonn/vectornav.git ${HOME}/workspace/ros/src/vectornav && \
-    sed -i 's/tf2_geometry_msgs\.hpp/tf2_geometry_msgs.h/g' ${HOME}/workspace/ros/src/vectornav/vectornav/src/vn_sensor_msgs.cc
 
 RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
     echo "source ${HOME}/workspace/ros/install/setup.bash" >> ${HOME}/.bashrc && \

@@ -7,12 +7,12 @@ namespace aiformula {
  *
  * @param[in] node_ptr node pointer
  * @param[in] camera_name Camera Name
- * @param[in] camera_matrix Camera Matris
- * @param[in] image_size Image Size
+ * @param[out] camera_matrix Camera Matrix
+ * @param[out] image_size Image Size
  *
- * @note Usage: `getCameraParams(this, "zedx.LEFT_CAM_FHD", camera_matrix, &image_size);`
+ * @note Usage: `getCameraParams(this, "zedx", camera_matrix, &image_size);`
  */
-void getCameraParams(rclcpp::Node* node_ptr, const std::string& camera_name, cv::Mat& camera_matrix,
+void getCameraParams(rclcpp::Node* const node_ptr, const std::string& camera_name, cv::Mat& camera_matrix,
                      cv::Size* image_size) {
     camera_matrix = cv::Mat::eye(3, 3, CV_32F);
     camera_matrix.at<float>(0, 0) = getRosParameter<double>(node_ptr, camera_name + ".focal_length.x");
