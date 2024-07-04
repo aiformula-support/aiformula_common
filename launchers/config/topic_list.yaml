@@ -8,9 +8,11 @@ sensing:
   input_can_data: "/aiformula_sensing/vehicle_info"
   vectornav:
     imu: "/aiformula_sensing/vectornav/imu"
+    gnss: "/aiformula_sensing/vectornav/gnss"
   odometry:
     gyro: "/aiformula_sensing/gyro_odometry_publisher/odom"
     wheel: "/aiformula_sensing/wheel_odometry_publisher/odom"
+    gnss: "/aiformula_sensing/gnss_odometry_publisher/odom"
 
 perception:
   mask_image: "/aiformula_perception/road_detector/mask_image"
