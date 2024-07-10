@@ -1,10 +1,4 @@
 #include "odometry_publisher/gnss_odometry_publisher.hpp"
-
-#include "std_msgs/msg/float64_multi_array.hpp"
-rclcpp::Publisher<std_msgs::msg::Float64MultiArray>::SharedPtr gnss_odom_yaw_pub;
-inline double toTimeStampDouble(const builtin_interfaces::msg::Time& msg_stamp) {
-    return msg_stamp.sec + static_cast<double>(msg_stamp.nanosec) / 1e9;
-}
 namespace aiformula {
 
 GnssOdometryPublisher::GnssOdometryPublisher()
@@ -16,9 +10,6 @@ void GnssOdometryPublisher::initValues() {
     const int buffer_size = 10;
     gnss_sub_ = this->create_subscription<sensor_msgs::msg::NavSatFix>(
         "sub_gnss", buffer_size, std::bind(&GnssOdometryPublisher::gnssCallback, this, std::placeholders::_1));
-
-    gnss_odom_yaw_pub = this->create_publisher<std_msgs::msg::Float64MultiArray>(
-        "odometry_yaw_angle_viewer/gnss_odom_yaw", buffer_size);
 
     // The calculation methods for 'A_' and 'alpha_' can be found at the link at the bottom of
     // gnss_odometry_publisher.hpp.
