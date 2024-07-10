@@ -8,12 +8,7 @@ inline double toTimeStampDouble(const builtin_interfaces::msg::Time& msg_stamp) 
 namespace aiformula {
 
 GnssOdometryPublisher::GnssOdometryPublisher()
-    : OdometryPublisher("gnss_odometry_publisher"),
-      A_(std::vector<double>(6, 0.0)),
-      alpha_(std::vector<double>(6, 0.0)),
-      phi0_(0.0),
-      lambda0_(0.0),
-      S_phi0_(0.0) {
+    : OdometryPublisher("gnss_odometry_publisher"), phi0_(0.0), lambda0_(0.0), S_phi0_(0.0) {
     initValues();
 }
 
@@ -25,9 +20,11 @@ void GnssOdometryPublisher::initValues() {
     gnss_odom_yaw_pub = this->create_publisher<std_msgs::msg::Float64MultiArray>(
         "odometry_yaw_angle_viewer/gnss_odom_yaw", buffer_size);
 
-    A_[0] = 1 + pow(n_, 2) / 4 + pow(n_, 4) / 64;
-    A_[1] = -3. / 2. * (n_ - pow(n_, 3) / 8 - pow(n_, 5) / 64);
-    A_[2] = 15. / 16. * (pow(n_, 2) - pow(n_, 4) / 4);
+    // The calculation methods for 'A_' and 'alpha_' can be found at the link at the bottom of
+    // gnss_odometry_publisher.hpp.
+    A_[0] = 1. + pow(n_, 2) / 4. + pow(n_, 4) / 64.;
+    A_[1] = -3. / 2. * (n_ - pow(n_, 3) / 8. - pow(n_, 5) / 64.);
+    A_[2] = 15. / 16. * (pow(n_, 2) - pow(n_, 4) / 4.);
     A_[3] = -35. / 48. * (pow(n_, 3) - 5. / 16. * pow(n_, 5));
     A_[4] = 315. / 512. * pow(n_, 4);
     A_[5] = -693. / 1280. * pow(n_, 5);
@@ -44,7 +41,7 @@ void GnssOdometryPublisher::gnssCallback(const sensor_msgs::msg::NavSatFix::Shar
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Gnss !");
 
     double x, y;
-    calcXY(msg->latitude * D2R, msg->longitude * D2R, x, y);
+    latLonToPlaneRectXY(msg->latitude * D2R, msg->longitude * D2R, x, y);
     const double dt = calcTimeDelta(msg->header.stamp);
     updatePosition(x, y, dt);
     updateYawAngleAndYawRate(x, y, dt);
@@ -54,7 +51,7 @@ void GnssOdometryPublisher::gnssCallback(const sensor_msgs::msg::NavSatFix::Shar
     RCLCPP_INFO_ONCE(this->get_logger(), "Publish Odometry !");
 }
 
-void GnssOdometryPublisher::calcXY(const double& phi, const double& lambda, double& x, double& y) {
+void GnssOdometryPublisher::latLonToPlaneRectXY(const double& phi, const double& lambda, double& x, double& y) {
     // At the first time, initialize phi0_, lambda0_, S_phi0_, A_bar_
     if (!phi0_ && !lambda0_) {
         phi0_ = phi;
@@ -63,8 +60,8 @@ void GnssOdometryPublisher::calcXY(const double& phi, const double& lambda, doub
         for (int j = 1; j <= 5; j++) {
             S_phi0_ += A_[j] * sin(2 * j * phi0_);
         }
-        S_phi0_ = m0_ * a_ / (1 + n_) * (A_[0] * phi0_ + S_phi0_);
-        A_bar_ = m0_ * a_ / (1 + n_) * A_[0];
+        S_phi0_ = m0_ * a_ / (1. + n_) * (A_[0] * phi0_ + S_phi0_);
+        A_bar_ = m0_ * a_ / (1. + n_) * A_[0];
     }
 
     // λc, λs
@@ -72,8 +69,8 @@ void GnssOdometryPublisher::calcXY(const double& phi, const double& lambda, doub
     const double lambda_s = sin(lambda - lambda0_);
 
     // t, t_
-    const double t = sinh(atanh(sin(phi)) - 2 * sqrt(n_) / (1 + n_) * atanh(2 * sqrt(n_) / (1 + n_) * sin(phi)));
-    const double t_bar = sqrt(1 + pow(t, 2));
+    const double t = sinh(atanh(sin(phi)) - 2. * sqrt(n_) / (1. + n_) * atanh(2. * sqrt(n_) / (1. + n_) * sin(phi)));
+    const double t_bar = sqrt(1. + pow(t, 2));
 
     // ξ', η'
     const double xi_prime = atan(t / lambda_c);
@@ -82,18 +79,18 @@ void GnssOdometryPublisher::calcXY(const double& phi, const double& lambda, doub
     // x, y
     x = y = 0;
     for (int j = 1; j <= 5; j++) {
-        x += alpha_[j] * sin(2 * j * xi_prime) * cosh(2 * j * eta_prime);
-        y += alpha_[j] * cos(2 * j * xi_prime) * sinh(2 * j * eta_prime);
+        x += alpha_[j] * sin(2. * j * xi_prime) * cosh(2. * j * eta_prime);
+        y += alpha_[j] * cos(2. * j * xi_prime) * sinh(2. * j * eta_prime);
     }
     x = A_bar_ * (xi_prime + x) - S_phi0_;  // x-axis positive: North
     y = A_bar_ * (eta_prime + y);           // y-axis positive: East
-    y *= -1;                                // y-axis positive: East  -> West
+    y *= -1.;                               // y-axis positive: East  -> West
 
     // true north angle
-    double sigma = 1.0, tau = 0;
+    double sigma = 1.0, tau = 0.;
     for (int j = 1; j <= 5; j++) {
-        sigma += 2 * alpha_[j] * sin(2 * j * xi_prime) * cosh(2 * j * eta_prime);
-        tau += 2 * alpha_[j] * cos(2 * j * xi_prime) * sinh(2 * j * eta_prime);
+        sigma += 2. * alpha_[j] * sin(2. * j * xi_prime) * cosh(2. * j * eta_prime);
+        tau += 2. * alpha_[j] * cos(2. * j * xi_prime) * sinh(2. * j * eta_prime);
     }
     double gamma_prime =
         -atan2((tau * t_bar * lambda_c + sigma * t * lambda_s), (sigma * t_bar, lambda_c - tau * t * lambda_s));
@@ -108,14 +105,14 @@ void GnssOdometryPublisher::updatePosition(const double& x, const double& y, con
 }
 
 void GnssOdometryPublisher::updateYawAngleAndYawRate(const double& x, const double& y, const double& dt) {
-    static double x_bef = DBL_MAX, y_bef = DBL_MAX;
-    if (x_bef != DBL_MAX && y_bef != DBL_MAX) {
-        double yaw = atan2(y - y_bef, x - x_bef);
+    static double x_prev = DBL_MAX, y_prev = DBL_MAX;
+    if (x_prev != DBL_MAX && y_prev != DBL_MAX) {
+        double yaw = atan2(y - y_prev, x - x_prev);
         yaw_rate_ = (yaw - yaw_angle_) / dt;
         yaw_angle_ = yaw;
     }
-    x_bef = x;
-    y_bef = y;
+    x_prev = x;
+    y_prev = y;
 }
 
 }  // namespace aiformula

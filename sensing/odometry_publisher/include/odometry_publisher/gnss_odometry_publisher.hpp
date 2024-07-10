@@ -24,7 +24,7 @@ private:
     void initValues();
     void printParam() const;
     void gnssCallback(const sensor_msgs::msg::NavSatFix::SharedPtr msg);
-    void calcXY(const double& phi, const double& lambda, double& x, double& y);
+    void latLonToPlaneRectXY(const double& phi, const double& lambda, double& x, double& y);
     void updatePosition(const double& x, const double& y, const double& dt);
     void updateYawAngleAndYawRate(const double& x, const double& y, const double& dt);
 
@@ -36,10 +36,10 @@ private:
     const double a_ = 6378137.;       // Long radius of ellipsoid (ITRF coordinate system GRS80 ellipsoid)
     const double F_ = 298.257222101;  // Inverse flatness of ellipsoid (ITRF coordinate system GRS80 ellipsoid)
     const double m0_ = 0.9999;        // Scale factor on the X-axis of the plane rectangular coordinate system
-    const double n_ = 1 / (2 * F_ - 1);
+    const double n_ = 1. / (2. * F_ - 1.);
 
-    std::vector<double> A_;      // A0 ~ A5
-    std::vector<double> alpha_;  // α1 ~ α5
+    std::array<double, 6> A_{};      // A0 ~ A5
+    std::array<double, 6> alpha_{};  // α1 ~ α5
 
     // Latitude and longitude of the plane rectangular coordinate system origin
     // Use the value at the start of the program
