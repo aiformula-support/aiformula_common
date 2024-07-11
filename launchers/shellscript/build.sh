@@ -9,7 +9,8 @@ TARGET_PACKEGES=(
 
     # sensing
     odometry_publisher
-    zed_wrapper
+    rear_potentiometer
+    #zed_wrapper
 
     # perception
     lane_line_publisher
@@ -18,8 +19,8 @@ TARGET_PACKEGES=(
     motor_controller
 
     # external repository
-    vectornav
-    ros2_socketcan
+    #vectornav
+    #ros2_socketcan
 )
 
 echo "Build Targets:"
@@ -28,5 +29,5 @@ for packege in ${TARGET_PACKEGES[@]}; do
 done
 echo ""
 
-cd ${HOME}/workspace/ros
+cd ${HOME}/workspace/ros2_ws
 colcon build --symlink-install --packages-up-to ${TARGET_PACKEGES[@]}
