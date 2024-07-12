@@ -10,7 +10,7 @@ TARGET_PACKEGES=(
     # sensing
     odometry_publisher
     rear_potentiometer
-    #zed_wrapper
+    zed_wrapper
 
     # perception
     lane_line_publisher
@@ -19,8 +19,8 @@ TARGET_PACKEGES=(
     motor_controller
 
     # external repository
-    #vectornav
-    #ros2_socketcan
+    vectornav
+    ros2_socketcan
 )
 
 echo "Build Targets:"
