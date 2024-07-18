@@ -68,7 +68,7 @@ void GnssOdometryPublisher::latLonToPlaneRectXY(const double& phi, const double&
     const double eta_prime = atanh(lambda_s / t_bar);
 
     // x, y
-    x = y = 0;
+    x = y = 0.;
     for (int j = 1; j <= 5; j++) {
         x += alpha_[j] * sin(2. * j * xi_prime) * cosh(2. * j * eta_prime);
         y += alpha_[j] * cos(2. * j * xi_prime) * sinh(2. * j * eta_prime);
