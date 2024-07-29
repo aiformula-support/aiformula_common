@@ -81,6 +81,13 @@ def generate_launch_description():
         }.items(),
     )
 
+    rear_potentiometer = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("rear_potentiometer"),
+                     "launch/rear_potentiometer.launch.py"),
+        ),
+    )
+
     return LaunchDescription([
         tf_static_publisher,
         zed_node,
@@ -91,4 +98,5 @@ def generate_launch_description():
         motor_controller,
         can_receiver_and_sender,
         gyro_odometry_publisher,
+        rear_potentiometer,
     ])
