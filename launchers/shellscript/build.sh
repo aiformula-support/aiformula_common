@@ -29,5 +29,5 @@ for packege in ${TARGET_PACKEGES[@]}; do
 done
 echo ""
 
-cd ${HOME}/workspace/ros2_ws
+cd ${HOME}/workspace/ros
 colcon build --symlink-install --packages-up-to ${TARGET_PACKEGES[@]}
