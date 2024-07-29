@@ -4,12 +4,12 @@ import sys
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from pathlib import Path
 from rclpy.utilities import remove_ros_args
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+from pathlib import Path
 from ament_index_python.packages import get_package_prefix
 
 package = str(Path(__file__).resolve().parent.name)
@@ -25,7 +25,6 @@ from lib.models import get_net
 from lib.utils.utils import create_logger, select_device
 from lib.utils import letterbox_for_img
 from lib.config import cfg
-
 
 normalize = transforms.Normalize(
     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
