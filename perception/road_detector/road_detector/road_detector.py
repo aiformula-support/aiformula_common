@@ -1,4 +1,3 @@
-import argparse
 import os
 import sys
 import rclpy
@@ -9,22 +8,22 @@ from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import torch
 import torchvision.transforms as transforms
+
 from pathlib import Path
 from ament_index_python.packages import get_package_prefix
-
 package = str(Path(__file__).resolve().parent.name)
 print('package:', package)
 workspace = Path(get_package_prefix(package)).parents[1]
-ROOT = workspace/'..' / 'YOLOP'
+ROOT = workspace/'..'/'YOLOP'
 if str(ROOT) not in sys.path:
     sys.path.insert(0, str(ROOT))  # add ROOT to PATH
     ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
 
-from lib.utils import show_seg_result
-from lib.models import get_net
-from lib.utils.utils import create_logger, select_device
-from lib.utils import letterbox_for_img
 from lib.config import cfg
+from lib.utils import letterbox_for_img
+from lib.utils.utils import create_logger, select_device
+from lib.models import get_net
+from lib.utils import show_seg_result
 
 normalize = transforms.Normalize(
     mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
@@ -38,25 +37,28 @@ transform = transforms.Compose([
 
 class RoadDetector(Node):
 
-    def __init__(self, cfg, opt):
+    def __init__(self):
         super().__init__('road_detector')
-        self.pub = self.create_publisher(Image, 'aiformula_visualization/road_detector/result_image', 10)
-        self.ll_pub = self.create_publisher(Image, 'aiformula_perception/road_detector/mask_image', 10)
+        self.pub = self.create_publisher(Image, 'pub_annotated_mask_image', 10)
+        self.ll_pub = self.create_publisher(Image, 'pub_mask_image', 10)
         self.image = self.create_subscription(
-            Image, 'aiformula_sensing/zed_node/left_image/undistorted', self.callback_detect, 10)
+            Image, 'sub_image', self.callback_detect, 10)
         self.cv_bridge = CvBridge()
 
         logger, _, _ = create_logger(
             cfg, cfg.LOG_DIR, 'demo')
 
-        self.opt = opt
+        # Set Device and Param
+        self.declare_parameter('use_device')
+        self.declare_parameter('weight_path')
+        device = self.get_parameter('use_device').get_parameter_value().string_value
+        weights = self.get_parameter('weight_path').get_parameter_value().string_value
         self.img_size = 640
-        self.device = select_device(logger, self.opt.device)
+        self.device = select_device(logger, device)
         self.half = self.device.type != 'cpu'  # half precision only supported on CUDA
         # Load model
         self.model = get_net(cfg)
-        print(self.device)
-        checkpoint = torch.load(self.opt.weights, map_location=self.device)
+        checkpoint = torch.load(weights, map_location=self.device)
         self.model.load_state_dict(checkpoint['state_dict'])
         self.model = self.model.to(self.device)
         if self.half:
@@ -80,7 +82,7 @@ class RoadDetector(Node):
         # Inference
         det_out, da_seg_out, ll_seg_out = self.model(img)
         _, _, height, width = img.shape
-        h, w, _ = img_det.shape
+        # h, w, _ = img_det.shape
         pad_w, pad_h = shapes[1][1]
         pad_w = int(pad_w)
         pad_h = int(pad_h)
@@ -111,23 +113,14 @@ class RoadDetector(Node):
         # Convert
         img = np.ascontiguousarray(img)
         return img, img0, shapes
-    
-
-def parse_opt():
-    sys.argv = remove_ros_args(args=sys.argv)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default=ROOT /
-                        'weights/End-to-End.pth', help='model.pth path(s)')
-    parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    opt = parser.parse_args()
-    return opt
 
 
 def main():
-    opt = parse_opt()
+    # opt = parse_opt()
     with torch.no_grad():
         rclpy.init()
-        road_detector = RoadDetector(cfg, opt)
+        road_detector = RoadDetector()
+        # road_detector = RoadDetector(cfg, opt)
         rclpy.spin(road_detector)
         road_detector.destroy_node()
         rclpy.shutdown()
