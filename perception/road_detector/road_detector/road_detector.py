@@ -3,7 +3,6 @@ import sys
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from rclpy.utilities import remove_ros_args
 from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
 import torch
@@ -82,7 +81,6 @@ class RoadDetector(Node):
         # Inference
         det_out, da_seg_out, ll_seg_out = self.model(img)
         _, _, height, width = img.shape
-        # h, w, _ = img_det.shape
         pad_w, pad_h = shapes[1][1]
         pad_w = int(pad_w)
         pad_h = int(pad_h)
@@ -116,11 +114,9 @@ class RoadDetector(Node):
 
 
 def main():
-    # opt = parse_opt()
     with torch.no_grad():
         rclpy.init()
         road_detector = RoadDetector()
-        # road_detector = RoadDetector(cfg, opt)
         rclpy.spin(road_detector)
         road_detector.destroy_node()
         rclpy.shutdown()
