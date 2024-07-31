@@ -91,8 +91,7 @@ void LaneLinePublisher::publishAnnotatedMask(const cv::Mat& mask, const builtin_
 
 void LaneLinePublisher::publishContourPoints(const std::vector<std::vector<Eigen::Vector3d>>& contour_points,
                                              const builtin_interfaces::msg::Time& timestamp) const {
-    static const int num_lane_lines = 3;
-    for (int i = 0; i < num_lane_lines; ++i) {
+    for (int i = 0; i < NUM_LANE_LINES; ++i) {
         const auto& points = contour_points[i];
         pcl::PointCloud<pcl::PointXYZ> cloud;
         for (const auto& point : points) {
@@ -113,8 +112,7 @@ void LaneLinePublisher::publishLaneLines(const LaneLines& lane_lines,
                                          const builtin_interfaces::msg::Time& timestamp) const {
     const std::vector<const LaneLine*> lane_line_ptrs = {&lane_lines.left, &lane_lines.right, &lane_lines.center};
 
-    static const int num_lane_lines = 3;
-    for (int i = 0; i < num_lane_lines; ++i) {
+    for (int i = 0; i < NUM_LANE_LINES; ++i) {
         const auto& lane_line_points = lane_line_ptrs[i]->points;
         pcl::PointCloud<pcl::PointXYZ> cloud;
         for (const auto& point : lane_line_points) {
