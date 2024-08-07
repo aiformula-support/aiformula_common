@@ -29,11 +29,14 @@ private:
                        LaneLines& lane_lines) const;
     void publishAnnotatedMask(const cv::Mat& mask, const builtin_interfaces::msg::Time& timestamp,
                               const LaneLines& lane_lines) const;
+    void publishContourPoints(const std::vector<std::vector<Eigen::Vector3d>>& contour_points,
+                              const builtin_interfaces::msg::Time& timestamp) const;
     void publishLaneLines(const LaneLines& lane_lines, const builtin_interfaces::msg::Time& timestamp) const;
 
     rclcpp::Subscription<sensor_msgs::msg::Image>::SharedPtr mask_image_sub_;
     rclcpp::Publisher<sensor_msgs::msg::Image>::SharedPtr annotated_mask_image_pub_;
     std::vector<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr> lane_line_pubs_;
+    std::vector<rclcpp::Publisher<sensor_msgs::msg::PointCloud2>::SharedPtr> contour_point_pubs_;
 
     LanePixelFinder::ConstPtr lane_pixel_finder_;
     CubicLineFitter::ConstPtr cubic_line_fitter_;

@@ -23,6 +23,8 @@ public:
     std::vector<Eigen::Vector3d> points;
 };
 
+enum { LEFT, RIGHT, CENTER, NUM_LANE_LINES };
+
 class LaneLines {
 public:
     explicit LaneLines() {}
