@@ -1,4 +1,3 @@
-import os
 import sys
 import rclpy
 from rclpy.node import Node
@@ -11,107 +10,97 @@ import torchvision.transforms as transforms
 from pathlib import Path
 from ament_index_python.packages import get_package_prefix
 package = str(Path(__file__).resolve().parent.name)
-print('package:', package)
 workspace = Path(get_package_prefix(package)).parents[1]
-ROOT = workspace/'..'/'YOLOP'
-if str(ROOT) not in sys.path:
-    sys.path.insert(0, str(ROOT))  # add ROOT to PATH
-    ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+yolop_module_path = workspace/'..'/'YOLOP'
+if str(yolop_module_path) not in sys.path:
+    sys.path.insert(0, str(yolop_module_path))  # add ROOT to PATH
 
 from lib.config import cfg
 from lib.utils import letterbox_for_img
-from lib.utils.utils import create_logger, select_device
+from lib.utils.utils import select_device
 from lib.models import get_net
 from lib.utils import show_seg_result
-
-normalize = transforms.Normalize(
-    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-)
-
-transform = transforms.Compose([
-    transforms.ToTensor(),
-    normalize,
-])
 
 
 class RoadDetector(Node):
 
     def __init__(self):
         super().__init__('road_detector')
-        self.pub = self.create_publisher(Image, 'pub_annotated_mask_image', 10)
-        self.ll_pub = self.create_publisher(Image, 'pub_mask_image', 10)
-        self.image = self.create_subscription(
-            Image, 'sub_image', self.callback_detect, 10)
+        buffer_size = 10
+        self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
+        self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
+        self.image_sub = self.create_subscription(
+            Image, 'sub_image', self.image_callback, buffer_size)
         self.cv_bridge = CvBridge()
-
-        logger, _, _ = create_logger(
-            cfg, cfg.LOG_DIR, 'demo')
-
         # Set Device and Param
-        self.declare_parameter('use_device')
+        self.declare_parameter('use_architecture')
         self.declare_parameter('weight_path')
-        device = self.get_parameter('use_device').get_parameter_value().string_value
+        self.declare_parameter('mean')
+        self.declare_parameter('standard_deviation')
+        architecture = self.get_parameter('use_architecture').get_parameter_value().string_value
         weights = self.get_parameter('weight_path').get_parameter_value().string_value
-        self.img_size = 640
-        self.device = select_device(logger, device)
-        self.half = self.device.type != 'cpu'  # half precision only supported on CUDA
+        mean = np.array(self.get_parameter('mean').get_parameter_value().double_array_value)
+        std = np.array(self.get_parameter('standard_deviation').get_parameter_value().double_array_value)
+        self.architecture = select_device(device = architecture)
+        self.half = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
         # Load model
         self.model = get_net(cfg)
-        checkpoint = torch.load(weights, map_location=self.device)
+        checkpoint = torch.load(weights, map_location=self.architecture)
         self.model.load_state_dict(checkpoint['state_dict'])
-        self.model = self.model.to(self.device)
+        self.model = self.model.to(self.architecture)
         if self.half:
             self.model.half()  # to FP16
-        img = torch.zeros((1, 3, self.img_size, self.img_size), device=self.device)  # init img
-        self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
-        self.model.eval()
+        # Nomalization and Tensor
+        normalize = transforms.Normalize(mean, std)
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            normalize,
+        ])
 
-    def callback_detect(self, data):
+    def image_callback(self, msg):
         try:
-            self.image = self.cv_bridge.imgmsg_to_cv2(data, "bgr8")
+            time_stamp = msg.header.stamp
+            undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
 
-        # Set Dataloader and Run interfence
-        img, img_det, shapes = self.LoadImages(self.image)
-        img = transform(img).to(self.device)
-        img = img.half() if self.half else img.float()  # uint8 to fp16/32
-        if img.ndimension() == 3:
-            img = img.unsqueeze(0)
+        # Set Dataloader and Run inference
+        padding_image, shapes = self.LoadImages(undistorted_image)
+        normalize_image = self.transform(padding_image).to(self.architecture)
+        input_image = normalize_image.half() if self.half else normalize_image.float()  # uint8 to fp16/32
+        if input_image.ndimension() == 3:
+            input_image = input_image.unsqueeze(0)
         # Inference
-        det_out, da_seg_out, ll_seg_out = self.model(img)
-        _, _, height, width = img.shape
-        pad_w, pad_h = shapes[1][1]
-        pad_w = int(pad_w)
-        pad_h = int(pad_h)
-        pad_h = int(pad_h)
-        ratio = shapes[1][0][1]
-
-        ll_predict = ll_seg_out[:, :, pad_h:(height-pad_h), pad_w:(width-pad_w)]
-        ll_seg_mask = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1/ratio), mode='bilinear')
-        _, ll_seg_mask = torch.max(ll_seg_mask, 1)
-        ll_seg_mask = ll_seg_mask.int().squeeze().cpu().numpy()
-
-        img_det = show_seg_result(img_det, (ll_seg_mask, ll_seg_mask), _, _, is_demo=True)
-        ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
+        _, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
+        _, _, height, width = input_image.shape
+        padding_w, padding_h = shapes[1][1]
+        padding_w = int(padding_w)
+        padding_h = int(padding_h)
+        ratio = shapes[1][0][1]    # ratio -> ratio of undistorted image to input image
+        # create Lane line segmentation masks
+        ll_predict = ll_seg_out[:, :, padding_h:(height-padding_h), padding_w:(width-padding_w)]
+        ll_seg_mask_raw = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1/ratio), mode='bilinear')
+        _, ll_seg_poits = torch.max(ll_seg_mask_raw, 1)
+        ll_seg_mask = ll_seg_poits.int().squeeze().cpu().numpy()
+        # visualization
+        annotated_image = show_seg_result(undistorted_image, (ll_seg_mask, ll_seg_mask), _, _, is_demo=True)
         # ROS Publish
         bridge = CvBridge()
-        ll_image = bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
-        ll_image.header.stamp = self.get_clock().now().to_msg()
-        self.ll_pub.publish(ll_image)
-        self.pub.publish(bridge.cv2_to_imgmsg(img_det, "bgr8"))
+        ll_array = np.array(ll_seg_mask, dtype='uint8')
+        ll_image = bridge.cv2_to_imgmsg(ll_array, "mono8")
+        ll_image.header.stamp = time_stamp
+        self.lane_mask_image_pub.publish(ll_image)
+        self.annotated_mask_image_pub.publish(bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
 
-    def LoadImages(self, img):
-        img0 = img
-        h0, w0 = img0.shape[:2]
-        # Padded resize
-        img, ratio, pad = letterbox_for_img(img0, new_shape=self.img_size, auto=True)
-        h, w = img.shape[:2]
-        shapes = (h0, w0), ((h / h0, w / w0), pad)
+    def LoadImages(self, image):
+        image_height, image_width = image.shape[:2]
+        # Padded resize        
+        padding_image, _, padding = letterbox_for_img(image, new_shape=640, auto=True)
+        padding_height, padding_width = padding_image.shape[:2]
+        shapes = (padding_height, padding_width), ((padding_height / image_height, padding_width / image_width), padding)
         # Convert
-        img = np.ascontiguousarray(img)
-        return img, img0, shapes
-
+        convarted_image = np.ascontiguousarray(padding_image)
+        return convarted_image, shapes
 
 def main():
     with torch.no_grad():
