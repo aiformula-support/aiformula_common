@@ -4,6 +4,17 @@ This package is based on [YOLOP](https://github.com/hustvl/YOLOP)
 
 ![image](https://github.com/user-attachments/assets/078b5c81-7e08-4ad7-9dc2-9ec09a537de5)
 
+## YOLOP
+```
+cd ~/workspace
+git clone https://github.com/hustvl/YOLOP.git
+```
+### requirements
+See requirements.txt for additional dependencies and version requirements.
+```
+pip3 install -r requirements.txt
+```
+
 ## pytorch install
 
 ### requirement packages
