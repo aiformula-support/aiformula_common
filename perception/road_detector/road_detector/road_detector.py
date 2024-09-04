@@ -20,8 +20,6 @@ from lib.utils import letterbox_for_img
 from lib.utils.utils import select_device
 from lib.models import get_net
 from lib.utils import show_seg_result
-
-
 class RoadDetector(Node):
 
     def __init__(self):
@@ -29,7 +27,7 @@ class RoadDetector(Node):
         buffer_size = 10
         self.cv_bridge = CvBridge()
         architecture, weights, mean, std = self.get_params()
-        self.architecture = select_device(device = architecture)
+        self.architecture = select_device(device=architecture)
         self.use_half_precision = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
         # Load model
         self.model = get_net(cfg)
@@ -44,7 +42,7 @@ class RoadDetector(Node):
             transforms.ToTensor(),
             normalize,
         ])
-        
+
         self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
         self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
         self.image_sub = self.create_subscription(
@@ -63,14 +61,14 @@ class RoadDetector(Node):
 
     def padding_image(self, image):
         # Padded resize
-        padding_image, ratio_to_padding, (dw, dh) = letterbox_for_img(image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
+        padding_image, (ratio_to_padding, _), (dw, dh) = letterbox_for_img(
+            image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
         top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
         left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
         return np.ascontiguousarray(padding_image), ratio_to_padding, top, bottom, left, right
 
     def image_callback(self, msg):
         try:
-            time_stamp = msg.header.stamp
             undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
@@ -84,11 +82,12 @@ class RoadDetector(Node):
         _, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
         _, _, height, width = input_image.shape
         ll_predict = ll_seg_out[:, :, top:(height-bottom), left:(width-right)]
-        ll_seg_mask_raw = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1/ratio_to_padding[0]), mode='bilinear')
+        ll_seg_mask_raw = torch.nn.functional.interpolate(
+            ll_predict, scale_factor=int(1/ratio_to_padding), mode='bilinear')
         _, ll_seg_poits = torch.max(ll_seg_mask_raw, 1)
         ll_seg_mask = ll_seg_poits.int().squeeze().cpu().numpy()
-        self.publish_result(undistorted_image, ll_seg_mask, time_stamp)
-    
+        self.publish_result(undistorted_image, ll_seg_mask, msg.header.stamp)
+
     def publish_result(self, image, ll_seg_mask, time_stamp):
         # Publish annotated image
         annotated_image = show_seg_result(image, (ll_seg_mask, None), None, None, is_demo=True)
@@ -99,6 +98,7 @@ class RoadDetector(Node):
         ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
         ll_seg_mask_msg.header.stamp = time_stamp
         self.lane_mask_image_pub.publish(ll_seg_mask_msg)
+
 
 def main():
     with torch.no_grad():
