@@ -32,4 +32,6 @@ control:
 
 # planning:
 
-# visualization:
+visualization:
+  annotated_mask_image: "/aiformula_visualization/road_detector/annotated_mask_image"
+

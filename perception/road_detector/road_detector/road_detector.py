@@ -1,143 +1,113 @@
-import argparse
-import os, sys
-import platform
+import sys
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
-from pathlib import Path
-from rclpy.utilities import remove_ros_args
-
-import cv2
-from cv_bridge import CvBridge,CvBridgeError
-
-import torch
+from cv_bridge import CvBridge, CvBridgeError
 import numpy as np
+import torch
 import torchvision.transforms as transforms
 
-#ワークスペースの直下にディレクトリyolopがあることを仮定
-package = str(Path(__file__).resolve().parent.name)
-print('package:', package)
+from pathlib import Path
 from ament_index_python.packages import get_package_prefix
+package = str(Path(__file__).resolve().parent.name)
 workspace = Path(get_package_prefix(package)).parents[1]
-ROOT = workspace / 'YOLOP'
-if str(ROOT) not in sys.path:
-   sys.path.insert(0, str(ROOT))  # add ROOT to PATH
-   ROOT = Path(os.path.relpath(ROOT, Path.cwd()))  # relative
+yolop_module_path = workspace/'..'/'YOLOP'
+if str(yolop_module_path) not in sys.path:
+    sys.path.insert(0, str(yolop_module_path))  # add ROOT to PATH
 
 from lib.config import cfg
-from lib.utils.utils import create_logger, select_device
+from lib.utils import letterbox_for_img
+from lib.utils.utils import select_device
 from lib.models import get_net
-from lib.dataset.DemoDataset_ros import LoadImages
-from lib.utils import plot_one_box,show_seg_result
-
-#from models.common import DetectMultiBackend
-
-normalize = transforms.Normalize(
-    mean=[0.485, 0.456, 0.406], std=[0.229, 0.224, 0.225]
-    )
-
-transform=transforms.Compose([
-    transforms.ToTensor(),
-    normalize,
-        ])
-
+from lib.utils import show_seg_result
 class RoadDetector(Node):
 
-    def __init__(self,cfg, opt):
+    def __init__(self):
         super().__init__('road_detector')
-        self.pub = self.create_publisher(Image, 'aiformula_perception/road_detector/result_image', 10)
-        self.ll_pub = self.create_publisher(Image, 'aiformula_perception/road_detector/mask_image', 10)
-        self.image = self.create_subscription(Image,'aiformula_sensing/zedx_image_publisher/image_raw', self.callback_detect, 10)
-        self.cv_bridge = CvBridge() 
-
-        logger, _, _ = create_logger(
-            cfg, cfg.LOG_DIR, 'demo')
-            
-        self.opt = opt
-        self.device = select_device(logger,self.opt.device)
-        self.half = self.device.type != 'cpu'  # half precision only supported on CUDA
+        buffer_size = 10
+        self.cv_bridge = CvBridge()
+        architecture, weights, mean, std = self.get_params()
+        self.architecture = select_device(device=architecture)
+        self.use_half_precision = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
         # Load model
         self.model = get_net(cfg)
-        print(self.device)
-        checkpoint = torch.load(self.opt.weights, map_location= self.device)
+        checkpoint = torch.load(weights, map_location=self.architecture)
         self.model.load_state_dict(checkpoint['state_dict'])
-        self.model = self.model.to(self.device)
-        if self.half:
+        self.model = self.model.to(self.architecture)
+        if self.use_half_precision:
             self.model.half()  # to FP16
+        # Nomalization and Tensor
+        normalize = transforms.Normalize(mean, std)
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            normalize,
+        ])
 
-    def callback_detect(self,data):
+        self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
+        self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
+        self.image_sub = self.create_subscription(
+            Image, 'sub_image', self.image_callback, buffer_size)
+
+    def get_params(self):
+        self.declare_parameter('use_architecture')
+        self.declare_parameter('weight_path')
+        self.declare_parameter('mean')
+        self.declare_parameter('standard_deviation')
+        architecture = self.get_parameter('use_architecture').get_parameter_value().string_value
+        weights = self.get_parameter('weight_path').get_parameter_value().string_value
+        mean = np.array(self.get_parameter('mean').get_parameter_value().double_array_value)
+        std = np.array(self.get_parameter('standard_deviation').get_parameter_value().double_array_value)
+        return architecture, weights, mean, std
+
+    def padding_image(self, image):
+        # Padded resize
+        padding_image, (ratio_to_padding, _), (dw, dh) = letterbox_for_img(
+            image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
+        top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
+        left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
+        return np.ascontiguousarray(padding_image), ratio_to_padding, top, bottom, left, right
+
+    def image_callback(self, msg):
         try:
-            self.image = self.cv_bridge.imgmsg_to_cv2(data, "bgr8")
-            self.image = cv2.resize(self.image,(640,480))
+            undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
 
-        # Set Dataloader
-        dataset = LoadImages(self.image, img_size=self.opt.img_size)
-
-        # Run inference
-        img = torch.zeros((1, 3, self.opt.img_size, self.opt.img_size), device=self.device)  # init img
-        self.model(img.half() if self.half else img) if self.device.type != 'cpu' else None  # run once
-        self.model.eval()
-
-        img, img_det, shapes = next(dataset)
-    
-        img = transform(img).to(self.device)
-        img = img.half() if self.half else img.float()  # uint8 to fp16/32
-        if img.ndimension() == 3:
-            img = img.unsqueeze(0)
+        padding_image, ratio_to_padding, top, bottom, left, right = self.padding_image(undistorted_image)
+        normalize_image = self.transform(padding_image).to(self.architecture)
+        input_image = normalize_image.half() if self.use_half_precision else normalize_image.float()  # uint8 to fp16/32
+        if input_image.ndimension() == 3:
+            input_image = input_image.unsqueeze(0)
         # Inference
-        det_out, da_seg_out,ll_seg_out= self.model(img)
+        _, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
+        _, _, height, width = input_image.shape
+        ll_predict = ll_seg_out[:, :, top:(height-bottom), left:(width-right)]
+        ll_seg_mask_raw = torch.nn.functional.interpolate(
+            ll_predict, scale_factor=int(1/ratio_to_padding), mode='bilinear')
+        _, ll_seg_poits = torch.max(ll_seg_mask_raw, 1)
+        ll_seg_mask = ll_seg_poits.int().squeeze().cpu().numpy()
+        self.publish_result(undistorted_image, ll_seg_mask, msg.header.stamp)
 
-        _, _, height, width = img.shape
-        h,w,_=img_det.shape
-        pad_w, pad_h = shapes[1][1]
-        pad_w = int(pad_w)
-        pad_h = int(pad_h)
-        pad_h = int(pad_h)
-        ratio = shapes[1][0][1]
+    def publish_result(self, image, ll_seg_mask, time_stamp):
+        # Publish annotated image
+        annotated_image = show_seg_result(image, (ll_seg_mask, None), None, None, is_demo=True)
+        self.annotated_mask_image_pub.publish(self.cv_bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
 
-        da_predict = da_seg_out[:, :, pad_h:(height-pad_h),pad_w:(width-pad_w)]
-        da_seg_mask = torch.nn.functional.interpolate(da_predict, scale_factor=int(1/ratio), mode='bilinear')
-        _, da_seg_mask = torch.max(da_seg_mask, 1)
-        da_seg_mask = da_seg_mask.int().squeeze().cpu().numpy()
-#        da_seg_mask = morphological_process(da_seg_mask, kernel_size=7)
-        
-        ll_predict = ll_seg_out[:, :,pad_h:(height-pad_h),pad_w:(width-pad_w)]
-        ll_seg_mask = torch.nn.functional.interpolate(ll_predict, scale_factor=int(1/ratio), mode='bilinear')
-        _, ll_seg_mask = torch.max(ll_seg_mask, 1)
-        ll_seg_mask = ll_seg_mask.int().squeeze().cpu().numpy()
-
-        img_det = show_seg_result(img_det, (da_seg_mask, ll_seg_mask), _, _, is_demo=True)
+        # Publish mask image
         ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
+        ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
+        ll_seg_mask_msg.header.stamp = time_stamp
+        self.lane_mask_image_pub.publish(ll_seg_mask_msg)
 
-        bridge=CvBridge()
-        self.pub.publish(bridge.cv2_to_imgmsg(img_det,"bgr8"))
-        self.ll_pub.publish(bridge.cv2_to_imgmsg(ll_seg_mask, "mono8"))
-
-def parse_opt():
-    sys.argv = remove_ros_args(args=sys.argv)
-    parser = argparse.ArgumentParser()
-    parser.add_argument('--weights', nargs='+', type=str, default= ROOT/'weights/End-to-end.pth', help='model.pth path(s)')
-    parser.add_argument('--source', type=str, default='videos', help='source')  # file/folder   ex:inference/images
-    parser.add_argument('--img-size', type=int, default=640, help='inference size (pixels)')
-    parser.add_argument('--conf-thres', type=float, default=0.25, help='object confidence threshold')
-    parser.add_argument('--iou-thres', type=float, default=0.45, help='IOU threshold for NMS')
-    parser.add_argument('--device', default='cpu', help='cuda device, i.e. 0 or 0,1,2,3 or cpu')
-    parser.add_argument('--save-dir', type=str, default='output', help='directory to save results')
-    parser.add_argument('--augment', action='store_true', help='augmented inference')
-    parser.add_argument('--update', action='store_true', help='update all models')
-    opt = parser.parse_args()
-    return opt
 
 def main():
-    opt = parse_opt()
     with torch.no_grad():
         rclpy.init()
-        road_detector = RoadDetector(cfg,opt)
+        road_detector = RoadDetector()
         rclpy.spin(road_detector)
         road_detector.destroy_node()
         rclpy.shutdown()
+
 
 if __name__ == '__main__':
     main()
