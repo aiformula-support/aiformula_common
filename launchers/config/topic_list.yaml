@@ -34,4 +34,4 @@ control:
 
 visualization:
   annotated_mask_image: "/aiformula_visualization/road_detector/annotated_mask_image"
-
+  aiformula_pilot: "/aiformula_visualization/zed/left_image/compressed"

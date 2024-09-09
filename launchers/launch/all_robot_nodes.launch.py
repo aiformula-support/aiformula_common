@@ -80,11 +80,17 @@ def generate_launch_description():
             "use_rviz": "true",
         }.items(),
     )
-
     rear_potentiometer = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("rear_potentiometer"),
                      "launch/rear_potentiometer.launch.py"),
+        ),
+    )
+    # --- Compress Zed Image for AI Formula Pilot --- #
+    image_compressor = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("image_compressor"),
+                     "launch/image_compressor.launch.py"),
         ),
     )
 
@@ -99,4 +105,5 @@ def generate_launch_description():
         can_receiver_and_sender,
         gyro_odometry_publisher,
         rear_potentiometer,
+        image_compressor,
     ])
