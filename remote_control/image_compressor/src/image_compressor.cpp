@@ -28,7 +28,7 @@ void ImageCompressor::printParam() const {
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
-void ImageCompressor::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) {
+void ImageCompressor::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) const {
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Image !");
     cv::Mat raw_image;
     try {

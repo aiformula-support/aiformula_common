@@ -16,5 +16,5 @@ $ ros2 launch image_compressor image_compressor.launch.py
     - `/aiformula_visualization/zed/left_image/compressed`
 
 ## Parameters
-- `jpeg_quality` (int, default: 30)
+- `jpeg_quality` (int, default: `30`)
     - Value to be set for `IMWRITE_JPEG_QUALITY`. From 0 to 100 (the higher is the better).

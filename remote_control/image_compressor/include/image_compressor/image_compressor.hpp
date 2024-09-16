@@ -27,7 +27,7 @@ private:
     void getRosParams();
     void initValues();
     void printParam() const;
-    void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg);
+    void imageCallback(const sensor_msgs::msg::Image::SharedPtr msg) const;
 
     int jpeg_quality_;
 
