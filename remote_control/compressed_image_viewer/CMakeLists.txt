@@ -6,6 +6,8 @@ find_package(rclcpp REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
+find_package(X11 REQUIRED)
+find_package(common_cpp REQUIRED)
 
 file(GLOB SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
 add_executable(${PROJECT_NAME}
@@ -19,6 +21,11 @@ ament_target_dependencies(${PROJECT_NAME}
     cv_bridge
     sensor_msgs
     OpenCV
+    X11
+    common_cpp
+)
+target_link_libraries(${PROJECT_NAME}
+    Xinerama
 )
 install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
@@ -26,6 +33,7 @@ install(TARGETS ${PROJECT_NAME}
 
 install(
     DIRECTORY
+        ${CMAKE_CURRENT_SOURCE_DIR}/config
         ${CMAKE_CURRENT_SOURCE_DIR}/launch
     DESTINATION share/${PROJECT_NAME}
 )

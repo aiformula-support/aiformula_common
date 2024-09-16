@@ -12,6 +12,8 @@
   <depend>cv_bridge</depend>
   <depend>sensor_msgs</depend>
   <depend>OpenCV</depend>
+  <depend>X11</depend>
+  <depend>common_cpp</depend>
   <depend>common_python</depend>
   
   <test_depend>ament_lint_auto</test_depend>

@@ -1,12 +1,15 @@
+import os.path as osp
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
+from ament_index_python.packages import get_package_share_directory
 from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_NAME = "compressed_image_viewer"
+    PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
     launch_args = (
@@ -17,6 +20,9 @@ def generate_launch_description():
         ),
     )
 
+    ROS_PARAM_CONFIG = (
+        osp.join(PACKAGE_DIR, "config", PACKAGE_NAME + ".yaml"),
+    )
     compressed_image_viewer = Node(
         package=PACKAGE_NAME,
         executable=PACKAGE_NAME,
@@ -25,6 +31,7 @@ def generate_launch_description():
         output="screen",
         emulate_tty=True,
         arguments=["--ros-args", "--log-level", LaunchConfiguration("log_level")],
+        parameters=[ROS_PARAM_CONFIG],
         remappings=[
             ("sub_compressed_image", TOPIC_NAMES["visualization"]["aiformula_pilot"]),
         ],
