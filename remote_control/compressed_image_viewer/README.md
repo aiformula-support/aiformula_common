@@ -31,6 +31,6 @@ $ ros2 launch compressed_image_viewer compressed_image_viewer.launch.py
     - The ratio of the window width to the screen size.
     - The height is determined to maintain the aspect ratio.
 
-- `window.posision_ratio` (double, default: `(0.5, 0.5)`)
+- `window.position_ratio` (double, default: `(0.5, 0.5)`)
     - The ratio of the window position to the screen size.
     - `0.0`: left/top, `1.0`: right/bottom

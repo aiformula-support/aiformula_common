@@ -7,7 +7,7 @@ CompressedImageViewer::CompressedImageViewer()
       display_full_screen_(true),
       target_screen_idx_(0),
       window_width_ratio_(0.5),
-      window_posision_ratio_(cv::Point2d(0.0, 0.0)),
+      window_position_ratio_(cv::Point2d(0.0, 0.0)),
       window_name_("AI Formula Pilot"),
       screens_info_(NULL) {
     getRosParams();
@@ -20,8 +20,8 @@ void CompressedImageViewer::getRosParams() {
     display_full_screen_ = getRosParameter<bool>(this, "display_full_screen");
     target_screen_idx_ = getRosParameter<int>(this, "target_screen_idx");
     window_width_ratio_ = getRosParameter<double>(this, "window.width_ratio");
-    window_posision_ratio_.x = getRosParameter<double>(this, "window.posision_ratio.x");
-    window_posision_ratio_.y = getRosParameter<double>(this, "window.posision_ratio.y");
+    window_position_ratio_.x = getRosParameter<double>(this, "window.position_ratio.x");
+    window_position_ratio_.y = getRosParameter<double>(this, "window.position_ratio.y");
 
     if (target_screen_idx_ < 0) {
         RCLCPP_ERROR(this->get_logger(), "'target_screen_idx_'(=%d) must be greater than or equal to 0",
@@ -98,8 +98,8 @@ void CompressedImageViewer::printParam() const {
     RCLCPP_INFO(this->get_logger(), "  display_full_screen_   : %s", display_full_screen_ ? "true" : "else");
     RCLCPP_INFO(this->get_logger(), "  target_screen_idx_     : %d", target_screen_idx_);
     RCLCPP_INFO(this->get_logger(), "  window_width_ratio_    : %.2lf", window_width_ratio_);
-    RCLCPP_INFO(this->get_logger(), "  window_posision_ratio_ : (%.2lf, %.2lf)", window_posision_ratio_.x,
-                window_posision_ratio_.y);
+    RCLCPP_INFO(this->get_logger(), "  window_position_ratio_ : (%.2lf, %.2lf)", window_position_ratio_.x,
+                window_position_ratio_.y);
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
@@ -130,8 +130,8 @@ void CompressedImageViewer::setWindowSizeAndPosition(const cv::Size2i& image_siz
     const cv::Size2i window_size(window_width, static_cast<int>(window_width * image_size.height / image_size.width));
     cv::resizeWindow(window_name_, window_size);
 
-    const int window_x = screen_org.x + static_cast<int>((screen_size - window_size).width * window_posision_ratio_.x);
-    const int window_y = screen_org.y + static_cast<int>((screen_size - window_size).height * window_posision_ratio_.y);
+    const int window_x = screen_org.x + static_cast<int>((screen_size - window_size).width * window_position_ratio_.x);
+    const int window_y = screen_org.y + static_cast<int>((screen_size - window_size).height * window_position_ratio_.y);
     cv::moveWindow(window_name_, window_x, window_y);
 }
 

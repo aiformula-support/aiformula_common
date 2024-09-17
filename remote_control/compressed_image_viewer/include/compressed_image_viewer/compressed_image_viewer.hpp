@@ -37,7 +37,7 @@ private:
     bool display_full_screen_;
     int target_screen_idx_;
     double window_width_ratio_;
-    cv::Point2d window_posision_ratio_;
+    cv::Point2d window_position_ratio_;
 
     rclcpp::Subscription<sensor_msgs::msg::CompressedImage>::SharedPtr compressed_image_sub_;
 

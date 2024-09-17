@@ -7,5 +7,5 @@
     window:
       width_ratio: 0.5  # The ratio of the window width to the screen size.
                         # The height is determined to maintain the aspect ratio.
-      posision_ratio: {x: 0.5, y: 0.5}  # The ratio of the window position to the screen size.
+      position_ratio: {x: 0.5, y: 0.5}  # The ratio of the window position to the screen size.
                                         # 0.0: left/top, 1.0: right/bottom
