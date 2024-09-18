@@ -36,6 +36,7 @@ private:
 
     bool display_full_screen_;
     int target_screen_idx_;
+    int display_scale_setting_;
     double window_width_ratio_;
     cv::Point2d window_position_ratio_;
 
