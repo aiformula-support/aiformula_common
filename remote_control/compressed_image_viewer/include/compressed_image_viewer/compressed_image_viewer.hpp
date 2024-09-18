@@ -19,6 +19,7 @@
 
 // Original
 #include "common_cpp/get_ros_parameter.hpp"
+#include "compressed_image_viewer/exception.hpp"
 
 namespace aiformula {
 

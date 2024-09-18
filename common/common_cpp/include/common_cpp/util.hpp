@@ -9,6 +9,15 @@
 
 namespace aiformula {
 
+class BasicException : public std::exception {
+public:
+    BasicException(const std::string& error_message) : error_message_(error_message) {}
+    const char* what() const noexcept override { return error_message_.c_str(); }
+
+protected:
+    std::string error_message_;
+};
+
 inline double toTimeStampDouble(const builtin_interfaces::msg::Time& msg_stamp) {
     return msg_stamp.sec + static_cast<double>(msg_stamp.nanosec) / 1e9;
 }
