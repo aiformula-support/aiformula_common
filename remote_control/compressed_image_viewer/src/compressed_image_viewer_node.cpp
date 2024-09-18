@@ -2,7 +2,9 @@
 
 int main(int argc, char** argv) {
     rclcpp::init(argc, argv);
-    rclcpp::spin(std::make_shared<aiformula::CompressedImageViewer>());
+    auto compressed_image_viewer = std::make_shared<aiformula::CompressedImageViewer>();
+    compressed_image_viewer->setup();
+    rclcpp::spin(compressed_image_viewer);
     rclcpp::shutdown();
     return 0;
 }
