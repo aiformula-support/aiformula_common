@@ -27,6 +27,9 @@ $ ros2 launch compressed_image_viewer compressed_image_viewer.launch.py
 - `target_screen_idx` (int, default: `0`)
     - Screen index to show when multiple displays are available.
 
+- `display_scale_setting` (int, default: `100` [%])
+    - Check the value of `Scale` in `Ubuntu Settings` > `Displays`.
+
 - `window.width_ratio` (double, default: `0.5`)
     - The ratio of the window width to the screen size.
     - The height is determined to maintain the aspect ratio.
