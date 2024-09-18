@@ -28,15 +28,22 @@ void CompressedImageViewer::getRosParams() {
         window_position_ratio_.x = getRosParameter<double>(this, "window.position_ratio.x");
         window_position_ratio_.y = getRosParameter<double>(this, "window.position_ratio.y");
 
-        if (target_screen_idx_ < 0) {
-            RCLCPP_ERROR(this->get_logger(), "'target_screen_idx_'(=%d) must be greater than or equal to 0",
-                         target_screen_idx_);
-            rclcpp::shutdown();
-            exit(1);
-        }
-        if (window_width_ratio_ <= 0.0) {
-            RCLCPP_ERROR(this->get_logger(), "'window_width_ratio_'(%.2lf) must be greater than 0.0",
-                         window_width_ratio_);
+        // Check the range of parameter values.
+        try {
+            if (target_screen_idx_ < 0) {
+                throw std::out_of_range("'target_screen_idx_'(=" + std::to_string(target_screen_idx_) +
+                                        ") must be greater than or equal to 0.");
+            }
+            if (display_scale_setting_ <= 0) {
+                throw std::out_of_range("'display_scale_setting_'(=" + std::to_string(display_scale_setting_) +
+                                        ") must be greater than 0.");
+            }
+            if (window_width_ratio_ <= 0.0) {
+                throw std::out_of_range("'window_width_ratio_'(=" + std::to_string(window_width_ratio_) +
+                                        ") must be greater than 0.0.");
+            }
+        } catch (const std::exception& e) {
+            RCLCPP_ERROR_STREAM(this->get_logger(), "Error: " << e.what());
             rclcpp::shutdown();
             exit(1);
         }
@@ -68,28 +75,28 @@ XineramaScreenInfo* CompressedImageViewer::getScreenInfo() const {
     Display* display = NULL;
     try {
         display = XOpenDisplay(NULL);
-        if (display == NULL) throw std::logic_error("Cannot connect to any displays.");
+        if (display == NULL) throw std::runtime_error("Cannot connect to any displays.");
         // Check if Xinerama is available
         int event_base, error_base;
         if (!XineramaQueryExtension(display, &event_base, &error_base)) {
-            throw std::logic_error("Xinerama extension is not available.");
+            throw std::runtime_error("Xinerama extension is not available.");
         }
         // Check if Xinerama is active
         if (!XineramaIsActive(display)) {
-            throw std::logic_error("Xinerama is not active.");
+            throw std::runtime_error("Xinerama is not active.");
         }
         // Get information about screens
         int num_screens;
         XineramaScreenInfo* screens_info = XineramaQueryScreens(display, &num_screens);
         if (screens_info == NULL) {
-            throw std::logic_error("Failed to query screens.");
+            throw std::runtime_error("Failed to query screens.");
         }
         if (target_screen_idx_ >= num_screens) {
             XFree(screens_info);
             std::ostringstream error_ss;
             error_ss << "'target_screen_idx_'(=" << target_screen_idx_ << ") must be an integer between 0 and "
                      << num_screens - 1 << ".";
-            throw std::logic_error(error_ss.str());
+            throw std::out_of_range(error_ss.str());
         }
         XCloseDisplay(display);
         return screens_info;
