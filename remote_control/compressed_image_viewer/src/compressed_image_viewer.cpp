@@ -19,22 +19,26 @@ CompressedImageViewer::CompressedImageViewer()
 void CompressedImageViewer::getRosParams() {
     // compressed_image_viewer.yaml
     display_full_screen_ = getRosParameter<bool>(this, "display_full_screen");
-    target_screen_idx_ = getRosParameter<int>(this, "target_screen_idx");
-    display_scale_setting_ = getRosParameter<int>(this, "display_scale_setting");
-    window_width_ratio_ = getRosParameter<double>(this, "window.width_ratio");
-    window_position_ratio_.x = getRosParameter<double>(this, "window.position_ratio.x");
-    window_position_ratio_.y = getRosParameter<double>(this, "window.position_ratio.y");
 
-    if (target_screen_idx_ < 0) {
-        RCLCPP_ERROR(this->get_logger(), "'target_screen_idx_'(=%d) must be greater than or equal to 0",
-                     target_screen_idx_);
-        rclcpp::shutdown();
-        exit(1);
-    }
-    if (window_width_ratio_ <= 0.0) {
-        RCLCPP_ERROR(this->get_logger(), "'window_width_ratio_'(%.2lf) must be greater than 0.0", window_width_ratio_);
-        rclcpp::shutdown();
-        exit(1);
+    if (!display_full_screen_) {
+        target_screen_idx_ = getRosParameter<int>(this, "target_screen_idx");
+        display_scale_setting_ = getRosParameter<int>(this, "display_scale_setting");
+        window_width_ratio_ = getRosParameter<double>(this, "window.width_ratio");
+        window_position_ratio_.x = getRosParameter<double>(this, "window.position_ratio.x");
+        window_position_ratio_.y = getRosParameter<double>(this, "window.position_ratio.y");
+
+        if (target_screen_idx_ < 0) {
+            RCLCPP_ERROR(this->get_logger(), "'target_screen_idx_'(=%d) must be greater than or equal to 0",
+                         target_screen_idx_);
+            rclcpp::shutdown();
+            exit(1);
+        }
+        if (window_width_ratio_ <= 0.0) {
+            RCLCPP_ERROR(this->get_logger(), "'window_width_ratio_'(%.2lf) must be greater than 0.0",
+                         window_width_ratio_);
+            rclcpp::shutdown();
+            exit(1);
+        }
     }
 }
 
@@ -45,7 +49,6 @@ void CompressedImageViewer::initValues() {
         "sub_compressed_image", buffer_size,
         std::bind(&CompressedImageViewer::compressedImageCallback, this, std::placeholders::_1));
 
-    window_name_ = "AI Formula Pilot";
     cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
     if (display_full_screen_) {
         cv::setWindowProperty(window_name_, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
@@ -133,7 +136,8 @@ void CompressedImageViewer::setWindowSizeAndPosition(const cv::Size2i& image_siz
     const cv::Point2i screen_org(static_cast<int>(screen.x_org * display_scale_factor),
                                  static_cast<int>(screen.y_org * display_scale_factor));
     const int window_width = static_cast<int>(screen_size.width * window_width_ratio_);
-    const cv::Size2i window_size(window_width, static_cast<int>(window_width * image_size.height / image_size.width));
+    const cv::Size2i window_size(
+        window_width, static_cast<int>(static_cast<double>(window_width) * image_size.height / image_size.width));
     cv::resizeWindow(window_name_, window_size);
 
     const int window_x = screen_org.x + static_cast<int>((screen_size - window_size).width * window_position_ratio_.x);
