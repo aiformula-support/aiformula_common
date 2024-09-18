@@ -40,7 +40,7 @@ void ImageCompressor::imageCallback(const sensor_msgs::msg::Image::SharedPtr msg
     sensor_msgs::msg::CompressedImage::UniquePtr pub_msg = std::make_unique<sensor_msgs::msg::CompressedImage>();
     pub_msg->header = msg->header;
     pub_msg->format = "jpeg";
-    std::vector<int> compression_params{cv::IMWRITE_JPEG_QUALITY, jpeg_quality_};
+    const std::vector<int> compression_params{cv::IMWRITE_JPEG_QUALITY, jpeg_quality_};
     if (!cv::imencode(".jpg", raw_image, pub_msg->data, compression_params)) {
         RCLCPP_ERROR(this->get_logger(), "[%s] Encoding failed.", __func__);
         return;
