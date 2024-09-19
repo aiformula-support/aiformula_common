@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    display_full_screen: true  # If true, display the image in full screen.
+    display_full_screen: false  # If true, display the image in full screen.
 
     # If not in full screen mode
     target_screen_idx: 0  # Screen index to show when multiple displays are available.

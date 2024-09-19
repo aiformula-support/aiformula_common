@@ -2,8 +2,6 @@
 #define COMPRESSED_IMAGE_VIEWER_HPP
 
 // ROS
-#include <cv_bridge/cv_bridge.h>
-
 #include <rclcpp/rclcpp.hpp>
 #include <rclcpp/wait_for_message.hpp>
 
@@ -32,8 +30,9 @@ public:
 private:
     void getRosParams();
     void initValues();
-    XineramaScreenInfo* getScreenInfo() const;
-    void setWindowSizeAndPosition(XineramaScreenInfo* screens_info);
+    XineramaScreenInfo* getScreenInfo();
+    void getScreenInfo(XineramaScreenInfo*& screen_infos) const;
+    void setWindowSizeAndPosition(XineramaScreenInfo* const& screens_info);
     void printParam() const;
     void compressedImageCallback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) const;
 

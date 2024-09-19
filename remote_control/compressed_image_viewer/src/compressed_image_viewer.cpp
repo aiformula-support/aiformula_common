@@ -57,12 +57,13 @@ void CompressedImageViewer::initValues() {
            the displayed image is scaled to full screen (the reason is unknown). */
         cv::resizeWindow(window_name_, cv::Size());
     } else {
-        const auto& screens_info = getScreenInfo();
-        setWindowSizeAndPosition(screens_info);
+        XineramaScreenInfo* screen_infos;
+        getScreenInfo(screen_infos);
+        setWindowSizeAndPosition(screen_infos);
     }
 }
 
-XineramaScreenInfo* CompressedImageViewer::getScreenInfo() const {
+void CompressedImageViewer::getScreenInfo(XineramaScreenInfo*& screen_infos) const {
     Display* display = NULL;
     try {
         display = XOpenDisplay(NULL);
@@ -78,16 +79,15 @@ XineramaScreenInfo* CompressedImageViewer::getScreenInfo() const {
         }
         // Get information about screens
         int num_screens;
-        XineramaScreenInfo* screens_info = XineramaQueryScreens(display, &num_screens);
-        if (screens_info == NULL) {
+        screen_infos = XineramaQueryScreens(display, &num_screens);
+        if (screen_infos == NULL) {
             throw X11Exception("Failed to query screens.");
         }
         if (target_screen_idx_ >= num_screens) {
-            XFree(screens_info);
+            XFree(screen_infos);
             throw ScreenIndexException(target_screen_idx_, num_screens);
         }
         XCloseDisplay(display);
-        return screens_info;
     } catch (const std::exception& e) {
         RCLCPP_ERROR_STREAM(this->get_logger(), "[Exception] " << e.what());
         if (display) XCloseDisplay(display);
@@ -96,25 +96,25 @@ XineramaScreenInfo* CompressedImageViewer::getScreenInfo() const {
     }
 }
 
-void CompressedImageViewer::setWindowSizeAndPosition(XineramaScreenInfo* screens_info) {
+void CompressedImageViewer::setWindowSizeAndPosition(XineramaScreenInfo* const& screen_infos) {
     // Get the image size.
     sensor_msgs::msg::CompressedImage msg;
     if (!rclcpp::wait_for_message(msg, shared_from_this(), "sub_compressed_image", std::chrono::milliseconds(3000))) {
         RCLCPP_ERROR(this->get_logger(), "Couldn't receive a CompressedImage topic.");
-        XFree(screens_info);
+        XFree(screen_infos);
         rclcpp::shutdown();
         exit(1);
     }
     const auto image_size = cv::imdecode(cv::Mat(msg.data), cv::IMREAD_COLOR).size();
 
     // Calculate the screen size and origin position considering the display resolution setting.
-    const auto& screen = screens_info[target_screen_idx_];
+    const auto& screen_info = screen_infos[target_screen_idx_];
     const double display_scale_factor = 100. / display_scale_setting_;
-    const cv::Size2i screen_size(static_cast<int>(screen.width * display_scale_factor),
-                                 static_cast<int>(screen.height * display_scale_factor));
-    const cv::Point2i screen_origin(static_cast<int>(screen.x_org * display_scale_factor),
-                                    static_cast<int>(screen.y_org * display_scale_factor));
-    XFree(screens_info);
+    const cv::Size2i screen_size(static_cast<int>(screen_info.width * display_scale_factor),
+                                 static_cast<int>(screen_info.height * display_scale_factor));
+    const cv::Point2i screen_origin(static_cast<int>(screen_info.x_org * display_scale_factor),
+                                    static_cast<int>(screen_info.y_org * display_scale_factor));
+    XFree(screen_infos);
 
     // Set the size and position of the display window.
     const int window_width = static_cast<int>(screen_size.width * window_width_ratio_);
@@ -133,24 +133,22 @@ void CompressedImageViewer::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
     RCLCPP_INFO(this->get_logger(), "(compressed_image_viewer.yaml)");
     RCLCPP_INFO(this->get_logger(), "  display_full_screen_   : %s", display_full_screen_ ? "true" : "else");
-    RCLCPP_INFO(this->get_logger(), "  target_screen_idx_     : %d", target_screen_idx_);
-    RCLCPP_INFO(this->get_logger(), "  display_scale_setting_ : %d", display_scale_setting_);
-    RCLCPP_INFO(this->get_logger(), "  window_width_ratio_    : %.2lf", window_width_ratio_);
-    RCLCPP_INFO(this->get_logger(), "  window_position_ratio_ : (%.2lf, %.2lf)", window_position_ratio_.x,
-                window_position_ratio_.y);
+
+    if (!display_full_screen_) {
+        RCLCPP_INFO(this->get_logger(), "  target_screen_idx_     : %d", target_screen_idx_);
+        RCLCPP_INFO(this->get_logger(), "  display_scale_setting_ : %d", display_scale_setting_);
+        RCLCPP_INFO(this->get_logger(), "  window_width_ratio_    : %.2lf", window_width_ratio_);
+        RCLCPP_INFO(this->get_logger(), "  window_position_ratio_ : (%.2lf, %.2lf)", window_position_ratio_.x,
+                    window_position_ratio_.y);
+    }
     RCLCPP_INFO(this->get_logger(), "============================\n");
 }
 
 void CompressedImageViewer::compressedImageCallback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) const {
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Compressed Image !");
-    try {
-        const auto decoded_image = cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR);
-        cv::imshow(window_name_, decoded_image);
-        cv::waitKey(1);
-    } catch (cv_bridge::Exception& e) {
-        RCLCPP_ERROR(this->get_logger(), "[%s] cv_bridge exception: %s", __func__, e.what());
-        return;
-    }
+    const auto decoded_image = cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR);
+    cv::imshow(window_name_, decoded_image);
+    cv::waitKey(1);
 }
 
 }  // namespace aiformula

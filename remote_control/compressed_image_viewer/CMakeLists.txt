@@ -18,7 +18,6 @@ target_include_directories(${PROJECT_NAME} PRIVATE
 )
 ament_target_dependencies(${PROJECT_NAME}
     rclcpp
-    cv_bridge
     sensor_msgs
     OpenCV
     X11
