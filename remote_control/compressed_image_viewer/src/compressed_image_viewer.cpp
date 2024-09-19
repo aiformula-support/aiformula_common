@@ -83,24 +83,24 @@ void CompressedImageViewer::setWindowSizeAndPosition(const GdkRectangle& monitor
         exit(1);
     }
     const auto image_size = cv::imdecode(cv::Mat(msg.data), cv::IMREAD_COLOR).size();
+    const double aspect_ratio = static_cast<double>(image_size.width) / image_size.height;
 
     // Set the size and position of the display window.
     const int window_width = static_cast<int>(monitor_geometry.width * window_width_ratio_);
-    const cv::Size2i window_size(
-        window_width, static_cast<int>(static_cast<double>(window_width) * image_size.height / image_size.width));
-    cv::resizeWindow(window_name_, window_size);
+    const int window_height = static_cast<int>(window_width / aspect_ratio);
+    cv::resizeWindow(window_name_, window_width, window_height);
 
     const int window_x =
-        monitor_geometry.x + static_cast<int>((monitor_geometry.width - window_size.width) * window_position_ratio_.x);
-    const int window_y = monitor_geometry.y +
-                         static_cast<int>((monitor_geometry.height - window_size.height) * window_position_ratio_.y);
+        monitor_geometry.x + static_cast<int>((monitor_geometry.width - window_width) * window_position_ratio_.x);
+    const int window_y =
+        monitor_geometry.y + static_cast<int>((monitor_geometry.height - window_height) * window_position_ratio_.y);
     cv::moveWindow(window_name_, window_x, window_y);
 }
 
 void CompressedImageViewer::printParam() const {
     RCLCPP_INFO(this->get_logger(), "[%s] ===============", __func__);
     RCLCPP_INFO(this->get_logger(), "(compressed_image_viewer.yaml)");
-    RCLCPP_INFO(this->get_logger(), "  display_full_screen_   : %s", display_full_screen_ ? "true" : "else");
+    RCLCPP_INFO(this->get_logger(), "  display_full_screen_   : %s", display_full_screen_ ? "true" : "false");
 
     if (!display_full_screen_) {
         RCLCPP_INFO(this->get_logger(), "  target_screen_idx_     : %d", target_screen_idx_);
