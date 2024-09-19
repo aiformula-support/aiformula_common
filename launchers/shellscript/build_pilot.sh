@@ -4,23 +4,9 @@ set -e
 TARGET_PACKEGES=(
     launchers
     common_python
-    common_cpp
-    vehicle
 
-    # sensing
-    odometry_publisher
-    rear_potentiometer
-    zed_wrapper
-
-    # perception
-    lane_line_publisher
-
-    # control
-    motor_controller
-
-    # external repository
-    vectornav
-    ros2_socketcan
+    # remote control
+    compressed_image_viewer
 )
 
 echo "Build Targets:"
