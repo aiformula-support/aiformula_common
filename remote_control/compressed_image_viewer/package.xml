@@ -11,7 +11,7 @@
   <depend>rclcpp</depend>
   <depend>sensor_msgs</depend>
   <depend>OpenCV</depend>
-  <depend>X11</depend>
+  <depend>PkgConfig</depend>
   <depend>common_cpp</depend>
   <depend>common_python</depend>
   

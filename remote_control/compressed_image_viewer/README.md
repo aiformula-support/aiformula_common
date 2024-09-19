@@ -9,6 +9,12 @@
 - If `display_full_screen` is `false`
     - Subscribed image is displayed at a size based on `window.width_ratio` and positioned according to `window.position_ratio`.
 
+
+## Required Library
+```sh
+sudo apt update  && sudo apt install -y libgtk-3-dev
+```
+
 ## Usage
 ```sh
 $ colcon build --symlink-install --packages-up-to compressed_image_viewer
@@ -26,9 +32,6 @@ $ ros2 launch compressed_image_viewer compressed_image_viewer.launch.py
 ### If not in full screen mode
 - `target_screen_idx` (int, default: `0`)
     - Screen index to show when multiple displays are available.
-
-- `display_scale_setting` (int, default: `100` [%])
-    - Check the value of `Scale` in `Ubuntu Settings` > `Displays`.
 
 - `window.width_ratio` (double, default: `0.5`)
     - The ratio of the window width to the screen size.

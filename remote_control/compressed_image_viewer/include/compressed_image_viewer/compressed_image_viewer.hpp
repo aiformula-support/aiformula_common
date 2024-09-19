@@ -11,9 +11,8 @@
 // OpenCV
 #include <opencv2/opencv.hpp>
 
-// X11
-#include <X11/Xlib.h>
-#include <X11/extensions/Xinerama.h>
+// GDK
+#include <gdk/gdk.h>
 
 // Original
 #include "common_cpp/get_ros_parameter.hpp"
@@ -30,15 +29,13 @@ public:
 private:
     void getRosParams();
     void initValues();
-    XineramaScreenInfo* getScreenInfo();
-    void getScreenInfo(XineramaScreenInfo*& screen_infos) const;
-    void setWindowSizeAndPosition(XineramaScreenInfo* const& screens_info);
+    void getScreenInfo(GdkRectangle& monitor_geometry) const;
+    void setWindowSizeAndPosition(const GdkRectangle& monitor_geometry);
     void printParam() const;
     void compressedImageCallback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) const;
 
     bool display_full_screen_;
     int target_screen_idx_;
-    int display_scale_setting_;
     double window_width_ratio_;
     cv::Point2d window_position_ratio_;
 

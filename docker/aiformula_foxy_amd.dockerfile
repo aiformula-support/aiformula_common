@@ -79,6 +79,12 @@ RUN pip3 install xacro
 # install pytorch
 RUN pip3 install torch torchvision
 
+# install other necessary packages
+RUN apt-get update && DEBIAN_FRONTEND=noninteractive && \
+    apt-get install -q -y --no-install-recommends \
+        libgtk-3-dev && \
+    apt-get clean && rm -rf /var/lib/apt/lists/*
+
 # add user
 ARG USER_NAME=aiformula
 ARG GROUP_NAME=aiformula

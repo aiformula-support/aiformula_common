@@ -6,7 +6,6 @@ CompressedImageViewer::CompressedImageViewer()
     : Node("compressed_image_viewer"),
       display_full_screen_(true),
       target_screen_idx_(0),
-      display_scale_setting_(100),
       window_width_ratio_(0.5),
       window_position_ratio_(cv::Point2d(0.0, 0.0)),
       window_name_("AI Formula Pilot") {}
@@ -23,7 +22,6 @@ void CompressedImageViewer::getRosParams() {
 
     if (!display_full_screen_) {
         target_screen_idx_ = getRosParameter<int>(this, "target_screen_idx");
-        display_scale_setting_ = getRosParameter<int>(this, "display_scale_setting");
         window_width_ratio_ = getRosParameter<double>(this, "window.width_ratio");
         window_position_ratio_.x = getRosParameter<double>(this, "window.position_ratio.x");
         window_position_ratio_.y = getRosParameter<double>(this, "window.position_ratio.y");
@@ -31,7 +29,6 @@ void CompressedImageViewer::getRosParams() {
         // Check the range of parameter values.
         try {
             if (target_screen_idx_ < 0) throw ScreenIndexException(target_screen_idx_);
-            if (display_scale_setting_ <= 0) throw DisplayScaleException(display_scale_setting_);
             if (window_width_ratio_ <= 0.0) throw WindowWidthRatioException(window_width_ratio_);
         } catch (const std::exception& e) {
             RCLCPP_ERROR_STREAM(this->get_logger(), "[Exception] " << e.what());
@@ -57,75 +54,46 @@ void CompressedImageViewer::initValues() {
            the displayed image is scaled to full screen (the reason is unknown). */
         cv::resizeWindow(window_name_, cv::Size());
     } else {
-        XineramaScreenInfo* screen_infos;
-        getScreenInfo(screen_infos);
-        setWindowSizeAndPosition(screen_infos);
+        GdkRectangle monitor_geometry;
+        getScreenInfo(monitor_geometry);
+        setWindowSizeAndPosition(monitor_geometry);
     }
 }
 
-void CompressedImageViewer::getScreenInfo(XineramaScreenInfo*& screen_infos) const {
-    Display* display = NULL;
+void CompressedImageViewer::getScreenInfo(GdkRectangle& monitor_geometry) const {
     try {
-        display = XOpenDisplay(NULL);
-        if (display == NULL) throw X11Exception("Cannot connect to any displays.");
-        // Check if Xinerama is available
-        int event_base, error_base;
-        if (!XineramaQueryExtension(display, &event_base, &error_base)) {
-            throw X11Exception("Xinerama extension is not available.");
-        }
-        // Check if Xinerama is active
-        if (!XineramaIsActive(display)) {
-            throw X11Exception("Xinerama is not active.");
-        }
-        // Get information about screens
-        int num_screens;
-        screen_infos = XineramaQueryScreens(display, &num_screens);
-        if (screen_infos == NULL) {
-            throw X11Exception("Failed to query screens.");
-        }
-        if (target_screen_idx_ >= num_screens) {
-            XFree(screen_infos);
-            throw ScreenIndexException(target_screen_idx_, num_screens);
-        }
-        XCloseDisplay(display);
+        gdk_init(NULL, NULL);
+        GdkDisplay* display = gdk_display_get_default();
+        GdkMonitor* monitor = gdk_display_get_monitor(display, target_screen_idx_);
+        if (!monitor) throw ScreenIndexException(target_screen_idx_, gdk_display_get_n_monitors(display));
+        gdk_monitor_get_geometry(monitor, &monitor_geometry);
     } catch (const std::exception& e) {
         RCLCPP_ERROR_STREAM(this->get_logger(), "[Exception] " << e.what());
-        if (display) XCloseDisplay(display);
         rclcpp::shutdown();
         exit(1);
     }
 }
 
-void CompressedImageViewer::setWindowSizeAndPosition(XineramaScreenInfo* const& screen_infos) {
+void CompressedImageViewer::setWindowSizeAndPosition(const GdkRectangle& monitor_geometry) {
     // Get the image size.
     sensor_msgs::msg::CompressedImage msg;
     if (!rclcpp::wait_for_message(msg, shared_from_this(), "sub_compressed_image", std::chrono::milliseconds(3000))) {
         RCLCPP_ERROR(this->get_logger(), "Couldn't receive a CompressedImage topic.");
-        XFree(screen_infos);
         rclcpp::shutdown();
         exit(1);
     }
     const auto image_size = cv::imdecode(cv::Mat(msg.data), cv::IMREAD_COLOR).size();
 
-    // Calculate the screen size and origin position considering the display resolution setting.
-    const auto& screen_info = screen_infos[target_screen_idx_];
-    const double display_scale_factor = 100. / display_scale_setting_;
-    const cv::Size2i screen_size(static_cast<int>(screen_info.width * display_scale_factor),
-                                 static_cast<int>(screen_info.height * display_scale_factor));
-    const cv::Point2i screen_origin(static_cast<int>(screen_info.x_org * display_scale_factor),
-                                    static_cast<int>(screen_info.y_org * display_scale_factor));
-    XFree(screen_infos);
-
     // Set the size and position of the display window.
-    const int window_width = static_cast<int>(screen_size.width * window_width_ratio_);
+    const int window_width = static_cast<int>(monitor_geometry.width * window_width_ratio_);
     const cv::Size2i window_size(
         window_width, static_cast<int>(static_cast<double>(window_width) * image_size.height / image_size.width));
     cv::resizeWindow(window_name_, window_size);
 
     const int window_x =
-        screen_origin.x + static_cast<int>((screen_size - window_size).width * window_position_ratio_.x);
-    const int window_y =
-        screen_origin.y + static_cast<int>((screen_size - window_size).height * window_position_ratio_.y);
+        monitor_geometry.x + static_cast<int>((monitor_geometry.width - window_size.width) * window_position_ratio_.x);
+    const int window_y = monitor_geometry.y +
+                         static_cast<int>((monitor_geometry.height - window_size.height) * window_position_ratio_.y);
     cv::moveWindow(window_name_, window_x, window_y);
 }
 
@@ -136,7 +104,6 @@ void CompressedImageViewer::printParam() const {
 
     if (!display_full_screen_) {
         RCLCPP_INFO(this->get_logger(), "  target_screen_idx_     : %d", target_screen_idx_);
-        RCLCPP_INFO(this->get_logger(), "  display_scale_setting_ : %d", display_scale_setting_);
         RCLCPP_INFO(this->get_logger(), "  window_width_ratio_    : %.2lf", window_width_ratio_);
         RCLCPP_INFO(this->get_logger(), "  window_position_ratio_ : (%.2lf, %.2lf)", window_position_ratio_.x,
                     window_position_ratio_.y);
@@ -146,8 +113,7 @@ void CompressedImageViewer::printParam() const {
 
 void CompressedImageViewer::compressedImageCallback(const sensor_msgs::msg::CompressedImage::SharedPtr msg) const {
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe Compressed Image !");
-    const auto decoded_image = cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR);
-    cv::imshow(window_name_, decoded_image);
+    cv::imshow(window_name_, cv::imdecode(cv::Mat(msg->data), cv::IMREAD_COLOR));
     cv::waitKey(1);
 }
 

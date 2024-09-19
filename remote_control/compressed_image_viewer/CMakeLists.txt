@@ -6,7 +6,8 @@ find_package(rclcpp REQUIRED)
 find_package(cv_bridge REQUIRED)
 find_package(sensor_msgs REQUIRED)
 find_package(OpenCV REQUIRED)
-find_package(X11 REQUIRED)
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(GDK REQUIRED gdk-3.0)
 find_package(common_cpp REQUIRED)
 
 file(GLOB SOURCE_FILES "${CMAKE_CURRENT_SOURCE_DIR}/src/*.cpp")
@@ -15,16 +16,16 @@ add_executable(${PROJECT_NAME}
 )
 target_include_directories(${PROJECT_NAME} PRIVATE
     $<BUILD_INTERFACE:${CMAKE_CURRENT_SOURCE_DIR}/include>
+    ${GDK_INCLUDE_DIRS}
 )
 ament_target_dependencies(${PROJECT_NAME}
     rclcpp
     sensor_msgs
     OpenCV
-    X11
     common_cpp
 )
 target_link_libraries(${PROJECT_NAME}
-    Xinerama
+    ${GDK_LIBRARIES}
 )
 install(TARGETS ${PROJECT_NAME}
     DESTINATION lib/${PROJECT_NAME}
