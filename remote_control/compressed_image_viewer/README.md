@@ -12,7 +12,7 @@
 
 ## Required Library
 ```sh
-sudo apt update  && sudo apt install -y libgtk-3-dev
+sudo apt update  && sudo apt install -y libgtk2.0-dev
 ```
 
 ## Usage
