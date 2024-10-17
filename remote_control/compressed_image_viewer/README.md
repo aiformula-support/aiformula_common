@@ -12,8 +12,24 @@
 
 ## Required Library
 ```sh
-sudo apt update  && sudo apt install -y libgtk2.0-dev
+  A required package was not found
 ```
+If you get the above error during build, install the appropriate version of the GTK library according to the following.
+
+1. Check the value of `GTK_VERSION` output during build (probably 2 or 3).  
+    Build method is as follows.
+    ```sh
+    colcon build --symlink-install --packages-up-to compressed_image_viewer
+    ```
+2. Install the GTK library.
+    - GTK2
+        ```sh
+        sudo apt update  && sudo apt install -y libgtk2.0-dev
+        ```
+    - GTK3
+        ```sh
+        sudo apt update  && sudo apt install -y libgtk-3-dev
+        ```
 
 ## Usage
 ```sh
