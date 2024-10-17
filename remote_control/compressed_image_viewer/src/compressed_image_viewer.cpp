@@ -48,7 +48,7 @@ void CompressedImageViewer::initValues() {
     cv::namedWindow(window_name_, cv::WINDOW_NORMAL);
     if (display_full_screen_) {
         cv::setWindowProperty(window_name_, cv::WND_PROP_FULLSCREEN, cv::WINDOW_FULLSCREEN);
-        /* In OpenCV 4.2.0, 'cv::setWindowProperty()' makes the window full screen,
+        /* In older versions of OpenCV, 'cv::setWindowProperty()' makes the window full screen,
            but the displayed image is not scaled to full screen.
            By executing 'cv::resizeWindow()', even just as a formality,
            the displayed image is scaled to full screen (the reason is unknown). */
