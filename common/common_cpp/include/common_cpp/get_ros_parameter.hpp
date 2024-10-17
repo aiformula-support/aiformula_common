@@ -73,7 +73,7 @@ inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(rcl
 template <typename T>
 T getRosParameter(rclcpp::Node* const node_ptr, const std::string& param_name) {
     if (!node_ptr->has_parameter(param_name)) {
-        node_ptr->declare_parameter(param_name);
+        node_ptr->declare_parameter(param_name, T());
     }
     try {
         return getParameterAsType<T>(node_ptr, param_name);
