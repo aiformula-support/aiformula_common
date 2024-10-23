@@ -12,7 +12,15 @@ def generate_launch_description():
                      "launch/compressed_image_viewer.launch.py"),
         ),
     )
+    # --- Command input from handle controller --- #
+    handle_controller_joy = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("launchers"),
+                     "launch/handle_controller_joy.launch.py"),
+        ),
+    )
 
     return LaunchDescription([
         compressed_image_viewer,
+        handle_controller_joy,
     ])
