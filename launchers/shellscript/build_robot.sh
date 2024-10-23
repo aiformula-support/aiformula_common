@@ -2,7 +2,7 @@
 set -e
 
 TARGET_PACKEGES=(
-    launchers
+    #launchers
     common_python
     common_cpp
     vehicle
@@ -26,6 +26,9 @@ TARGET_PACKEGES=(
     vectornav
     ros2_socketcan
     twist_mux
+
+    # planning
+    extremum_seeking_mpc
 )
 
 echo "Build Targets:"
