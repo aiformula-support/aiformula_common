@@ -97,6 +97,12 @@ def generate_launch_description():
                      "launch/rear_potentiometer.launch.py"),
         ),
     )
+    extremum_seeking_mpc = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("extremum_seeking_mpc"),
+                     "launch/extremum_seeking_mpc.launch.py"),
+        ),
+    )
     # --- Compress Zed Image for AI Formula Pilot --- #
     image_compressor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -118,4 +124,5 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
+        extremum_seeking_mpc,
     ])
