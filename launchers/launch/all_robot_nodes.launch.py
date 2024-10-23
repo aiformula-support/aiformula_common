@@ -45,18 +45,18 @@ def generate_launch_description():
             "camera_resolution": CAMERA_RESOLUTION,
         }.items(),
     )
-    # --- GamePad --- #
-    joy_node = IncludeLaunchDescription(
+    # --- Command input from gamepad --- #
+    gamepad_joy = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("launchers"),
-                     "launch/joy.launch.py"),
+                     "launch/gamepad_joy.launch.py"),
         ),
     )
-    # --- Output velocity and angular velocity --- #
-    teleop_node = IncludeLaunchDescription(
+    # --- Output velocity and angular velocity from gamepad --- #
+    gamepad_teleop = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("launchers"),
-                     "launch/teleop.launch.py"),
+                     "launch/gamepad_teleop.launch.py"),
         ),
     )
     motor_controller = IncludeLaunchDescription(
@@ -99,8 +99,8 @@ def generate_launch_description():
         zed_node,
         vectornav,
         lane_line_publisher,
-        joy_node,
-        teleop_node,
+        gamepad_joy,
+        gamepad_teleop,
         motor_controller,
         can_receiver_and_sender,
         gyro_odometry_publisher,
