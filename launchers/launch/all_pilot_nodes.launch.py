@@ -19,8 +19,16 @@ def generate_launch_description():
                      "launch/handle_controller_joy.launch.py"),
         ),
     )
+    # --- Output velocity and angular velocity from handle controller --- #
+    teleop_twist_handle_controller = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("teleop_twist_handle_controller"),
+                     "launch/teleop_twist_handle_controller.launch.py"),
+        ),
+    )
 
     return LaunchDescription([
         compressed_image_viewer,
         handle_controller_joy,
+        teleop_twist_handle_controller,
     ])

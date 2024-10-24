@@ -1,72 +1,44 @@
-import os
+import os.path as osp
 from launch import LaunchDescription
 from launch_ros.actions import Node
 from launch.actions import DeclareLaunchArgument
 from launch.substitutions import LaunchConfiguration
 from ament_index_python.packages import get_package_share_directory
+from common_python.launch_util import get_frame_ids_and_topic_names
 
 
 def generate_launch_description():
     PACKAGE_NAME = "teleop_twist_handle_controller"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
+    _, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
     launch_args = (
         DeclareLaunchArgument(
-            "pub_teleop_twist_handle_controller",
-            default_value="/cmd_vel",
-            description="handle controller topic name",
-        ),
-
-        DeclareLaunchArgument(
-            "sub_joy_frame",
-            default_value="/joy",
-            description="Joy topic name",
-        ),
-
-        DeclareLaunchArgument(
-            "teleop_twist_handle_controller_frame_id",
-            default_value="teleop_twist_handle_controller",
-            description="Frame id of teleop_twist_handle_controller",
-        ),
-
-        DeclareLaunchArgument(
-            'joy_dev',
-            default_value='/dev/input/js0'
+            "log_level",
+            default_value="info",
+            description="Logger level (debug, info, warn, error, fatal)",
         ),
     )
 
     ROS_PARAM_CONFIG = (
-        os.path.join(PACKAGE_DIR, "config", "teleop_twist_handle_controller.yaml"),
+        osp.join(PACKAGE_DIR, "config", PACKAGE_NAME + ".yaml"),
     )
-
-    nodes = (
-        Node(
-            package=PACKAGE_NAME,
-            executable=PACKAGE_NAME,
-            name=PACKAGE_NAME,
-            namespace="/aiformula_control",
-            output="screen",
-            emulate_tty=True,
-            parameters=[*ROS_PARAM_CONFIG,
-                        {
-                        }],
-            remappings=[
-                ("sub_joy_frame", LaunchConfiguration("sub_joy_frame")),
-                ("pub_teleop_twist_handle_controller", LaunchConfiguration("pub_teleop_twist_handle_controller")),
-            ],
-        ),
-
-        Node(
-            package='joy', executable='joy_node', name='joy_node',
-            parameters=[{
-                'dev': LaunchConfiguration("joy_dev"),
-                'deadzone': 0.3,
-                'autorepeat_rate': 20.0,
-            }],
-        ),
+    teleop_twist_handle_controller = Node(
+        package=PACKAGE_NAME,
+        executable=PACKAGE_NAME,
+        name=PACKAGE_NAME,
+        namespace="/aiformula_control",
+        output="screen",
+        emulate_tty=True,
+        arguments=["--ros-args", "--log-level", LaunchConfiguration('log_level')],
+        parameters=[*ROS_PARAM_CONFIG],
+        remappings=[
+            ("sub_joy", TOPIC_NAMES["control"]["joy"]["handle_controller"]),
+            ("pub_cmd_vel", TOPIC_NAMES["control"]["speed_command"]["handle_controller"]),
+        ],
     )
 
     return LaunchDescription([
         *launch_args,
-        *nodes,
+        teleop_twist_handle_controller,
     ])
