@@ -17,7 +17,7 @@ setup(
     tests_require=['pytest'],
     entry_points={
         'console_scripts': [
-            'teleop_twist_handle_controller=teleop_twist_handle_controller.teleop_twist_handle_controller:main'
+            'teleop_node=teleop_twist_handle_controller.teleop_twist_handle_controller:main'
         ],
     },
 )

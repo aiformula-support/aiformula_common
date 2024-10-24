@@ -6,9 +6,9 @@ from sensor_msgs.msg import Joy
 from common_python.get_ros_parameter import get_ros_parameter
 
 
-class JoyTransFormer(Node):
+class TeleopTwistHandleController(Node):
     def __init__(self):
-        super().__init__('teleop_twist_handle_controller')
+        super().__init__('teleop_twist_handle_controller_node')
         buffer_size = 10
         self.joy_sub = self.create_subscription(Joy, 'sub_joy', self.joy_callback, buffer_size)
         self.twist_pub = self.create_publisher(Twist, 'pub_cmd_vel', buffer_size)
@@ -37,8 +37,8 @@ class JoyTransFormer(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    joy_transformer = JoyTransFormer()
-    rclpy.spin(joy_transformer)
+    teleop_twist_handle_controller = TeleopTwistHandleController()
+    rclpy.spin(teleop_twist_handle_controller)
     rclpy.shutdown()
 
 

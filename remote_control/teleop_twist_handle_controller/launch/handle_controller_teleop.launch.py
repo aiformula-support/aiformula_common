@@ -9,6 +9,7 @@ from common_python.launch_util import get_frame_ids_and_topic_names
 
 def generate_launch_description():
     PACKAGE_NAME = "teleop_twist_handle_controller"
+    NODE_NAME = "teleop_node"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
@@ -23,11 +24,11 @@ def generate_launch_description():
     ROS_PARAM_CONFIG = (
         osp.join(PACKAGE_DIR, "config", PACKAGE_NAME + ".yaml"),
     )
-    teleop_twist_handle_controller = Node(
+    handle_controller_teleop = Node(
         package=PACKAGE_NAME,
-        executable=PACKAGE_NAME,
-        name=PACKAGE_NAME,
-        namespace="/aiformula_control",
+        executable=NODE_NAME,
+        name=NODE_NAME,
+        namespace="/aiformula_control/handle_controller",
         output="screen",
         emulate_tty=True,
         arguments=["--ros-args", "--log-level", LaunchConfiguration('log_level')],
@@ -40,5 +41,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         *launch_args,
-        teleop_twist_handle_controller,
+        handle_controller_teleop,
     ])
