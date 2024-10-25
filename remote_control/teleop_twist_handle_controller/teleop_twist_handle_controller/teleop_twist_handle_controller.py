@@ -1,7 +1,7 @@
 import rclpy
 from rclpy.node import Node
-from geometry_msgs.msg import Twist
 from sensor_msgs.msg import Joy
+from geometry_msgs.msg import Twist
 
 from common_python.get_ros_parameter import get_ros_parameter
 
