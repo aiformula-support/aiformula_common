@@ -30,6 +30,12 @@ control:
   speed_command:
     gamepad: "/aiformula_control/gamepad/cmd_vel"
     handle_controller: "/aiformula_control/handle_controller/cmd_vel"
+    multiplexed: "/aiformula_control/twist_mux/cmd_vel"
+    neutral: "/aiformula_control/neutral/cmd_vel"
+  twist_mux_lock:
+    all: "/aiformula_control/twist_mux/all/lock"
+    handle_controller: "/aiformula_control/twist_mux/handle_controller/lock"
+    gamepad: "/aiformula_control/twist_mux/gamepad/lock"
   output_can_data: "/aiformula_control/motor_controller/reference_signal"
 
 # planning:

@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-      max_vel: 2.0       # [m/s]
-      max_angular: 3.0   # [rad/s]
-      determine_pressed: 0.1   # determine accel & brake pedal pressed
+      max_vel: 2.0      # [m/s]
+      max_angular: 3.0  # [rad/s]
+      determine_pressed: 0.1  # determine accel & brake pedal pressed
       
