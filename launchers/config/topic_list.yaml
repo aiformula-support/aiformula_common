@@ -42,6 +42,7 @@ planning:
   road_pointcloud:
     left: "/aiformula_planning/road_pointcloud/left"
     right: "/aiformula_planning/road_pointcloud/right"
+  speed_command: "/aiformula_planning/extremum_seeking_mpc/cmd_vel"
 
 visualization:
   annotated_mask_image: "/aiformula_visualization/road_detector/annotated_mask_image"
