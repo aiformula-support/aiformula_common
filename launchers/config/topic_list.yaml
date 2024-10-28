@@ -30,8 +30,8 @@ control:
   speed_command:
     gamepad: "/aiformula_control/gamepad/cmd_vel"
     handle_controller: "/aiformula_control/handle_controller/cmd_vel"
+    mpc: "/aiformula_control/extremum_seeking_mpc/cmd_vel"
     multiplexed: "/aiformula_control/twist_mux/cmd_vel"
-    neutral: "/aiformula_control/neutral/cmd_vel"
   twist_mux_lock:
     all: "/aiformula_control/twist_mux/all/lock"
     handle_controller: "/aiformula_control/twist_mux/handle_controller/lock"

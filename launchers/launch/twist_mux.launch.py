@@ -46,6 +46,7 @@ def generate_launch_description():
                     {
                         "topics.handle_controller.topic": TOPIC_NAMES["control"]["speed_command"]["handle_controller"],
                         "topics.gamepad.topic": TOPIC_NAMES["control"]["speed_command"]["gamepad"],
+                        "topics.mpc.topic": TOPIC_NAMES["control"]["speed_command"]["mpc"],
                         "locks.gamepad.topic": TOPIC_NAMES["control"]["twist_mux_lock"]["gamepad"],
                     }],
         remappings=[

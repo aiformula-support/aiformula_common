@@ -11,15 +11,12 @@
       handle_controller:
         timeout : 0.3
         priority: 250
-      # mpc:
-      #   timeout : 0.5
-      #   priority: 200
       gamepad:
         timeout : 0.3
         priority: 150
-      # neutral:
-      #   timeout : 0.3
-      #   priority: 0
+      mpc:
+        timeout : 0.3
+        priority: 50
 
 
 # Locks to stop the twist inputs.
@@ -38,9 +35,9 @@
       # handle_controller:
       #   timeout : 0.0
       #   priority: 251
-      # mpc:
-      #   timeout : 0.0
-      #   priority: 201
       gamepad:
         timeout : 0.0
         priority: 151
+      # mpc:
+      #   timeout : 0.0
+      #   priority: 51

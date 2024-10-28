@@ -1,11 +1,12 @@
 #!/usr/bin/env python
-import rclpy
 import math
+from typing import List
 import numpy as np
+
+import rclpy
 from rclpy.node import Node
 from geometry_msgs.msg import Twist
 from can_msgs.msg import Frame
-from typing import List
 
 from common_python.get_ros_parameter import get_ros_parameter
 
@@ -14,16 +15,21 @@ class MotorController(Node):
 
     def __init__(self):
         super().__init__('motor_controller')
-        self.tread = get_ros_parameter(self, "wheel.tread")
-        self.diameter = get_ros_parameter(self, "wheel.diameter")
-        self.gear_ratio = get_ros_parameter(self, "wheel.gear_ratio")
-        publish_timer_loop_duration = get_ros_parameter(self, "publish_timer_loop_duration")
+        publish_timer_loop_duration = self.get_ros_params()
 
+        # Publisher & Subscriber
         buffer_size = 10
         self.twist_sub = self.create_subscription(Twist, 'sub_speed_command', self.twist_callback, buffer_size)
         self.can_pub = self.create_publisher(Frame, 'pub_can', buffer_size)
         self.publish_timer = self.create_timer(publish_timer_loop_duration, self.publish_canframe_callback)
         self.frame_msg = Frame()
+
+    def get_ros_params(self):
+        self.diameter = get_ros_parameter(self, "wheel.diameter")
+        self.tread = get_ros_parameter(self, "wheel.tread")
+        self.gear_ratio = get_ros_parameter(self, "wheel.gear_ratio")
+        publish_timer_loop_duration = get_ros_parameter(self, "publish_timer_loop_duration")
+        return publish_timer_loop_duration
 
     def twist_callback(self, msg):
         rpm = self.toRefRPM(msg.linear.x, msg.angular.z)
@@ -31,7 +37,7 @@ class MotorController(Node):
         cmd_left = self.toCanCmd(rpm[1])
         can_data = cmd_right + cmd_left
         self.frame_msg.header.frame_id = "can0"        # Default can0
-        self.frame_msg.id = 0x210                      # MotorControler CAN ID : 0x210
+        self.frame_msg.id = 0x210                      # MotorController CAN ID : 0x210
         self.frame_msg.dlc = 8                         # Data length
         self.frame_msg.data = can_data
 
@@ -39,11 +45,12 @@ class MotorController(Node):
         self.can_pub.publish(self.frame_msg)
 
 #  Velocity -> RPM Calc
-#  V_right = (V + tread/2 * w), V_left = (V - tread / 2 * w ) [m/s]
-#  w_right = V/r + (d/2r) * w   [rad/s]
-#  w_left = V/r - (d/2r) * w    [rad/s]
-#  rpm = w * 60 / 2* pi [rpm]
-#  rpm = rpm * gear_ratio  [rpm]
+#  V_right = (V + tread/2 * w)   [m/s]
+#  V_left = (V - tread / 2 * w ) [m/s]
+#  w_right = V/r + (d/2r) * w    [rad/s]
+#  w_left = V/r - (d/2r) * w     [rad/s]
+#  rpm = w * 60 / 2* pi          [rpm]
+#  rpm = rpm * gear_ratio        [rpm]
 
     def toRefRPM(self, linear_velocity, angular_velocity):  # Calc Motor ref rad/s
         wheel_angular_velocities = np.array([(linear_velocity / (self.diameter * 0.5)) + (self.tread / self.diameter) * angular_velocity,  # right[rad/s]

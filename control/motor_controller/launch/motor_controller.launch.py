@@ -23,7 +23,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[*ROS_PARAM_CONFIG],
         remappings=[
-            ("sub_speed_command", TOPIC_NAMES["control"]["speed_command"]["gamepad"]),
+            ("sub_speed_command", TOPIC_NAMES["control"]["speed_command"]["multiplexed"]),
             ("pub_can", TOPIC_NAMES["control"]["output_can_data"]),
         ],
     )
