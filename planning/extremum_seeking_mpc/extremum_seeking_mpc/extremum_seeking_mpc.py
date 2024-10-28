@@ -40,11 +40,6 @@ class ExsMpc(Node):
 
 	    # cmd_vel Message
         self.vel_msg = Twist()
-        
-        # road center point
-        self.first_point_l = 0.
-        self.first_point_r = 0.
-        self.center_point = 0.
 
         # instance of scripts
         object_risk_table_u = self.get_parameter('object_risk_potential.pedestrian_risk_table_u').get_parameter_value().double_array_value # u is distance from object
@@ -53,7 +48,7 @@ class ExsMpc(Node):
         road_sigma = self.get_parameter('road_risk_potential.road_risk_table_u').get_parameter_value().double_array_value
         road_risk_table_l = self.get_parameter('road_risk_potential.road_l_risk_table_y').get_parameter_value().double_array_value
         road_risk_table_r = self.get_parameter('road_risk_potential.road_r_risk_table_y').get_parameter_value().double_array_value
-        self.road_estimation = RoadEst(road_sigma,road_risk_table_l,road_risk_table_r)
+        self.road_estimation = RoadEstimation(road_sigma,road_risk_table_l,road_risk_table_r)
 
         # EXS_MPC parameter
         self.ego_v = self.get_parameter('mpc_parameters.planned_speed').get_parameter_value().double_array_value
@@ -72,8 +67,7 @@ class ExsMpc(Node):
                          self.exs_mpc.extremum_seeking_step3.seek_points] # csa type: sin is dibided by fixed value of 8
 
         # for risk calculation
-        # self.total_risk  = []
-        self.object_risk    = []
+        self.object_risk = []
         self.road_l_risk = []
         self.road_r_risk = []
         self.norm_den_l = 0.
@@ -83,7 +77,7 @@ class ExsMpc(Node):
         self.norm_ofs_r = 0.
         self.thetas_r = np.full((5,3), 0.)
         self.benefit = []
-        self.benefit_gain = 2
+        self.benefit_gain = self.get_parameter('mpc_parameters.benefit_gain').get_parameter_value().integer_value
 
         self.timer = self.create_timer(0.01, self.on_timer)
         
@@ -100,6 +94,7 @@ class ExsMpc(Node):
                 ("mpc_parameters.esc_max", 0.2),
                 ("mpc_parameters.esc_min", -0.2),
                 ("mpc_parameters.curvature_gain", 15),
+                ("mpc_parameters.benefit_gain", 2),
                 ("object_risk_potential.pedestrian_risk_table_u", [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.]),
                 ("object_risk_potential.pedestrian_risk_table_y", [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]),
                 ("road_risk_potential.road_risk_table_u", [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.4]),
@@ -112,13 +107,13 @@ class ExsMpc(Node):
         pc_data = pc2.read_points(msg_pc2)
         if (len(pc_data) > 1):
             xys = np.array(pc_data.tolist())[:, :2] #Nx3
-            self.norm_den_l, self.norm_ofs_l, self.thetas_l, self.first_point_l = self.road_estimation.line_id_quintiple(xys) # thetas: 5x(1x3)
+            self.norm_den_l, self.norm_ofs_l, self.thetas_l = self.road_estimation.line_id_quintiple(xys) # thetas: 5x(1x3)
 
     def listener_road_r(self, msg_pc2):
         pc_data = pc2.read_points(msg_pc2)
         if (len(pc_data) > 1):
             xys = np.array(pc_data.tolist())[:, :2] #Nx3
-            self.norm_den_r, self.norm_ofs_r, self.thetas_r, self.first_point_r = self.road_estimation.line_id_quintiple(xys) # thetas: 5x(1x3)
+            self.norm_den_r, self.norm_ofs_r, self.thetas_r = self.road_estimation.line_id_quintiple(xys) # thetas: 5x(1x3)
 
     def signal_handler(self,sig,frame): # Ctrl + C
         self.vel_msg.linear.x = 0.0
@@ -169,16 +164,6 @@ class ExsMpc(Node):
 
         ### risk seeking
         self.total_risk  = []
-        # No benefit
-        #risk_tmp = (np.array(self.object_risk[0]) + np.array(self.road_l_risk[0]) + np.array(self.road_r_risk[0])).tolist()
-        #self.total_risk.append(risk_tmp)
-        #risk_tmp = (np.array(self.object_risk[1]) + np.array(self.road_l_risk[1]) + np.array(self.road_r_risk[1])).tolist()
-        #self.total_risk.append(risk_tmp)
-        #risk_tmp = (np.array(self.object_risk[2]) + np.array(self.road_l_risk[2]) + np.array(self.road_r_risk[2])).tolist()
-        #self.total_risk.append(risk_tmp)
-        #print(self.total_risk)
-        
-        # Add benefit
         risk_tmp = (np.array(self.object_risk[0]) + np.array(self.road_l_risk[0]) + np.array(self.road_r_risk[0]) - self.benefit_gain * np.array(self.benefit[0])).tolist()
         self.total_risk.append(risk_tmp)       
         risk_tmp = (np.array(self.object_risk[1]) + np.array(self.road_l_risk[1]) + np.array(self.road_r_risk[1]) - self.benefit_gain * np.array(self.benefit[1])).tolist()      
@@ -193,14 +178,9 @@ class ExsMpc(Node):
         # for test, spped circle
         ang_circle = max((abs(yaw_angle) - 0.16), 0)
         x_vel = max(self.ego_v[0] - (ang_circle * 5), 0.)
-        #print("ang: {}, spd: {}".format(yaw_angle, x_vel))
 
         msg_time = self.get_clock().now().to_msg()
-        
-        self.center_point = (self.first_point_l + self.first_point_r) / 2
-        self.center_point = max(self.center_point, -0.6)
-        self.center_point = min(self.center_point, 0.6)
-        
+                
         self.vel_msg.linear.x = x_vel
         self.vel_msg.angular.z = yaw_angle_velocity * self.curvature_gain
         self.pub_cmd.publish(self.vel_msg)
