@@ -19,19 +19,19 @@ class ObjectEstimation:
         # objs: [x, y] * num (list), seekpos: 3x([x,y]x5) (np.array)
         # Assume omega is 1/curvature instead ang.z
 
-        curvature1_rotation_matrix = np.array([[np.cos(ego_angle[0]), -np.sin(ego_angle[0])], [np.sin(ego_angle[0]), np.cos(ego_angle[0])]]) # 2x2
-        curvature2_rotation_matrix = np.array([[np.cos(ego_angle[0] + ego_angle[1]), -np.sin(ego_angle[0] + ego_angle[1])], [np.sin(ego_angle[0] + ego_angle[1]), np.cos(ego_angle[0] + ego_angle[1])]])
+        seek_point1_rotation_matrix = np.array([[np.cos(ego_angle[0]), -np.sin(ego_angle[0])], [np.sin(ego_angle[0]), np.cos(ego_angle[0])]]) # 2x2
+        seek_point2_rotation_matrix = np.array([[np.cos(ego_angle[0] + ego_angle[1]), -np.sin(ego_angle[0] + ego_angle[1])], [np.sin(ego_angle[0] + ego_angle[1]), np.cos(ego_angle[0] + ego_angle[1])]])
 
         # step1
-        curvature1_risk = self.risk_obj_five(objs, seekpos[0]) # list num x (5x1), np.array 2x5
+        seek_point1_risk = self.risk_obj_five(objs, seekpos[0]) # list num x (5x1), np.array 2x5
         # step2
-        new_objs = np.dot(curvature1_rotation_matrix, (objs - ego_position[0]).T).T # [x,y] * num_obj
-        curvature2_risk = self.risk_obj_five(new_objs, seekpos[1])
+        new_objs = np.dot(seek_point1_rotation_matrix, (objs - ego_position[0]).T).T # [x,y] * num_obj
+        seek_point2_risk = self.risk_obj_five(new_objs, seekpos[1])
         # step3
-        new_objs = np.dot(curvature2_rotation_matrix, (objs - ego_position[0] - ego_position[1]).T).T
-        curvature3_risk = self.risk_obj_five(new_objs, seekpos[2])
+        new_objs = np.dot(seek_point2_rotation_matrix, (objs - ego_position[0] - ego_position[1]).T).T
+        seek_point3_risk = self.risk_obj_five(new_objs, seekpos[2])
         
-        return [curvature1_risk, curvature2_risk, curvature3_risk] # list [5x1] x 3
+        return [seek_point1_risk, seek_point2_risk, seek_point3_risk] # list [5x1] x 3
 
     def risk_obj_five(self, objs, ego_positions):
         # obj: (x, y) * 2 list, ego_pos: (x, y) * 5 np.array
