@@ -27,7 +27,7 @@ def generate_launch_description():
         package=PACKAGE_NAME,
         executable=PACKAGE_NAME,
         name=PACKAGE_NAME,
-        namespace="/aiformula_visualization/" + PACKAGE_NAME + "/",
+        namespace="/aiformula_visualization",
         output="screen",
         emulate_tty=True,
         arguments=["--ros-args", "--log-level", LaunchConfiguration("log_level")],
