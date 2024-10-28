@@ -15,7 +15,6 @@ class ExtremumSeekingController:
         self.feedback_gain = 0.9
 
         self.risk_mem = 0
-        #self.sin_mem = 0
         self.optimize_out_memory = 0
 
         self.moving_average_out = 0
@@ -87,14 +86,10 @@ class exs_mpc:
         risk1_moving_average = self.extremum_seeking_step1.risk_moving_average(risk1) # in: list [5x1], out: scalar
         risk2_moving_average = self.extremum_seeking_step2.risk_moving_average(risk2)
         risk3_moving_average = self.extremum_seeking_step3.risk_moving_average(risk3)
-
-        #print("risk_moving_average: ", risk1_moving_average, risk2_moving_average, risk3_moving_average)
         
         backpropagation_value_32 = self.backpropagation_32.backward(risk2_moving_average, risk3_moving_average)
         backpropagation_value_31 = self.backpropagation_31.backward(risk1_moving_average, risk3_moving_average)
         backpropagation_value_21 = self.backpropagation_21.backward(risk1_moving_average, risk2_moving_average)
-
-        #print("bp: ", bp32, bp31, bp21)
         
         curvature1 = self.extremum_seeking_step1.extremum_seeking_optimize(risk1_moving_average, backpropagation_value_21 + backpropagation_value_31)
         curvature2 = self.extremum_seeking_step2.extremum_seeking_optimize(risk2_moving_average, backpropagation_value_32)
