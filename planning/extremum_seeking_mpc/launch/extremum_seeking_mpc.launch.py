@@ -22,7 +22,7 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[*ROS_PARAM_CONFIG],
         remappings=[
-            ("pub_speed_command", TOPIC_NAMES["control"]["speed_command"]["game_pad"]),
+            ("pub_speed_command", TOPIC_NAMES["planning"]["speed_command"]),
             ('sub_road_l',TOPIC_NAMES["planning"]["road_pointcloud"]["left"]),
             ('sub_road_r',TOPIC_NAMES["planning"]["road_pointcloud"]["right"]),
         ],
