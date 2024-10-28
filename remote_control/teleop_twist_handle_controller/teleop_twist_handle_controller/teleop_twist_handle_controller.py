@@ -42,9 +42,8 @@ class AXIS(IntEnum):
 class TeleopTwistHandleController(Node):
     def __init__(self):
         super().__init__('teleop_twist_handle_controller_node')
-        self.get_parameter()
-        self.vel = Twist()
-        self.is_pedal_pressed = False
+        self.get_ros_params()
+        self.is_accel_pressed = False
 
         # Publisher & Subscriber
         buffer_size = 10
@@ -52,7 +51,7 @@ class TeleopTwistHandleController(Node):
         self.twist_pub = self.create_publisher(Twist, 'pub_cmd_vel', buffer_size)
         self.twist_mux_lock_pub = self.create_publisher(Bool, 'pub_twist_mux_lock', buffer_size)
 
-    def get_parameter(self):
+    def get_ros_params(self):
         self.max_vel = get_ros_parameter(self, "max_vel")
         self.max_angular = get_ros_parameter(self, "max_angular")
         self.determine_pressed = get_ros_parameter(self, "determine_pressed")
@@ -62,27 +61,26 @@ class TeleopTwistHandleController(Node):
         accel_ratio = (joy_msg.axes[AXIS.ACCEL] + 1.0) * 0.5
         stearing_ratio = joy_msg.axes[AXIS.STEALING]
 
-        if brake_ratio >= self.determine_pressed or accel_ratio >= self.determine_pressed:
-            self.is_pedal_pressed = True
-            if brake_ratio >= self.determine_pressed:
-                self.publish_lock()
-                self.set_velocity(0.0, 0.0)
-            else:
-                self.set_velocity(self.max_vel * accel_ratio, self.max_angular * stearing_ratio)
-        elif self.is_pedal_pressed:
-            self.set_velocity(0.0, 0.0)
-            self.is_pedal_pressed = False
-
-        if self.is_pedal_pressed:  # Do not publish when neither the accelerator nor the brake is pressed.
-            self.twist_pub.publish(self.vel)
-            self.get_logger().debug("(v, w): (%.2f, %.2f)" % (self.vel.linear.x, self.vel.angular.z))
+        # Do not publish when neither the accelerator nor the brake is pressed.
+        if brake_ratio >= self.determine_pressed:
+            self.publish_lock()
+            self.publish_velocity(0.0, 0.0)
+        elif accel_ratio >= self.determine_pressed:
+            self.is_accel_pressed = True
+            self.publish_velocity(self.max_vel * accel_ratio, self.max_angular * stearing_ratio)
+        elif self.is_accel_pressed:
+            self.publish_velocity(0.0, 0.0)
+            self.is_accel_pressed = False
 
         if joy_msg.buttons[Button.ENTER_ICON]:
             self.publish_release()
 
-    def set_velocity(self, linear_velocity, angular_velocity):
-        self.vel.linear.x = linear_velocity
-        self.vel.angular.z = angular_velocity
+    def publish_velocity(self, linear_velocity, angular_velocity):
+        twist_msg = Twist()
+        twist_msg.linear.x = linear_velocity
+        twist_msg.angular.z = angular_velocity
+        self.twist_pub.publish(twist_msg)
+        self.get_logger().debug("(v, w): (%.2f, %.2f)" % (twist_msg.linear.x, twist_msg.angular.z))
 
     def publish_lock(self):
         lock_msg = Bool()
@@ -98,7 +96,9 @@ class TeleopTwistHandleController(Node):
 
 def main(args=None):
     rclpy.init(args=args)
-    rclpy.spin(TeleopTwistHandleController())
+    teleop_twist__handle_controller = TeleopTwistHandleController()
+    rclpy.spin(teleop_twist__handle_controller)
+    teleop_twist__handle_controller.destroy_node()
     rclpy.shutdown()
 
 
