@@ -59,6 +59,17 @@ def generate_launch_description():
                      "launch/gamepad_teleop.launch.py"),
         ),
     )
+    # --- Multiplex velocities --- #
+    twist_mux = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("launchers"),
+                     "launch/twist_mux.launch.py"),
+        ),
+        launch_arguments={
+            "use_rviz": "false",
+            "use_runtime_monitor": "false",
+        }.items(),
+    )
     motor_controller = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("motor_controller"),
@@ -101,6 +112,7 @@ def generate_launch_description():
         lane_line_publisher,
         gamepad_joy,
         gamepad_teleop,
+        twist_mux,
         motor_controller,
         can_receiver_and_sender,
         gyro_odometry_publisher,
