@@ -5,8 +5,7 @@ class geometric_pos_curvatures:
 
     def __init__(self, t_step1 = 0.1, t_step2 = 0.15, t_step3 = 0.2):
 
-        self.dt_setp = np.array([t_step1, (t_step2-t_step1), (t_step3-t_step2)])
-
+        self.horizon_step = np.array([t_step1, (t_step2-t_step1), (t_step3-t_step2)])
         self.ego_position = []
         self.ego_angle = []
     
@@ -15,21 +14,21 @@ class geometric_pos_curvatures:
         # ego_v: lin_x, ang.z, curvature(curvature): 3 horizon
         # Assume omega is 1/curvature instead ang.z
         ##### 1st static object estimation only. not yet dynamic object estimation
-        curvature1_ego_position, curvature1_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[0], self.dt_setp[0]) # (x, y) position
-        curvature2_ego_position, curvature2_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[1], self.dt_setp[1])
-        curvature3_ego_position, curvature3_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[2], self.dt_setp[2])
+        seek_point1_ego_position, seek_point1_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[0], self.horizon_step[0]) # (x, y) position
+        seek_point2_ego_position, seek_point2_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[1], self.horizon_step[1])
+        seek_point3_ego_position, seek_point3_angle = self.estimate_pos_curvature(ego_velocity[0], curvature[2], self.horizon_step[2])
         
-        curvature1_rotation_matrix = np.array([[np.cos(curvature1_angle), -np.sin(curvature1_angle)], [np.sin(curvature1_angle), np.cos(curvature1_angle)]])
-        curvature2_rotation_matrix = np.array([[np.cos(curvature1_angle + curvature2_angle), -np.sin(curvature1_angle + curvature2_angle)], [np.sin(curvature1_angle + curvature2_angle), np.cos(curvature1_angle + curvature2_angle)]])
+        seek_point1_rotation_matrix = np.array([[np.cos(seek_point1_angle), -np.sin(seek_point1_angle)], [np.sin(seek_point1_angle), np.cos(seek_point1_angle)]])
+        seek_point2_rotation_matrix = np.array([[np.cos(seek_point1_angle + seek_point2_angle), -np.sin(seek_point1_angle + seek_point2_angle)], [np.sin(seek_point1_angle + seek_point2_angle), np.cos(seek_point1_angle + seek_point2_angle)]])
 
-        curvature2_ego_position = np.dot(curvature1_rotation_matrix, curvature2_ego_position.T).T
-        curvature3_ego_position = np.dot(curvature2_rotation_matrix, curvature3_ego_position.T).T
+        seek_point2_ego_position = np.dot(seek_point1_rotation_matrix, seek_point2_ego_position.T).T
+        seek_point3_ego_position = np.dot(seek_point2_rotation_matrix, seek_point3_ego_position.T).T
 
-        curvature2_angle = curvature2_angle + curvature1_angle
-        curvature3_angle = curvature3_angle + curvature2_angle
+        seek_point2_angle = seek_point2_angle + seek_point1_angle
+        seek_point3_angle = seek_point3_angle + seek_point2_angle
 
-        self.ego_position = np.array([curvature1_ego_position, curvature2_ego_position, curvature3_ego_position]).reshape(3,2) # (1,2) * 3 => (3,2)
-        self.ego_angle = np.array([curvature1_angle, curvature2_angle, curvature3_angle])    # (1,3)
+        self.ego_position = np.array([seek_point1_ego_position, seek_point2_ego_position, seek_point3_ego_position]).reshape(3,2) # (1,2) * 3 => (3,2)
+        self.ego_angle = np.array([seek_point1_angle, seek_point2_angle, seek_point3_angle])    # (1,3)
 
         return self.ego_position, self.ego_angle
 
