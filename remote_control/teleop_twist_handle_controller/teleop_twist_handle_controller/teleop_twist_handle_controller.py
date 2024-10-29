@@ -30,8 +30,8 @@ class Button(IntEnum):
     PLAY_STATION = 24
 
 
-class AXIS(IntEnum):
-    STEALING = 0          # Full Left Turn: 1.0, Full Right Turn: -1.0
+class Axis(IntEnum):
+    STEERING = 0          # Full Left Turn: 1.0, Full Right Turn: -1.0
     CLUTCH = 1            # Natural: 1.0, Full Throttle: -1.0
     ACCEL = 2             # Natural: 1.0, Full Throttle: -1.0
     BRAKE = 3             # Natural: 1.0, Full Throttle: -1.0
@@ -43,7 +43,8 @@ class TeleopTwistHandleController(Node):
     def __init__(self):
         super().__init__('teleop_twist_handle_controller_node')
         self.get_ros_params()
-        self.is_accel_pressed = False
+        self.was_accel_pressed = False
+        self.is_low_priority_speed_locked = False
 
         # Publisher & Subscriber
         buffer_size = 10
@@ -57,41 +58,44 @@ class TeleopTwistHandleController(Node):
         self.determine_pressed = get_ros_parameter(self, "determine_pressed")
 
     def joy_callback(self, joy_msg):
-        brake_ratio = (joy_msg.axes[AXIS.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
-        accel_ratio = (joy_msg.axes[AXIS.ACCEL] + 1.0) * 0.5
-        stearing_ratio = joy_msg.axes[AXIS.STEALING]
+        brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
+        accel_ratio = (joy_msg.axes[Axis.ACCEL] + 1.0) * 0.5
+        steering_ratio = joy_msg.axes[Axis.STEERING]
 
         # Do not publish when neither the accelerator nor the brake is pressed.
         if brake_ratio >= self.determine_pressed:
-            self.publish_lock()
+            self.lock_low_priority_speed_commands()
             self.publish_velocity(0.0, 0.0)
         elif accel_ratio >= self.determine_pressed:
-            self.is_accel_pressed = True
-            self.publish_velocity(self.max_vel * accel_ratio, self.max_angular * stearing_ratio)
-        elif self.is_accel_pressed:
+            self.was_accel_pressed = True
+            self.publish_velocity(self.max_vel * accel_ratio, self.max_angular * steering_ratio)
+        elif self.was_accel_pressed:
             self.publish_velocity(0.0, 0.0)
-            self.is_accel_pressed = False
+            self.was_accel_pressed = False
 
         if joy_msg.buttons[Button.ENTER_ICON]:
-            self.publish_release()
+            self.unlock_low_priority_speed_commands()
 
     def publish_velocity(self, linear_velocity, angular_velocity):
         twist_msg = Twist()
         twist_msg.linear.x = linear_velocity
         twist_msg.angular.z = angular_velocity
         self.twist_pub.publish(twist_msg)
-        self.get_logger().debug("(v, w): (%.2f, %.2f)" % (twist_msg.linear.x, twist_msg.angular.z))
+        self.get_logger().debug(f"(v, w): ({twist_msg.linear.x:.2f}, {twist_msg.angular.z:.2f})")
 
-    def publish_lock(self):
-        lock_msg = Bool()
-        lock_msg.data = True
-        self.twist_mux_lock_pub.publish(lock_msg)
+    def lock_low_priority_speed_commands(self):
+        if not self.is_low_priority_speed_locked:
+            lock_msg = Bool()
+            lock_msg.data = self.is_low_priority_speed_locked = True
+            self.twist_mux_lock_pub.publish(lock_msg)
+            self.get_logger().debug("Lock the low-priority speed commands.")
 
-    def publish_release(self):
-        release_lock_msg = Bool()
-        release_lock_msg.data = False
-        self.twist_mux_lock_pub.publish(release_lock_msg)
-        self.get_logger().debug("Release Lock")
+    def unlock_low_priority_speed_commands(self):
+        if self.is_low_priority_speed_locked:
+            lock_msg = Bool()
+            lock_msg.data = self.is_low_priority_speed_locked = False
+            self.twist_mux_lock_pub.publish(lock_msg)
+            self.get_logger().debug("Unlock the low-priority speed commands.")
 
 
 def main(args=None):

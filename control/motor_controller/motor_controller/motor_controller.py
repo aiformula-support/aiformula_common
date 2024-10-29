@@ -15,21 +15,20 @@ class MotorController(Node):
 
     def __init__(self):
         super().__init__('motor_controller')
-        publish_timer_loop_duration = self.get_ros_params()
+        self.get_ros_params()
 
         # Publisher & Subscriber
         buffer_size = 10
         self.twist_sub = self.create_subscription(Twist, 'sub_speed_command', self.twist_callback, buffer_size)
         self.can_pub = self.create_publisher(Frame, 'pub_can', buffer_size)
-        self.publish_timer = self.create_timer(publish_timer_loop_duration, self.publish_canframe_callback)
+        self.publish_timer = self.create_timer(self.publish_timer_loop_duration, self.publish_canframe_callback)
         self.frame_msg = Frame()
 
     def get_ros_params(self):
         self.diameter = get_ros_parameter(self, "wheel.diameter")
         self.tread = get_ros_parameter(self, "wheel.tread")
         self.gear_ratio = get_ros_parameter(self, "wheel.gear_ratio")
-        publish_timer_loop_duration = get_ros_parameter(self, "publish_timer_loop_duration")
-        return publish_timer_loop_duration
+        self.publish_timer_loop_duration = get_ros_parameter(self, "publish_timer_loop_duration")
 
     def twist_callback(self, msg):
         rpm = self.toRefRPM(msg.linear.x, msg.angular.z)
