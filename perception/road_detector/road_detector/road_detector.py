@@ -20,6 +20,10 @@ from lib.utils import letterbox_for_img
 from lib.utils.utils import select_device
 from lib.models import get_net
 from lib.utils import show_seg_result
+
+from common_python.get_ros_parameter import get_ros_parameter
+
+
 class RoadDetector(Node):
 
     def __init__(self):
@@ -49,14 +53,10 @@ class RoadDetector(Node):
             Image, 'sub_image', self.image_callback, buffer_size)
 
     def get_params(self):
-        self.declare_parameter('use_architecture')
-        self.declare_parameter('weight_path')
-        self.declare_parameter('mean')
-        self.declare_parameter('standard_deviation')
-        architecture = self.get_parameter('use_architecture').get_parameter_value().string_value
-        weights = self.get_parameter('weight_path').get_parameter_value().string_value
-        mean = np.array(self.get_parameter('mean').get_parameter_value().double_array_value)
-        std = np.array(self.get_parameter('standard_deviation').get_parameter_value().double_array_value)
+        architecture = get_ros_parameter(self, "use_architecture")
+        weights = get_ros_parameter(self, "weight_path")
+        mean = get_ros_parameter(self, "mean")
+        std = get_ros_parameter(self, "standard_deviation")
         return architecture, weights, mean, std
 
     def padding_image(self, image):
