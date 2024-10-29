@@ -1,17 +1,17 @@
-import rclpy
-from rclpy.node import Node
 from typing import Any
+
+import rclpy
 
 from common_python.util import abort
 
 
-def get_ros_parameter(node: Node, param_name: str) -> Any:
+def get_ros_parameter(node: rclpy.node.Node, param_name: str) -> Any:
     """Returns the value of the parameter `param_name` passed to the node.
 
     Parameters:
     ----------
-    `node`: The instance of th `Node` class
-    `param_name`: The name of the parameter
+    `node`: the instance of th `Node` class
+    `param_name`: the name of the parameter
 
     Returns:
     ----------
