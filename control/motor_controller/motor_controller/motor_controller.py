@@ -7,20 +7,17 @@ from geometry_msgs.msg import Twist
 from can_msgs.msg import Frame
 from typing import List
 
+from common_python.get_ros_parameter import get_ros_parameter
+
 
 class MotorController(Node):
 
     def __init__(self):
         super().__init__('motor_controller')
-        self.declare_parameter('wheel.tread')
-        self.declare_parameter('wheel.diameter')
-        self.declare_parameter('wheel.gear_ratio')
-        self.declare_parameter('publish_timer_loop_duration')
-        self.tread = self.get_parameter('wheel.tread').get_parameter_value().double_value
-        self.diameter = self.get_parameter('wheel.diameter').get_parameter_value().double_value
-        self.gear_ratio = self.get_parameter('wheel.gear_ratio').get_parameter_value().double_value
-        publish_timer_loop_duration = self.get_parameter(
-            'publish_timer_loop_duration').get_parameter_value().double_value
+        self.tread = get_ros_parameter(self, "wheel.tread")
+        self.diameter = get_ros_parameter(self, "wheel.diameter")
+        self.gear_ratio = get_ros_parameter(self, "wheel.gear_ratio")
+        publish_timer_loop_duration = get_ros_parameter(self, "publish_timer_loop_duration")
 
         buffer_size = 10
         self.twist_sub = self.create_subscription(Twist, 'sub_speed_command', self.twist_callback, buffer_size)
