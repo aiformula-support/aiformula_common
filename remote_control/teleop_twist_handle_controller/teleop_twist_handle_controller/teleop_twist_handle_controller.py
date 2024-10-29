@@ -55,7 +55,6 @@ class TeleopTwistHandleController(Node):
     def get_ros_params(self):
         self.max_vel = get_ros_parameter(self, "max_vel")
         self.max_angular = get_ros_parameter(self, "max_angular")
-        self.determine_pressed = get_ros_parameter(self, "determine_pressed")
 
     def joy_callback(self, joy_msg):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
@@ -63,10 +62,10 @@ class TeleopTwistHandleController(Node):
         steering_ratio = joy_msg.axes[Axis.STEERING]
 
         # Do not publish when neither the accelerator nor the brake is pressed.
-        if brake_ratio >= self.determine_pressed:
+        if brake_ratio:
             self.lock_low_priority_speed_commands()
             self.publish_velocity(0.0, 0.0)
-        elif accel_ratio >= self.determine_pressed:
+        elif accel_ratio:
             self.was_accel_pressed = True
             self.publish_velocity(self.max_vel * accel_ratio, self.max_angular * steering_ratio)
         elif self.was_accel_pressed:
