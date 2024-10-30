@@ -44,7 +44,6 @@ class TeleopTwistHandleController(Node):
         super().__init__('teleop_twist_handle_controller_node')
         self.get_ros_params()
         self.was_accel_pressed = False
-        self.is_low_priority_speed_locked = False
 
         # Publisher & Subscriber
         buffer_size = 10
@@ -83,18 +82,16 @@ class TeleopTwistHandleController(Node):
         self.get_logger().debug(f"(v, w): ({twist_msg.linear.x:.2f}, {twist_msg.angular.z:.2f})")
 
     def lock_low_priority_speed_commands(self):
-        if not self.is_low_priority_speed_locked:
-            lock_msg = Bool()
-            lock_msg.data = self.is_low_priority_speed_locked = True
-            self.twist_mux_lock_pub.publish(lock_msg)
-            self.get_logger().debug("Lock the low-priority speed commands.")
+        lock_msg = Bool()
+        lock_msg.data =  True
+        self.twist_mux_lock_pub.publish(lock_msg)
+        self.get_logger().debug("Lock the low-priority speed commands.")
 
     def unlock_low_priority_speed_commands(self):
-        if self.is_low_priority_speed_locked:
-            lock_msg = Bool()
-            lock_msg.data = self.is_low_priority_speed_locked = False
-            self.twist_mux_lock_pub.publish(lock_msg)
-            self.get_logger().debug("Unlock the low-priority speed commands.")
+        lock_msg = Bool()
+        lock_msg.data = False
+        self.twist_mux_lock_pub.publish(lock_msg)
+        self.get_logger().debug("Unlock the low-priority speed commands.")
 
 
 def main(args=None):
