@@ -1,46 +1,15 @@
 #ifndef GET_ROS_PARAMETER_HPP
 #define GET_ROS_PARAMETER_HPP
 
-#include <cxxabi.h>
-
 // ROS
 #include <rclcpp/rclcpp.hpp>
 
 namespace aiformula {
 
-class ParameterException : public std::runtime_error {
+class ParameterNotProvidedException : public std::runtime_error {
 public:
-    ParameterException(const std::string& message) : std::runtime_error(message) {}
+    ParameterNotProvidedException(const std::string& message) : std::runtime_error(message) {}
 };
-
-template <typename T>
-std::string getTypeName() {
-    return std::string(abi::__cxa_demangle(typeid(T).name(), 0, 0, nullptr));
-}
-
-inline std::string getTypeName(const rclcpp::ParameterType& param_type) {
-    if (param_type == rclcpp::ParameterType::PARAMETER_BOOL)
-        return "bool";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_INTEGER)
-        return "int";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_DOUBLE)
-        return "double";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_STRING)
-        return "std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_BYTE_ARRAY)
-        return "std::vector<unsigned char, std::allocator<unsigned char> >";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_BOOL_ARRAY)
-        return "std::vector<bool, std::allocator<bool> >";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_INTEGER_ARRAY)
-        return "std::vector<long, std::allocator<long> >";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_DOUBLE_ARRAY)
-        return "std::vector<double, std::allocator<double> >";
-    else if (param_type == rclcpp::ParameterType::PARAMETER_STRING_ARRAY)
-        return "std::vector<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> >, "
-               "std::allocator<std::__cxx11::basic_string<char, std::char_traits<char>, std::allocator<char> > > >";
-    else
-        throw ParameterException("Parameter type '" + std::to_string(param_type) + "' is not supported");
-}
 
 /*
 Since `as_xxx()` changes depending on the type of template arguments,
@@ -110,24 +79,15 @@ inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(con
 template <typename T>
 T getRosParameter(rclcpp::Node* const node_ptr, const std::string& param_name) {
     try {
-        node_ptr->declare_parameter(param_name, rclcpp::ParameterValue());
+        // node_ptr->declare_parameter(param_name, rclcpp::ParameterValue());
+        node_ptr->declare_parameter(param_name, T());
 
         const auto param_overrides = node_ptr->get_node_parameters_interface()->get_parameter_overrides();
         if (param_overrides.find(param_name) == param_overrides.end()) {
-            throw ParameterException("The value for '" + param_name + "' has not been provided");
+            throw ParameterNotProvidedException("The value for '" + param_name + "' has not been provided");
         }
-
-        const rclcpp::Parameter param = node_ptr->get_parameter(param_name);
-        const std::string param_type = getTypeName(param.get_type());
-        const std::string template_type = getTypeName<T>();
-
-        if (param_type == template_type) {
-            return getParameterAsType<T>(param);
-        } else {
-            throw ParameterException("The parameter '" + param_name + "' is of type '" + param_type +
-                                     "', but it is being retrieved as type '" + template_type + "'");
-        }
-    } catch (const ParameterException& e) {
+        return getParameterAsType<T>(node_ptr->get_parameter(param_name));
+    } catch (const ParameterNotProvidedException& e) {
         RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
         rclcpp::shutdown();
         exit(1);
@@ -136,7 +96,11 @@ T getRosParameter(rclcpp::Node* const node_ptr, const std::string& param_name) {
         rclcpp::shutdown();
         exit(1);
     } catch (const rclcpp::exceptions::InvalidParametersException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "%s !");
+        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
+        rclcpp::shutdown();
+        exit(1);
+    } catch (const rclcpp::exceptions::InvalidParameterTypeException& e) {
+        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
         rclcpp::shutdown();
         exit(1);
     } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
