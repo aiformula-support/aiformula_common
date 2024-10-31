@@ -52,8 +52,8 @@ class TeleopTwistHandleController(Node):
         self.twist_mux_lock_pub = self.create_publisher(Bool, 'pub_twist_mux_lock', buffer_size)
 
     def get_ros_params(self):
-        self.max_vel = get_ros_parameter(self, "max_vel")
-        self.max_angular = get_ros_parameter(self, "max_angular")
+        self.max_linear_vel = get_ros_parameter(self, "max_linear_vel")
+        self.max_angular_vel = get_ros_parameter(self, "max_angular_vel")
 
     def joy_callback(self, joy_msg):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
@@ -66,7 +66,7 @@ class TeleopTwistHandleController(Node):
             self.publish_velocity(0.0, 0.0)
         elif accel_ratio:
             self.was_accel_pressed = True
-            self.publish_velocity(self.max_vel * accel_ratio, self.max_angular * steering_ratio)
+            self.publish_velocity(self.max_linear_vel * accel_ratio, self.max_angular_vel * steering_ratio)
         elif self.was_accel_pressed:
             self.publish_velocity(0.0, 0.0)
             self.was_accel_pressed = False
@@ -83,7 +83,7 @@ class TeleopTwistHandleController(Node):
 
     def lock_low_priority_speed_commands(self):
         lock_msg = Bool()
-        lock_msg.data =  True
+        lock_msg.data = True
         self.twist_mux_lock_pub.publish(lock_msg)
         self.get_logger().debug("Lock the low-priority speed commands.")
 
