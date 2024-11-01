@@ -7,6 +7,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 
 from common_python.get_ros_parameter import get_ros_parameter
+from common_python.util import to_timestamp_double
 
 
 class Button(IntEnum):
@@ -43,43 +44,85 @@ class TeleopTwistHandleController(Node):
     def __init__(self):
         super().__init__('teleop_twist_handle_controller_node')
         self.get_ros_params()
+        # See “Acceleration Model” in `apply_acceleration()` below.
+        self.drag_coefficient = self.max_linear_acceleration / self.max_linear_vel ** self.drag_exponent
         self.was_accel_pressed = False
+        self.prev_time = 0.0
+        self.twist_msg = Twist()
+        self.twist_msg.linear.x = self.twist_msg.linear.z = 0.0
+        self.print_params()
 
         # Publisher & Subscriber
         buffer_size = 10
         self.joy_sub = self.create_subscription(Joy, 'sub_joy', self.joy_callback, buffer_size)
         self.twist_pub = self.create_publisher(Twist, 'pub_cmd_vel', buffer_size)
+        self.coasting_twist_pub = self.create_publisher(Twist, 'pub_cmd_vel_coasting', buffer_size)
         self.twist_mux_lock_pub = self.create_publisher(Bool, 'pub_twist_mux_lock', buffer_size)
 
     def get_ros_params(self):
         self.max_linear_vel = get_ros_parameter(self, "max_linear_vel")
         self.max_angular_vel = get_ros_parameter(self, "max_angular_vel")
+        self.max_linear_acceleration = get_ros_parameter(self, "max_linear_acceleration")
+        self.drag_exponent = get_ros_parameter(self, "drag_exponent")
+        self.stopping_vel = get_ros_parameter(self, "stopping_vel")
+
+    def print_params(self):
+        self.get_logger().debug("============================")
+        self.get_logger().debug("(teleop_twist_handle_controller.yaml)")
+        self.get_logger().debug(f"  max_linear_vel          : {self.max_linear_vel:.2f} [m/s]")
+        self.get_logger().debug(f"  max_angular_vel         : {self.max_angular_vel:.2f} [rad/s]")
+        self.get_logger().debug(f"  max_linear_acceleration : {self.max_linear_acceleration:.2f} [m/s^2]")
+        self.get_logger().debug(f"  drag_exponent           : {self.drag_exponent:.2f}")
+        self.get_logger().debug(f"  stopping_vel            : {self.stopping_vel:.2f} [m/s]")
+
+        self.get_logger().debug("\n(initialize)")
+        self.get_logger().debug(f"  drag_coefficient        : {self.drag_coefficient:.2f} [m/s]")
+        self.get_logger().debug("============================\n")
 
     def joy_callback(self, joy_msg):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
         accel_ratio = (joy_msg.axes[Axis.ACCEL] + 1.0) * 0.5
         steering_ratio = joy_msg.axes[Axis.STEERING]
-
-        # Do not publish when neither the accelerator nor the brake is pressed.
-        if brake_ratio:
-            self.lock_low_priority_speed_commands()
-            self.publish_velocity(0.0, 0.0)
-        elif accel_ratio:
-            self.was_accel_pressed = True
-            self.publish_velocity(self.max_linear_vel * accel_ratio, self.max_angular_vel * steering_ratio)
-        elif self.was_accel_pressed:
-            self.publish_velocity(0.0, 0.0)
-            self.was_accel_pressed = False
+        current_time = to_timestamp_double(joy_msg.header.stamp)
 
         if joy_msg.buttons[Button.ENTER_ICON]:
             self.unlock_low_priority_speed_commands()
 
-    def publish_velocity(self, linear_velocity, angular_velocity):
-        twist_msg = Twist()
-        twist_msg.linear.x = linear_velocity
-        twist_msg.angular.z = angular_velocity
-        self.twist_pub.publish(twist_msg)
-        self.get_logger().debug(f"(v, w): ({twist_msg.linear.x:.2f}, {twist_msg.angular.z:.2f})")
+        if self.prev_time:
+            dt = current_time - self.prev_time
+            if brake_ratio:
+                self.lock_low_priority_speed_commands()
+                self.twist_msg.linear.x = self.twist_msg.linear.z = 0.0
+            else:
+                self.apply_acceleration(accel_ratio, dt)
+            self.twist_msg.angular.z = self.max_angular_vel * steering_ratio
+            if accel_ratio or brake_ratio:
+                self.twist_pub.publish(self.twist_msg)
+            else:
+                self.coasting_twist_pub.publish(self.twist_msg)
+
+        self.prev_time = current_time
+
+    def apply_acceleration(self, accel_ratio, dt):
+        """ Acceleration Model
+        V2 = V1 + a * dt - b * V1^n * dt
+        t -> infinite
+        Vt = Vt + a * dt - b * Vt^n * dt
+        b = a / Vt^n
+        ------------------------------
+        V1 : velocity at time `t`
+        V2 : velocity at time `t + dt`
+        Vt : terminal velocity
+        a  : max acceleration
+        b  : drag coefficient
+        n  : drag exponent
+        """
+        linear_acceleration = self.max_linear_acceleration * accel_ratio - \
+            self.drag_coefficient * self.twist_msg.linear.x ** self.drag_exponent
+        accelerated_linear_velocity = self.twist_msg.linear.x + linear_acceleration * dt
+        self.twist_msg.linear.x = max(0.0, min(accelerated_linear_velocity, self.max_linear_vel))
+        if self.twist_msg.linear.x < self.stopping_vel:
+            self.twist_msg.linear.x = 0.0
 
     def lock_low_priority_speed_commands(self):
         lock_msg = Bool()

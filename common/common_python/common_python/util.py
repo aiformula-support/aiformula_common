@@ -2,6 +2,7 @@ import os
 
 import rclpy
 from rclpy.node import Node
+from builtin_interfaces.msg import Time
 
 
 def abort(node: Node) -> None:
@@ -9,7 +10,7 @@ def abort(node: Node) -> None:
 
     Parameters:
     ----------
-    `node`: The instance of th `Node` class
+    `node`: The instance of the `Node` class
 
     Examples:
     ----------
@@ -34,3 +35,17 @@ def get_ros_distro() -> str:
         print("Environmental Variable 'ROS Distro' is not set.")
         rclpy.shutdown()
         exit(1)
+
+
+def to_timestamp_double(timestamp_msg: Time) -> float:
+    """Convert timestamp in msg to float value
+
+    Parameters:
+    ----------
+    `timestamp_msg`: The instance of the `builtin_interfaces.msg` class
+
+    Examples:
+    ----------
+    >>> timestamp_double = to_timestamp_double(msg.header.stamp)
+    """
+    return timestamp_msg._sec + timestamp_msg._nanosec / 1e9
