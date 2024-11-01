@@ -56,6 +56,9 @@ class MotorController(Node):
                                              (linear_velocity / (self.diameter * 0.5)) - (self.tread / self.diameter) * angular_velocity])  # left[rad/s]
         minute_to_second = 60
         rpm = wheel_angular_velocities * (minute_to_second / (2 * math.pi))
+        if rpm[0] * rpm[1] < 0:
+            rpm[:] = 0.0
+            self.get_logger().debug(f"Preventing in-situ rotation ! (rpm: {rpm})")
         return (rpm * self.gear_ratio).tolist()
 
     @staticmethod
