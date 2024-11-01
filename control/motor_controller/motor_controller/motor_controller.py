@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import math
 from typing import List
 import numpy as np
 
@@ -54,9 +53,9 @@ class MotorController(Node):
     def toRefRPM(self, linear_velocity, angular_velocity):  # Calc Motor ref rad/s
         wheel_angular_velocities = np.array([(linear_velocity / (self.diameter * 0.5)) + (self.tread / self.diameter) * angular_velocity,  # right[rad/s]
                                              (linear_velocity / (self.diameter * 0.5)) - (self.tread / self.diameter) * angular_velocity])  # left[rad/s]
-        minute_to_second = 60
-        rpm = wheel_angular_velocities * (minute_to_second / (2 * math.pi))
-        if rpm[0] * rpm[1] < 0:
+        minute_to_second = 60.
+        rpm = wheel_angular_velocities * (minute_to_second / (2. * np.pi))
+        if rpm[0] * rpm[1] < 0.0:
             rpm[:] = 0.0
             self.get_logger().debug(f"Preventing in-situ rotation ! (rpm: {rpm})")
         return (rpm * self.gear_ratio).tolist()
