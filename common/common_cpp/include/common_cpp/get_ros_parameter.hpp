@@ -4,6 +4,9 @@
 // ROS
 #include <rclcpp/rclcpp.hpp>
 
+// Original
+#include "common_cpp/util.hpp"
+
 namespace aiformula {
 
 class ParameterNotProvidedException : public std::runtime_error {
@@ -79,32 +82,14 @@ inline std::vector<std::string> getParameterAsType<std::vector<std::string>>(con
 template <typename T>
 T getRosParameter(rclcpp::Node* const node_ptr, const std::string& param_name) {
     try {
-        // node_ptr->declare_parameter(param_name, rclcpp::ParameterValue());
         node_ptr->declare_parameter(param_name, T());
-
         const auto param_overrides = node_ptr->get_node_parameters_interface()->get_parameter_overrides();
         if (param_overrides.find(param_name) == param_overrides.end()) {
             throw ParameterNotProvidedException("The value for '" + param_name + "' has not been provided");
         }
         return getParameterAsType<T>(node_ptr->get_parameter(param_name));
-    } catch (const ParameterNotProvidedException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
-        rclcpp::shutdown();
-        exit(1);
-    } catch (const rclcpp::exceptions::ParameterAlreadyDeclaredException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
-        rclcpp::shutdown();
-        exit(1);
-    } catch (const rclcpp::exceptions::InvalidParametersException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
-        rclcpp::shutdown();
-        exit(1);
-    } catch (const rclcpp::exceptions::InvalidParameterTypeException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "%s !", e.what());
-        rclcpp::shutdown();
-        exit(1);
-    } catch (const rclcpp::exceptions::ParameterNotDeclaredException& e) {
-        RCLCPP_ERROR(node_ptr->get_logger(), "Parameter '%s' is not declared !", e.what());
+    } catch (const std::runtime_error& e) {
+        RCLCPP_ERROR(node_ptr->get_logger(), "%s: %s !", toExceptionTypeString(e).c_str(), e.what());
         rclcpp::shutdown();
         exit(1);
     }
