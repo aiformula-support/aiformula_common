@@ -1,4 +1,5 @@
 from enum import IntEnum
+import textwrap
 
 import rclpy
 from rclpy.node import Node
@@ -67,17 +68,18 @@ class TeleopTwistHandleController(Node):
         self.stopping_vel = get_ros_parameter(self, "stopping_vel")
 
     def print_params(self):
-        self.get_logger().debug("============================")
-        self.get_logger().debug("(teleop_twist_handle_controller.yaml)")
-        self.get_logger().debug(f"  max_linear_vel          : {self.max_linear_vel:.2f} [m/s]")
-        self.get_logger().debug(f"  max_angular_vel         : {self.max_angular_vel:.2f} [rad/s]")
-        self.get_logger().debug(f"  max_linear_acceleration : {self.max_linear_acceleration:.2f} [m/s^2]")
-        self.get_logger().debug(f"  drag_exponent           : {self.drag_exponent:.2f}")
-        self.get_logger().debug(f"  stopping_vel            : {self.stopping_vel:.2f} [m/s]")
+        self.get_logger().debug(textwrap.dedent(f"""
+        ============================
+        (teleop_twist_handle_controller.yaml)
+          max_linear_vel          : {self.max_linear_vel:.2f} [m/s]
+          max_angular_vel         : {self.max_angular_vel:.2f} [rad/s]
+          max_linear_acceleration : {self.max_linear_acceleration:.2f} [m/s^2]
+          drag_exponent           : {self.drag_exponent:.2f}
+          stopping_vel            : {self.stopping_vel:.2f} [m/s]
 
-        self.get_logger().debug("\n(initialize)")
-        self.get_logger().debug(f"  drag_coefficient        : {self.drag_coefficient:.2f} [m/s]")
-        self.get_logger().debug("============================\n")
+        (initialize)
+          drag_coefficient        : {self.drag_coefficient:.2f} [m/s]
+        ============================\n"""))
 
     def joy_callback(self, joy_msg):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
