@@ -121,7 +121,7 @@ class TeleopTwistHandleController(Node):
             self.drag_coefficient * self.twist_msg.linear.x ** self.drag_exponent
         accelerated_linear_velocity = self.twist_msg.linear.x + linear_acceleration * dt
         self.twist_msg.linear.x = max(0.0, min(accelerated_linear_velocity, self.max_linear_vel))
-        if self.twist_msg.linear.x < self.stopping_vel:
+        if accel_ratio == 0.0 and self.twist_msg.linear.x < self.stopping_vel:
             self.twist_msg.linear.x = 0.0
 
     def lock_low_priority_speed_commands(self):
