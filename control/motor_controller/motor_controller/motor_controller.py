@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 from typing import List
 import numpy as np
+from enum import IntEnum
 
 import rclpy
 from rclpy.node import Node
@@ -8,6 +9,12 @@ from geometry_msgs.msg import Twist
 from can_msgs.msg import Frame
 
 from common_python.get_ros_parameter import get_ros_parameter
+
+
+class DriveWheel(IntEnum):
+    LEFT = 0
+    RIGHT = 1
+    NUM_DRIVE_WHEELS = 2
 
 
 class MotorController(Node):
@@ -31,8 +38,8 @@ class MotorController(Node):
 
     def twist_callback(self, msg):
         rpm = self.toRefRPM(msg.linear.x, msg.angular.z)
-        cmd_right = self.toCanCmd(rpm[0])
-        cmd_left = self.toCanCmd(rpm[1])
+        cmd_left = self.toCanCmd(rpm[DriveWheel.LEFT])
+        cmd_right = self.toCanCmd(rpm[DriveWheel.RIGHT])
         can_data = cmd_right + cmd_left
         self.frame_msg.header.frame_id = "can0"        # Default can0
         self.frame_msg.id = 0x210                      # MotorController CAN ID : 0x210
@@ -51,11 +58,14 @@ class MotorController(Node):
 #  rpm = rpm * gear_ratio        [rpm]
 
     def toRefRPM(self, linear_velocity, angular_velocity):  # Calc Motor ref rad/s
-        wheel_angular_velocities = np.array([(linear_velocity / (self.diameter * 0.5)) + (self.tread / self.diameter) * angular_velocity,  # right[rad/s]
-                                             (linear_velocity / (self.diameter * 0.5)) - (self.tread / self.diameter) * angular_velocity])  # left[rad/s]
+        wheel_angular_velocities = np.zeros(DriveWheel.NUM_DRIVE_WHEELS)
+        wheel_angular_velocities[DriveWheel.LEFT] = (
+            linear_velocity / (self.diameter * 0.5)) - (self.tread / self.diameter) * angular_velocity  # [rad/s]
+        wheel_angular_velocities[DriveWheel.RIGHT] = (
+            linear_velocity / (self.diameter * 0.5)) + (self.tread / self.diameter) * angular_velocity  # [rad/s]
         minute_to_second = 60.
         rpm = wheel_angular_velocities * (minute_to_second / (2. * np.pi))
-        if rpm[0] * rpm[1] < 0.0:
+        if rpm[DriveWheel.LEFT] * rpm[DriveWheel.RIGHT] < 0.0:
             rpm[:] = 0.0
             self.get_logger().debug(f"Preventing in-situ rotation ! (rpm: {rpm})")
         return (rpm * self.gear_ratio).tolist()
