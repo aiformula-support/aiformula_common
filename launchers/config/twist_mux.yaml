@@ -17,7 +17,9 @@
       mpc:
         timeout : 0.3
         priority: 50
-
+      handle_controller_coasting:
+        timeout : 0.3
+        priority: 1
 
 # Locks to stop the twist inputs.
 # For each lock:
