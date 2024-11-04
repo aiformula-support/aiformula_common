@@ -87,9 +87,6 @@ class TeleopTwistHandleController(Node):
         steering_ratio = joy_msg.axes[Axis.STEERING]
         current_time = to_timestamp_double(joy_msg.header.stamp)
 
-        if joy_msg.buttons[Button.ENTER_ICON]:
-            self.unlock_low_priority_speed_commands()
-
         if self.prev_time:
             dt = current_time - self.prev_time
             if brake_ratio:
@@ -102,8 +99,10 @@ class TeleopTwistHandleController(Node):
                 self.twist_pub.publish(self.twist_msg)
             else:
                 self.coasting_twist_pub.publish(self.twist_msg)
-
         self.prev_time = current_time
+
+        if accel_ratio:
+            self.unlock_low_priority_speed_commands()
 
     def apply_acceleration(self, accel_ratio, dt):
         """ Acceleration Model
