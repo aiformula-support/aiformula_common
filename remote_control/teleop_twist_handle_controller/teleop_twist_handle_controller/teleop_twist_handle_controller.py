@@ -8,7 +8,7 @@ from geometry_msgs.msg import Twist
 from std_msgs.msg import Bool
 
 from common_python.get_ros_parameter import get_ros_parameter
-from common_python.util import to_timestamp_double
+from common_python.util import to_timestamp_float
 
 
 class Button(IntEnum):
@@ -85,7 +85,7 @@ class TeleopTwistHandleController(Node):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
         accel_ratio = (joy_msg.axes[Axis.ACCEL] + 1.0) * 0.5
         steering_ratio = joy_msg.axes[Axis.STEERING]
-        current_time = to_timestamp_double(joy_msg.header.stamp)
+        current_time = to_timestamp_float(joy_msg.header.stamp)
 
         if self.prev_time:
             dt = current_time - self.prev_time
