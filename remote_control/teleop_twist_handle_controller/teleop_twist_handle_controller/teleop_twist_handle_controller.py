@@ -91,7 +91,7 @@ class TeleopTwistHandleController(Node):
             dt = current_time - self.prev_time
             if brake_ratio:
                 self.lock_low_priority_speed_commands()
-                self.twist_msg.linear.x = self.twist_msg.linear.z = 0.0
+                self.twist_msg.linear.x = 0.0
             else:
                 self.apply_acceleration(accel_ratio, dt)
             self.twist_msg.angular.z = self.max_angular_vel * steering_ratio
