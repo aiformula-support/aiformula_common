@@ -50,7 +50,6 @@ class TeleopTwistHandleController(Node):
         self.was_accel_pressed = False
         self.prev_time = 0.0
         self.twist_msg = Twist()
-        self.twist_msg.linear.x = self.twist_msg.linear.z = 0.0
         self.print_params()
 
         # Publisher & Subscriber
