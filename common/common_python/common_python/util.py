@@ -48,4 +48,4 @@ def to_timestamp_float(timestamp_msg: Time) -> float:
     ----------
     >>> timestamp_double = to_timestamp_float(msg.header.stamp)
     """
-    return timestamp_msg._sec + timestamp_msg._nanosec / 1e9
+    return timestamp_msg.sec + timestamp_msg.nanosec / 1e9
