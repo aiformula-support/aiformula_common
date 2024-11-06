@@ -106,19 +106,22 @@ class TeleopTwistHandleController(Node):
 
     def apply_acceleration(self, accel_ratio, dt):
         """ Acceleration Model
-        V2 = V1 + a * dt - b * V1^n * dt
-        t -> infinite
-        Vt = Vt + a * dt - b * Vt^n * dt
-        b = a / Vt^n
+          V(t+1) = V(t) + (k * a - b * V(t)^n) * dt
+        As t approaches infinity, V(t) reaches a steady state V(∞) = Vt:
+          V(∞) = V(∞) + (k * a - b * V(∞)^n) * dt
+          Vt   = Vt   + (k * a - b * Vt  ^n) * dt
+        # Solving this gives:
+        b = k * a / Vt^n
         ------------------------------
-        V1 : velocity at time `t`
-        V2 : velocity at time `t + dt`
+        V(t) : velocity at time `t`
+        V(t+1) : velocity at time `t + dt`
         Vt : terminal velocity
         a  : max acceleration
+        k  : acceleration scaling factor (0 to 1)
         b  : drag coefficient
         n  : drag exponent
         """
-        linear_acceleration = self.max_linear_acceleration * accel_ratio - \
+        linear_acceleration = accel_ratio * self.max_linear_acceleration - \
             self.drag_coefficient * self.twist_msg.linear.x ** self.drag_exponent
         accelerated_linear_velocity = self.twist_msg.linear.x + linear_acceleration * dt
         self.twist_msg.linear.x = np.clip(accelerated_linear_velocity, 0.0, self.max_linear_vel)
