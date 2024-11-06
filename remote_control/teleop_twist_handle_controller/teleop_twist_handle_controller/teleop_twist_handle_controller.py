@@ -1,3 +1,4 @@
+import numpy as np
 from enum import IntEnum
 import textwrap
 
@@ -120,7 +121,7 @@ class TeleopTwistHandleController(Node):
         linear_acceleration = self.max_linear_acceleration * accel_ratio - \
             self.drag_coefficient * self.twist_msg.linear.x ** self.drag_exponent
         accelerated_linear_velocity = self.twist_msg.linear.x + linear_acceleration * dt
-        self.twist_msg.linear.x = max(0.0, min(accelerated_linear_velocity, self.max_linear_vel))
+        self.twist_msg.linear.x = np.clip(accelerated_linear_velocity, 0.0, self.max_linear_vel)
         if accel_ratio == 0.0 and self.twist_msg.linear.x < self.stopping_vel:
             self.twist_msg.linear.x = 0.0
 
