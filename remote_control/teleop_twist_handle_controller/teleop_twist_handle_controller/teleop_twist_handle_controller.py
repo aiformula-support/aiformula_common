@@ -97,17 +97,18 @@ class TeleopTwistHandleController(Node):
             self.lock_low_priority_speed_commands()
             self.twist_msg.linear.x = 0.0
         else:
+            if accel_ratio:
+                self.unlock_low_priority_speed_commands()
             self.apply_acceleration(accel_ratio, dt)
             if accel_ratio == 0.0 and self.twist_msg.linear.x < self.stopping_vel:
                 self.twist_msg.linear.x = 0.0
+
         self.twist_msg.angular.z = self.max_angular_vel * steering_ratio
+
         if accel_ratio or brake_ratio:
             self.twist_pub.publish(self.twist_msg)
         else:
             self.coasting_twist_pub.publish(self.twist_msg)
-
-        if accel_ratio:
-            self.unlock_low_priority_speed_commands()
 
     def apply_acceleration(self, accel_ratio, dt):
         """ Acceleration Model
