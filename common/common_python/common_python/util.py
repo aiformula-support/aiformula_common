@@ -37,7 +37,7 @@ def get_ros_distro() -> str:
         exit(1)
 
 
-def to_timestamp_double(timestamp_msg: Time) -> float:
+def to_timestamp_float(timestamp_msg: Time) -> float:
     """Convert timestamp in msg to float value
 
     Parameters:
@@ -46,6 +46,6 @@ def to_timestamp_double(timestamp_msg: Time) -> float:
 
     Examples:
     ----------
-    >>> timestamp_double = to_timestamp_double(msg.header.stamp)
+    >>> timestamp_double = to_timestamp_float(msg.header.stamp)
     """
-    return timestamp_msg._sec + timestamp_msg._nanosec / 1e9
+    return timestamp_msg.sec + timestamp_msg.nanosec / 1e9

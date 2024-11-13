@@ -9,16 +9,16 @@
   ros__parameters:
     topics:
       handle_controller:
-        timeout : 0.3
+        timeout : 0.3  # [sec]
         priority: 250
       gamepad:
-        timeout : 0.3
+        timeout : 0.3  # [sec]
         priority: 150
       mpc:
-        timeout : 0.3
+        timeout : 0.3  # [sec]
         priority: 50
       handle_controller_coasting:
-        timeout : 0.3
+        timeout : 0.3  # [sec]
         priority: 1
 
 # Locks to stop the twist inputs.
@@ -32,14 +32,14 @@
 #             will be stopped/disabled
     locks:
       # all:
-      #   timeout : 0.0
+      #   timeout : 0.0  # [sec]
       #   priority: 255
       # handle_controller:
-      #   timeout : 0.0
+      #   timeout : 0.0  # [sec]
       #   priority: 251
       gamepad:
-        timeout : 0.0
+        timeout : 0.0  # [sec]
         priority: 151
       # mpc:
-      #   timeout : 0.0
+      #   timeout : 0.0  # [sec]
       #   priority: 51
