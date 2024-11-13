@@ -85,23 +85,26 @@ class TeleopTwistHandleController(Node):
         brake_ratio = (joy_msg.axes[Axis.BRAKE] + 1.0) * 0.5  # raw:-1.0 ~ 1.0 -> ratio: 0 ~ 1.0
         accel_ratio = (joy_msg.axes[Axis.ACCEL] + 1.0) * 0.5
         steering_ratio = joy_msg.axes[Axis.STEERING]
-        current_time = to_timestamp_float(joy_msg.header.stamp)
 
-        if self.prev_time:
-            dt = current_time - self.prev_time
-            if brake_ratio:
-                self.lock_low_priority_speed_commands()
-                self.twist_msg.linear.x = 0.0
-            else:
-                self.apply_acceleration(accel_ratio, dt)
-                if accel_ratio == 0.0 and self.twist_msg.linear.x < self.stopping_vel:
-                    self.twist_msg.linear.x = 0.0
-            self.twist_msg.angular.z = self.max_angular_vel * steering_ratio
-            if accel_ratio or brake_ratio:
-                self.twist_pub.publish(self.twist_msg)
-            else:
-                self.coasting_twist_pub.publish(self.twist_msg)
+        current_time = to_timestamp_float(joy_msg.header.stamp)
+        if not self.prev_time:
+            self.prev_time = current_time
+            return
+        dt = current_time - self.prev_time
         self.prev_time = current_time
+
+        if brake_ratio:
+            self.lock_low_priority_speed_commands()
+            self.twist_msg.linear.x = 0.0
+        else:
+            self.apply_acceleration(accel_ratio, dt)
+            if accel_ratio == 0.0 and self.twist_msg.linear.x < self.stopping_vel:
+                self.twist_msg.linear.x = 0.0
+        self.twist_msg.angular.z = self.max_angular_vel * steering_ratio
+        if accel_ratio or brake_ratio:
+            self.twist_pub.publish(self.twist_msg)
+        else:
+            self.coasting_twist_pub.publish(self.twist_msg)
 
         if accel_ratio:
             self.unlock_low_priority_speed_commands()
