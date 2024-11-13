@@ -115,8 +115,8 @@ class TeleopTwistHandleController(Node):
         As t approaches infinity, V(t) reaches a steady state V(∞) = Vt:
           V(∞) = V(∞) + (k * a - b * V(∞)^n) * dt
           Vt   = Vt   + (k * a - b * Vt  ^n) * dt
-        # Solving this gives:
-        b = k * a / Vt^n
+        Solving this gives:
+          b = k * a / Vt^n
         ------------------------------
         V(t) : velocity at time `t`
         V(t+1) : velocity at time `t + dt`
