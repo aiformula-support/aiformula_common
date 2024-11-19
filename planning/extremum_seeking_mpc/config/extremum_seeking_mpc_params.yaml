@@ -1,18 +1,23 @@
 /**:
   ros__parameters:
     mpc_parameters:
-      holizon_times: [2.7, 3.7, 4.7]
-      planned_speed: [0.21, 0.0]
+      horizon_times: [2.7, 3.7, 4.7] #[s]
+      planned_speed: [0.21, 0.0] #linear_velocity[m/s], angular_velocity[rad/s]
       seek_gain: -0.5
       seek_amp: 0.2
       esc_max: 0.2
       esc_min: -0.2
+      curvature_limit: 0.2
       curvature_gain: 25
       benefit_gain: 2
     object_risk_potential:
-      pedestrian_risk_table_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.]
+      pedestrian_risk_table_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
       pedestrian_risk_table_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
     road_risk_potential:
-      road_risk_table_u: [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.4]
-      road_l_risk_table_y: [0.,0.,0.,0.,0.,0.,0., 0., 0.2, 0.4, 0.6, 0.8, 1.0]
-      road_r_risk_table_y: [1.0, 0.8, 0.6, 0.4, 0.2, 0., 0.,0.,0.,0.,0.,0.,0.]
+      road_risk_table_u: [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.4] #[m]
+      road_risk_table_y: [0., 0., 0., 0., 0., 0., 0., 0., 0.2, 0.4, 0.6, 0.8, 1.0]
+        #left: [0., 0., 0., 0., 0., 0., 0., 0., 0.2, 0.4, 0.6, 0.8, 1.0]
+        #right: [1.0, 0.8, 0.6, 0.4, 0.2, 0., 0., 0., 0., 0., 0., 0., 0.]
+    velocity_control:
+      speed_circle: 0.16
+      deceleration_gain: 5

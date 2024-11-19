@@ -1,7 +1,9 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -10,6 +12,14 @@ def generate_launch_description():
     CAMERA_NAME = "zedx"
     CAMERA_SN = "SN48442725"
     CAMERA_RESOLUTION = "SVGA"
+
+    launch_args = (
+        DeclareLaunchArgument(
+            "autopilot",
+            default_value="true",
+            description="If true, robot runs autonomously",
+        )
+    )
 
     tf_static_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -37,7 +47,8 @@ def generate_launch_description():
     # --- Perception --- #
     lane_line_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("lane_line_publisher"), "launch/lane_line_publisher.launch.py"),
+            osp.join(get_package_share_directory("lane_line_publisher"),
+                     "launch/lane_line_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -102,6 +113,7 @@ def generate_launch_description():
             osp.join(get_package_share_directory("extremum_seeking_mpc"),
                      "launch/extremum_seeking_mpc.launch.py"),
         ),
+        condition=IfCondition([LaunchConfiguration("autopilot")]),
     )
     # --- Compress Zed Image for AI Formula Pilot --- #
     image_compressor = IncludeLaunchDescription(
@@ -112,6 +124,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        launch_args,
         tf_static_publisher,
         zed_node,
         vectornav,

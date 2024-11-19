@@ -2,7 +2,7 @@
 set -e
 
 TARGET_PACKEGES=(
-    #launchers
+    launchers
     common_python
     common_cpp
     vehicle

@@ -39,10 +39,8 @@ control:
   output_can_data: "/aiformula_control/motor_controller/reference_signal"
 
 planning:
-  road_pointcloud:
-    left: "/aiformula_planning/road_pointcloud/left"
-    right: "/aiformula_planning/road_pointcloud/right"
   speed_command: "/aiformula_planning/extremum_seeking_mpc/cmd_vel"
+  ego_velocity: "/aiformula_planning/extremum_seeking_mpc/ego_velocity"
 
 visualization:
   annotated_mask_image: "/aiformula_visualization/road_detector/annotated_mask_image"

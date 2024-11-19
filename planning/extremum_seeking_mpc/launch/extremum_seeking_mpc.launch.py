@@ -4,15 +4,17 @@ from launch_ros.actions import Node
 from ament_index_python.packages import get_package_share_directory
 from common_python.launch_util import get_frame_ids_and_topic_names
 
+
 def generate_launch_description():
     PACKAGE_NAME = "extremum_seeking_mpc"
     PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
-    _, TOPIC_NAMES = get_frame_ids_and_topic_names()
+    FRAME_IDS, TOPIC_NAMES = get_frame_ids_and_topic_names()
 
     ROS_PARAM_CONFIG = (
         osp.join(PACKAGE_DIR, "config", "extremum_seeking_mpc_params.yaml"),
+        {'tf_frame_id': FRAME_IDS["base_footprint"]},
     )
-        
+
     extremum_seeking_mpc = Node(
         package=PACKAGE_NAME,
         executable=PACKAGE_NAME,
@@ -22,9 +24,10 @@ def generate_launch_description():
         emulate_tty=True,
         parameters=[*ROS_PARAM_CONFIG],
         remappings=[
-            ("pub_speed_command", TOPIC_NAMES["planning"]["speed_command"]),
-            ('sub_road_l',TOPIC_NAMES["planning"]["road_pointcloud"]["left"]),
-            ('sub_road_r',TOPIC_NAMES["planning"]["road_pointcloud"]["right"]),
+            ('pub_speed_command', TOPIC_NAMES["planning"]["speed_command"]),
+            ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),
+            ('sub_road_r', TOPIC_NAMES["perception"]["lane_lines"]["right"]),
+            ('sub_ego_velocity', TOPIC_NAMES["planning"]["ego_velocity"]),
         ],
     )
 
