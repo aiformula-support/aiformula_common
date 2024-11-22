@@ -41,15 +41,15 @@ class ExtremumSeekingController:
 
     def risk_moving_average(self, risk_in):  # list [5x1]
         # Highpass filter
-        valA = risk_in[0] - risk_in[2]
-        valB = risk_in[1] - risk_in[2]
-        valC = risk_in[3] - risk_in[2]
-        valD = risk_in[4] - risk_in[2]
+        valueA = risk_in[0] - risk_in[2]
+        valueB = risk_in[1] - risk_in[2]
+        valueC = risk_in[3] - risk_in[2]
+        valueD = risk_in[4] - risk_in[2]
 
         # risk mutilplied by Reference Signal (Sin Wave) and Moving Average
         self.moving_average_out = (
-            2 * self.sin_array[1] * valB + self.sin_array[2] * valA
-            + 2 * self.sin_array[5] * valC + self.sin_array[6] * valD
+            2 * self.sin_array[1] * valueB + self.sin_array[2] * valueA
+            + 2 * self.sin_array[5] * valueC + self.sin_array[6] * valueD
         ) / self.num_moving_average
 
         return self.moving_average_out  # for backpropagation

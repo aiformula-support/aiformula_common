@@ -92,7 +92,7 @@ class ExtremumSeekingMpc(Node):
         self.road_estimation = RoadEstimation(
             self.road_sigma, self.road_risk_table)
         self.pos_estimation = GeometricPoseCurvatures(
-            self.predict_horizon[0], self.predict_horizon[1], self.predict_horizon[2])
+            self.predict_horizon)
         self.exs_mpc = OptimizePath(
             self.seek_gain, self.seek_amp, self.curvature_limit, -(self.curvature_limit))
 
@@ -186,7 +186,7 @@ class ExtremumSeekingMpc(Node):
         ts = TransformStamped()
         msg_time = self.get_clock().now().to_msg()
         ts.header.stamp = msg_time
-        ts.header.frame_id = "camera_depth_optical_frame"
+        ts.header.frame_id = "base_footprint"
         # ts.header.frame_id = "tf_frame_id"
         ts.child_frame_id = "seek_point1"
         ts.transform.translation.x = ego_position[0][0]
@@ -236,10 +236,10 @@ class ExtremumSeekingMpc(Node):
         # visualize tf
         self.tf_viewer(self.ego_position)
 
-    def __del__(self):
-        self.vel_msg.linear.x = 0.0
-        self.vel_msg.angular.z = 0.0
-        self.pub_cmd.publish(self.vel_msg)
+    # def __del__(self):
+    #    self.vel_msg.linear.x = 0.0
+    #    self.vel_msg.angular.z = 0.0
+    #    self.pub_cmd.publish(self.vel_msg)
 
 
 def main(args=None):

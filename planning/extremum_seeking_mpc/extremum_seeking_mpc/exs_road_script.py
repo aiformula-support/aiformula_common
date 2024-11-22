@@ -38,13 +38,12 @@ class RoadEstimation:
 
     def line_identification(self, xys):
         xs = np.ravel(xys[:, :1].T)
-        norm_ofs = min(xs)  # offset
-        norm_den = max(xs) - norm_ofs  # max limit
-        index = np.arange(0, len(xs))
-        num_xs = min(len(xs), self.max_point_length)
+        normalize_offset = min(xs)  # offset
+        normalize_denominator = max(xs) - normalize_offset  # max limit
         index = np.random.permutation(len(xs))
         xs = xs[index]
-        xs = (xs - norm_ofs) / norm_den  # xs are normalize 1xN
+        xs = (xs - normalize_offset) / \
+            normalize_denominator  # xs are normalize 1xN
 
         ys = np.ravel(xys[:, 1:2].T)  # 1xN
         ys = ys[index]
@@ -69,8 +68,9 @@ class RoadEstimation:
             # zeta: 1x3, P: 3x3 = 1x3
             zp = np.dot(zeta.reshape(1, 3), self.identification_gain_matrix)
             # zp: 1x3, zeta: 3x1 = zpz: 1x1
-            adaptive_gain_den = 1 + np.dot(zp, zeta.reshape(3, 1))
-            adaptive_gain = adaptive_gain_num / adaptive_gain_den  # num: 3x1, den = 1x1
+            adaptive_gain_denominator = 1 + np.dot(zp, zeta.reshape(3, 1))
+            adaptive_gain = adaptive_gain_num / \
+                adaptive_gain_denominator  # num: 3x1, den = 1x1
 
             # Estimate & Error
             # Theta.T: 1x3, zeta: 3x1 = scalar
@@ -101,7 +101,7 @@ class RoadEstimation:
             thetas[4], dthetas[4] = self.f_identifier(
                 np.ravel(weight_y_error5), thetas[4], dthetas[4])
 
-        return norm_den, norm_ofs, thetas
+        return normalize_denominator, normalize_offset, thetas
 
     def f_identifier(self, ddtheta, dtheta, dtheta_mem):
         # ddtheta: 1x3, dtheta_mem: 1x3 ... add 1x3 + 1x3
@@ -112,8 +112,10 @@ class RoadEstimation:
 
         return dtheta_ret, dtheta_mem_ret  # for 1x3
 
-    def estimate_yhat(self, x_u, norm_den, norm_ofs, thetas):  # thetas is memory by 5x(1x3)
-        x = (x_u - norm_ofs) / norm_den  # xs are normalize
+    # thetas is memory by 5x(1x3)
+    def estimate_yhat(self, x_u, normalize_denominator, normalize_offset, thetas):
+        x = (x_u - normalize_offset) / \
+            normalize_denominator  # xs are normalize
         xx = x * x
         zeta = np.array([xx, x, 1.]).T  # memory by Nx(1x3)
         w1 = self.Weight1_function(x)
@@ -132,7 +134,7 @@ class RoadEstimation:
 
         return y_hat
 
-    def calculation_road_risk(self, seek_ps, norm_den, norm_ofs, thetas):
+    def calculation_road_risk(self, seek_ps, normalize_denominator, normalize_offset, thetas):
         # seeks_ps: 3 x (2x5)
         risks = []
         for seek_p in seek_ps:
@@ -140,8 +142,9 @@ class RoadEstimation:
             y_hat = 0
             seek_x = seek_p[0][2]  # center
             seek_ys = [p for p in seek_p[1]]
-            if (seek_x > norm_ofs) and (seek_x < (norm_ofs + norm_den)):
-                y_hat = self.estimate_yhat(seek_x, norm_den, norm_ofs, thetas)
+            if (seek_x > normalize_offset) and (seek_x < (normalize_offset + normalize_denominator)):
+                y_hat = self.estimate_yhat(
+                    seek_x, normalize_denominator, normalize_offset, thetas)
 
             if y_hat:
                 for i in range(len(seek_ys)):

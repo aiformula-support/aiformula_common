@@ -5,36 +5,40 @@ import numpy as np
 
 class GeometricPoseCurvatures:
 
-    def __init__(self, time_step1, time_step2, time_step3):
-        time_steps = [time_step1, time_step2, time_step3]
-        self.horizon_steps = np.diff(time_steps, prepend=0)
+    def __init__(self, horizon_times):
+        self.horizon_steps = np.diff(horizon_times, prepend=0)
+        self.horizon_length = len(horizon_times)
         self.ego_positions = []
         self.ego_angles = []
+        self.seek_points = list(np.zeros(self.horizon_length))
+        self.seek_angles = list(np.zeros(self.horizon_length))
+        self.seek_points_transformed = list(np.zeros(self.horizon_length-1))
 
     # ---- estimated egocar positions ----
     def estimate_ego_pos(self, ego_velocity, curvature):
         # ego_v: lin_x, ang.z, curvature(curvature): 3 horizon
         # Assume omega is 1/curvature instead ang.z
         # 1st static object estimation only. not yet dynamic object estimation
-        seek_point1_ego_position, seek_point1_angle = self.estimate_pos_curvature(
-            ego_velocity[0], curvature[0], self.horizon_steps[0])  # (x, y) position
-        seek_point2_ego_position, seek_point2_angle = self.estimate_pos_curvature(
-            ego_velocity[0], curvature[1], self.horizon_steps[1])
-        seek_point3_ego_position, seek_point3_angle = self.estimate_pos_curvature(
-            ego_velocity[0], curvature[2], self.horizon_steps[2])
+        for step in range(self.horizon_length):
+            self.seek_points[step], self.seek_angles[step] = self.estimate_pos_curvature(
+                ego_velocity[0], curvature[step], self.horizon_steps[step])
 
-        seek_point2_ego_position_transformed = self.rotate_point(
-            seek_point2_ego_position, seek_point1_angle)
-        seek_point3_ego_position_transformed = self.rotate_point(
-            seek_point3_ego_position, seek_point1_angle + seek_point2_angle)
+        # Rotate Point
+        for step in range(self.horizon_length - 1):
+            if step == 0:
+                self.seek_points_transformed[step] = self.rotate_point(
+                    self.seek_points[step+1], self.seek_angles[step])
+            else:
+                self.seek_points_transformed[step] = self.rotate_point(
+                    self.seek_points[step+1], self.seek_angles[step] + self.seek_angles[step+1])
 
-        seek_point2_angle += seek_point1_angle
-        seek_point3_angle += seek_point2_angle
+        for step in range(self.horizon_length - 1):
+            self.seek_angles[step+1] = self.seek_angles[step]
 
         self.ego_positions = np.vstack(
-            [seek_point1_ego_position, seek_point2_ego_position_transformed, seek_point3_ego_position_transformed])
+            [self.seek_points[0], self.seek_points_transformed])
         self.ego_angles = np.array(
-            [seek_point1_angle, seek_point2_angle, seek_point3_angle])    # (1,3)
+            self.seek_angles)    # (1,3)
 
         return self.ego_positions, self.ego_angles
 
@@ -68,18 +72,26 @@ class GeometricPoseCurvatures:
         return self.estimate_pos(ego_velocity, radius, horizon_time)
 
     def estimate_direct_seek_y_poss(self, ego_positions, curvature_seek):
-        curvature1_seeks = (
-            ego_positions[0] + np.array([np.zeros(5), np.array(curvature_seek[0])]).T).T  # 2x5
-        curvature2_seeks = (
-            ego_positions[1] + np.array([np.zeros(5), np.array(curvature_seek[1])]).T).T
-        curvature3_seeks = (
-            ego_positions[2] + np.array([np.zeros(5), np.array(curvature_seek[2])]).T).T
-        # 3x(2x5)
-        return [curvature1_seeks, curvature2_seeks, curvature3_seeks]
+        curvature_seeks = list(np.zeros(self.horizon_length))
+        for num in range(self.horizon_length):
+            curvature_seeks[num] = (
+                ego_positions[num] + np.array([np.zeros(5), np.array(curvature_seek[num])]).T).T
+
+        return curvature_seeks
 
     def estimate_base_abs_poss(self, egopos, curvature_seek):
-        curvature2_abs_seek = egopos[0].reshape(2, 1) + curvature_seek[1]
-        curvature3_abs_seek = (
-            egopos[0] + egopos[1]).reshape(2, 1) + curvature_seek[2]
+        curvature_abs_seeks = list(
+            np.zeros((len(curvature_seek[0]), len(curvature_seek[0][0]))))
 
-        return [curvature_seek[0], curvature2_abs_seek, curvature3_abs_seek]
+        for num in range(self.horizon_length-1):
+            if num == 0:
+                curvature_abs_seeks[num] = egopos[num].reshape(
+                    2, 1) + curvature_seek[num+1]
+            else:
+                curvature_abs_seeks[num] = (
+                    egopos[num-1] + egopos[num]).reshape(2, 1) + curvature_seek[num+1]
+
+        curvature_abs_seekss = [curvature_seek[0]]
+        curvature_abs_seekss.extend(curvature_abs_seeks)
+
+        return list(curvature_abs_seekss)
