@@ -12,7 +12,6 @@ def generate_launch_description():
 
     ROS_PARAM_CONFIG = (
         osp.join(PACKAGE_DIR, "config", "extremum_seeking_mpc_params.yaml"),
-        {'tf_frame_id': FRAME_IDS["base_footprint"]},
     )
 
     extremum_seeking_mpc = Node(
@@ -22,7 +21,8 @@ def generate_launch_description():
         namespace="/aiformula_planning",
         output="screen",
         emulate_tty=True,
-        parameters=[*ROS_PARAM_CONFIG],
+        parameters=[*ROS_PARAM_CONFIG,
+                    {"tf_frame_id": FRAME_IDS["base_footprint"], },],
         remappings=[
             ('pub_speed_command', TOPIC_NAMES["planning"]["speed_command"]),
             ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),

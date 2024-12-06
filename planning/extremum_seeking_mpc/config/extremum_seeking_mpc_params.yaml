@@ -2,7 +2,7 @@
   ros__parameters:
     mpc_parameters:
       horizon_times: [2.7, 3.7, 4.7] #[s]
-      planned_speed: [0.21, 0.0] #linear_velocity[m/s], angular_velocity[rad/s]
+      planned_speed: [1.5, 0.0] #linear_velocity[m/s], angular_velocity[rad/s]
       seek_gain: -0.5
       seek_amp: 0.2
       esc_max: 0.2

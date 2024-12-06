@@ -1,4 +1,6 @@
 import numpy as np
+import signal
+import sys
 import rclpy
 from rclpy.node import Node
 
@@ -56,6 +58,9 @@ class ExtremumSeekingMpc(Node):
         self.right_thetas = np.zeros((5, 3))  # 5x3
         self.benefit = []
 
+        # Ctrl + C
+        signal.signal(signal.SIGINT, self.reset_command)
+
         self.timer = self.create_timer(0.01, self.on_timer)
 
     def init_parameters(self):
@@ -85,6 +90,8 @@ class ExtremumSeekingMpc(Node):
             self, "velocity_control.speed_circle")
         self.deceleration_gain = get_ros_parameter(
             self, "velocity_control.deceleration_gain")
+        self.frame_id = get_ros_parameter(
+            self, "tf_frame_id")
 
     def init_members(self):
         self.object_estimation = ObjectEstimation(
@@ -102,9 +109,9 @@ class ExtremumSeekingMpc(Node):
         self.pub_cmd = self.create_publisher(
             Twist, 'pub_speed_command', buffer_size)
         self.sub_left_road = self.create_subscription(
-            PointCloud2, '/road_l', self.listener_left_road, buffer_size)
+            PointCloud2, 'sub_road_l', self.listener_left_road, buffer_size)
         self.sub_right_road = self.create_subscription(
-            PointCloud2, '/road_r', self.listener_right_road, buffer_size)
+            PointCloud2, 'sub_road_r', self.listener_right_road, buffer_size)
         self.sub_ego_velocity = self.create_subscription(
             Twist, 'sub_ego_velocity', self.listener_ego_velocity, buffer_size)
 
@@ -186,8 +193,7 @@ class ExtremumSeekingMpc(Node):
         ts = TransformStamped()
         msg_time = self.get_clock().now().to_msg()
         ts.header.stamp = msg_time
-        ts.header.frame_id = "base_footprint"
-        # ts.header.frame_id = "tf_frame_id"
+        ts.header.frame_id = self.frame_id
         ts.child_frame_id = "seek_point1"
         ts.transform.translation.x = ego_position[0][0]
         ts.transform.translation.y = ego_position[0][1]
@@ -236,10 +242,11 @@ class ExtremumSeekingMpc(Node):
         # visualize tf
         self.tf_viewer(self.ego_position)
 
-    # def __del__(self):
-    #    self.vel_msg.linear.x = 0.0
-    #    self.vel_msg.angular.z = 0.0
-    #    self.pub_cmd.publish(self.vel_msg)
+    def reset_command(self, sig, frame):  # Ctrl + C
+        self.vel_msg.linear.x = 0.0
+        self.vel_msg.angular.z = 0.0
+        self.pub_cmd.publish(self.vel_msg)
+        sys.exit(0)
 
 
 def main(args=None):
