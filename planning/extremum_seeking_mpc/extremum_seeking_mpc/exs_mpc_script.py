@@ -1,14 +1,10 @@
 import numpy as np
+from rclpy.node import Node
 from dataclasses import dataclass
 from scipy.interpolate import interp1d
 
-
-@dataclass
-class MpcParameters:
-    seek_gain: float
-    seek_amp: float
-    curvature_max: float
-    curvature_min: float
+from common_python.get_ros_parameter import get_ros_parameter
+from .util import MpcParameters
 
 
 # --- Extremum Seeking Controller for Optimization ---
@@ -32,12 +28,20 @@ class ExtremumSeekingController:
         self.num_moving_average = int(sin_period / sim_time)
         t = np.arange(0, sin_period, sim_time)
         self.sin_array = np.sin(2*np.pi*(t/sin_period))
-        # sin dibided by 8: fixed value
+        # sin divided by 8: fixed value
         # [1., 0.70710678, 0., -0.70710678, -1.]
         self.seek_points = np.hstack(
             [np.flip(self.sin_array[0:3]), self.sin_array[-3: -1]])
         # 5 points -> [0.7, 0.4949747468305832, 0.0, -0.4949747468305832, -0.7]
         self.seek_points = (self.seek_points * self.seek_amp).tolist()
+
+    def init_parameters(self, node: Node):
+        self.seek_gain = get_ros_parameter(
+            node, "mpc_parameters.seek_gain")
+        self.seek_amp = get_ros_parameter(
+            node, "mpc_parameters.seek_amp")
+        self.curvature_limit = get_ros_parameter(
+            node, "mpc_parameters.curvature_limit")
 
     def risk_moving_average(self, risk_in):  # list [5x1]
         # Highpass filter
@@ -86,19 +90,28 @@ class backpropagation:
 
         return backward_risk_in * propagation_gain
 
-# --- EXS_MPC ---
+# --- Extremum Seeking Controller ---
 
 
 class OptimizePath:
-    def __init__(self, seek_gain, seek_amp, curvature_max, curvature_min):
-        params = MpcParameters(seek_gain=seek_gain, seek_amp=seek_amp,
-                               curvature_max=curvature_max, curvature_min=curvature_min)
+    def __init__(self, node: Node):
+        self.init_parameters(node)
+        params = MpcParameters(seek_gain=self.seek_gain, seek_amp=self.seek_amp,
+                               curvature_max=self.curvature_limit, curvature_min=-(self.curvature_limit))
 
         self.extremum_seeking_controller = ExtremumSeekingController(params)
 
         self.backpropagation_21 = backpropagation()
         self.backpropagation_31 = backpropagation()
         self.backpropagation_32 = backpropagation()
+
+    def init_parameters(self, node: Node):
+        self.seek_gain = get_ros_parameter(
+            node, "mpc_parameters.seek_gain")
+        self.seek_amp = get_ros_parameter(
+            node, "mpc_parameters.seek_amp")
+        self.curvature_limit = get_ros_parameter(
+            node, "mpc_parameters.curvature_limit")
 
     def extremum_seeking_mpc_3step(self, risk1, risk2, risk3):
         risk1_moving_average = self.extremum_seeking_controller.risk_moving_average(

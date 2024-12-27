@@ -1,44 +1,57 @@
 import numpy as np
+from rclpy.node import Node
 
-# estimated position from curvatures
+from common_python.get_ros_parameter import get_ros_parameter
+from .util import Position, Pose
+
+
+# --- predict egpcar position from curvatures ---
 
 
 class GeometricPoseCurvatures:
 
-    def __init__(self, horizon_times):
-        self.horizon_steps = np.diff(horizon_times, prepend=0)
+    def __init__(self, node: Node, horizon_times):
+        self.init_parameters(node)
+        self.horizon_durations = np.diff(horizon_times, prepend=0)
         self.horizon_length = len(horizon_times)
         self.ego_positions = []
         self.ego_angles = []
-        self.seek_points = list(np.zeros(self.horizon_length))
-        self.seek_angles = list(np.zeros(self.horizon_length))
-        self.seek_points_transformed = list(np.zeros(self.horizon_length-1))
 
-    # ---- estimated egocar positions ----
-    def estimate_ego_pos(self, ego_velocity, curvature):
+    def init_parameters(self, node: Node):
+        self.curvature_radius_threshold = get_ros_parameter(
+            node, "mpc_parameters.curvature_radius_threshold")
+
+    # ---- predict egocar positions ----
+    def predict_relative_ego_positions(self, ego_velocity, curvatures):
         # ego_v: lin_x, ang.z, curvature(curvature): 3 horizon
         # Assume omega is 1/curvature instead ang.z
         # 1st static object estimation only. not yet dynamic object estimation
-        for step in range(self.horizon_length):
-            self.seek_points[step], self.seek_angles[step] = self.estimate_pos_curvature(
-                ego_velocity[0], curvature[step], self.horizon_steps[step])
+        predicted_positions = [
+            Pose(pos=Position(x=0.0, y=0.0), yaw=0.0)] * self.horizon_length
+        predicted_positions_rotate_transformed = list(
+            np.zeros(self.horizon_length-1))
+
+        for idx, (curvature, horizon_duration, predicted_position) in enumerate(zip(curvatures, self.horizon_durations, predicted_positions)):
+            predicted_positions[idx].pos, predicted_positions[idx].yaw = self.predict_position(
+                ego_velocity, curvature, horizon_duration)
 
         # Rotate Point
-        for step in range(self.horizon_length - 1):
-            if step == 0:
-                self.seek_points_transformed[step] = self.rotate_point(
-                    self.seek_points[step+1], self.seek_angles[step])
+        for horizon_idx in range(self.horizon_length - 1):
+            if horizon_idx == 0:
+                predicted_positions_rotate_transformed[horizon_idx] = self.rotate_position(
+                    predicted_positions[horizon_idx+1].pos, predicted_positions[horizon_idx].yaw)
             else:
-                self.seek_points_transformed[step] = self.rotate_point(
-                    self.seek_points[step+1], self.seek_angles[step] + self.seek_angles[step+1])
+                predicted_positions_rotate_transformed[horizon_idx] = self.rotate_position(
+                    predicted_positions[horizon_idx+1].pos, predicted_positions[horizon_idx].yaw + predicted_positions[horizon_idx+1].yaw)
 
-        for step in range(self.horizon_length - 1):
-            self.seek_angles[step+1] = self.seek_angles[step]
+        for horizon_idx in range(self.horizon_length - 1):
+            predicted_positions[horizon_idx +
+                                1].yaw = predicted_positions[horizon_idx].yaw
 
         self.ego_positions = np.vstack(
-            [self.seek_points[0], self.seek_points_transformed])
+            [predicted_positions[0].pos, predicted_positions_rotate_transformed])
         self.ego_angles = np.array(
-            self.seek_angles)    # (1,3)
+            [predicted_position.yaw for predicted_position in predicted_positions])
 
         return self.ego_positions, self.ego_angles
 
@@ -47,51 +60,47 @@ class GeometricPoseCurvatures:
             [[np.cos(angle), -np.sin(angle)], [np.sin(angle), np.cos(angle)]])
         return rotation_matrix
 
-    def rotate_point(self, previous_point, angle):
-        point_transformed = (self.create_rotation_matrix(
-            angle) @ previous_point.T).T
-        return point_transformed
+    def rotate_position(self, position, angle):
+        position_transformed = (self.create_rotation_matrix(
+            angle) @ np.array(position).T).T
+        return position_transformed
 
-    def estimate_pos(self, ego_velocity, radius, horizon_time):
-        distance = ego_velocity * horizon_time
-        angle = float(distance / radius)
-
-        if (radius < 1000):  # curve
-            x = radius * np.sin(angle)
-            y = radius * (1 - np.cos(angle))
+    def predict_position(self, ego_velocity, curvature, horizon_time):
+        radius = self.curvature_radius_threshold
+        if (abs(curvature) > (1/self.curvature_radius_threshold)):
+            radius = 1. / curvature
+        travel_distance = ego_velocity * horizon_time
+        arc_angle = float(travel_distance / radius)
+        if (radius < self.curvature_radius_threshold):  # curve
+            x = radius * np.sin(arc_angle)
+            y = radius * (1 - np.cos(arc_angle))
         else:  # straight
-            x = distance
+            x = travel_distance
             y = 0.
-            angle = 0.
-        return np.array([x, y]), angle
+            arc_angle = 0.
+        return np.array([x, y]), arc_angle
 
-    def estimate_pos_curvature(self, ego_velocity, curvature, horizon_time):
-        radius = 1000
-        if (abs(curvature) > 0.001):
-            radius = 1 / curvature
-        return self.estimate_pos(ego_velocity, radius, horizon_time)
+    def predict_relative_seek_positions(self, ego_positions, seek_y_positions):
+        relative_seek_positions = list(np.zeros(self.horizon_length))
+        for idx in range(self.horizon_length):
+            relative_seek_positions[idx] = (
+                ego_positions[idx] + np.array([np.zeros(5), np.array(seek_y_positions[idx])]).T).T
 
-    def estimate_direct_seek_y_poss(self, ego_positions, curvature_seek):
-        curvature_seeks = list(np.zeros(self.horizon_length))
-        for num in range(self.horizon_length):
-            curvature_seeks[num] = (
-                ego_positions[num] + np.array([np.zeros(5), np.array(curvature_seek[num])]).T).T
+        return relative_seek_positions
 
-        return curvature_seeks
+    def predict_absolute_seek_positions(self, ego_positions, relative_seek_positions):
+        absolute_seek_positions = list(
+            np.zeros((len(relative_seek_positions[0]), len(relative_seek_positions[0][0]))))
 
-    def estimate_base_abs_poss(self, egopos, curvature_seek):
-        curvature_abs_seeks = list(
-            np.zeros((len(curvature_seek[0]), len(curvature_seek[0][0]))))
-
-        for num in range(self.horizon_length-1):
-            if num == 0:
-                curvature_abs_seeks[num] = egopos[num].reshape(
-                    2, 1) + curvature_seek[num+1]
+        for idx in range(self.horizon_length-1):
+            if idx == 0:
+                absolute_seek_positions[idx] = ego_positions[idx].reshape(
+                    2, 1) + relative_seek_positions[idx+1]
             else:
-                curvature_abs_seeks[num] = (
-                    egopos[num-1] + egopos[num]).reshape(2, 1) + curvature_seek[num+1]
+                absolute_seek_positions[idx] = (
+                    ego_positions[idx-1] + ego_positions[idx]).reshape(2, 1) + relative_seek_positions[idx+1]
 
-        curvature_abs_seekss = [curvature_seek[0]]
-        curvature_abs_seekss.extend(curvature_abs_seeks)
+        absolute_seek_positions = [
+            relative_seek_positions[0]] + absolute_seek_positions
 
-        return list(curvature_abs_seekss)
+        return list(absolute_seek_positions)

@@ -1,21 +1,31 @@
 import numpy as np
+from rclpy.node import Node
 from scipy.interpolate import interp1d
+
+from common_python.get_ros_parameter import get_ros_parameter
 
 
 class ObjectEstimation:
-    def __init__(self, risk_table_u, risk_table_y):
+    def __init__(self, node: Node):
+        self.init_parameters(node)
         # it will be ros paramter
         PedestrianRisk_X_u = [-2, -1, -0.6, -0.5, -
                               0.35, -0.2, 0, 0.2, 0.35, 0.5, 0.6, 1, 2]
         PedestrianRisk_X_y = [0, 0, 0, 0.1, 1., 1., 1, 1., 1., 0.1, 0, 0, 0]
-        PedestrianRisk_Y_u = risk_table_u
-        PedestrianRisk_Y_y = risk_table_y
+        PedestrianRisk_Y_u = self.object_risk_table_u
+        PedestrianRisk_Y_y = self.object_risk_table_y
 
         self.risk_function_x = interp1d(PedestrianRisk_X_u, PedestrianRisk_X_y)
         self.risk_function_y = interp1d(PedestrianRisk_Y_u, PedestrianRisk_Y_y)
 
         self.risk_max = [max(PedestrianRisk_X_u), max(PedestrianRisk_Y_u)]
         self.risk_min = [min(PedestrianRisk_X_u), min(PedestrianRisk_Y_u)]
+
+    def init_parameters(self, node: Node):
+        self.object_risk_table_u = get_ros_parameter(
+            node, "object_risk_potential.pedestrian_risk_table_u")
+        self.object_risk_table_y = get_ros_parameter(
+            node, "object_risk_potential.pedestrian_risk_table_y")
 
     def create_rotation_matrix(self, angle):
         rotation_matrix = np.array(

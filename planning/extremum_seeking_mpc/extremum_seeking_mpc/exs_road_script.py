@@ -1,10 +1,14 @@
 import numpy as np
+from rclpy.node import Node
 from scipy.interpolate import interp1d
 from scipy.stats import multivariate_normal
 
+from common_python.get_ros_parameter import get_ros_parameter
+
 
 class RoadEstimation:
-    def __init__(self, road_sigma, road_risk_table):
+    def __init__(self, node: Node):
+        self.init_parameters(node)
         Weight_u = [-0.1, 0., 0.41, 0.69, 0.83, 1., 1.1]
         Weight_y1 = [1., 1., 0., 0., 0., 0., 0.]
         Weight_y2 = [0., 0., 1., 0., 0., 0., 0.]
@@ -26,15 +30,20 @@ class RoadEstimation:
         self.mem_lim = 0.3
         self.theta_base = [0., 0., 0.]
         self.risk_gain = 10
-        sigma = road_sigma  # sigma is distance between seek_point and road_bound
-        self.sigma_max = max(sigma)
-        self.sigma_min = min(sigma)
+        self.sigma_max = max(self.road_sigma)
+        self.sigma_min = min(self.road_sigma)
 
         ## Roadbound Risk Potential Function ##
-        left_road_risk_table = road_risk_table
-        self.left_road_risk = interp1d(sigma, left_road_risk_table)
-        right_road_risk_table = list(reversed(road_risk_table))
-        self.right_road_risk = interp1d(sigma, right_road_risk_table)
+        left_road_risk_table = self.road_risk_table
+        self.left_road_risk = interp1d(self.road_sigma, left_road_risk_table)
+        right_road_risk_table = list(reversed(self.road_risk_table))
+        self.right_road_risk = interp1d(self.road_sigma, right_road_risk_table)
+
+    def init_parameters(self, node: Node):
+        self.road_sigma = get_ros_parameter(
+            node, "road_risk_potential.road_risk_table_u")  # sigma is distance between seek_point and road_bound
+        self.road_risk_table = get_ros_parameter(
+            node, "road_risk_potential.road_risk_table_y")
 
     def line_identification(self, xys):
         xs = np.ravel(xys[:, :1].T)

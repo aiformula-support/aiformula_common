@@ -22,12 +22,12 @@ def generate_launch_description():
         output="screen",
         emulate_tty=True,
         parameters=[*ROS_PARAM_CONFIG,
-                    {"tf_frame_id": FRAME_IDS["base_footprint"], },],
+                    {"base_footprint_frame_id": FRAME_IDS["base_footprint"], },],
         remappings=[
-            ('pub_speed_command', TOPIC_NAMES["planning"]["speed_command"]),
+            ('pub_twist_command', TOPIC_NAMES["planning"]["twist_command"]),
             ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),
             ('sub_road_r', TOPIC_NAMES["perception"]["lane_lines"]["right"]),
-            ('sub_ego_velocity', TOPIC_NAMES["planning"]["ego_velocity"]),
+            ('sub_actual_speed', TOPIC_NAMES["sensing"]["actual_speed"]),
         ],
     )
 

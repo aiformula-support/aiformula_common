@@ -38,7 +38,8 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory("vehicle"), "config", "wheel.yaml"),
+        osp.join(get_package_share_directory(
+            "vehicle"), "config", "wheel.yaml"),
         osp.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     gyro_odometry_publisher = Node(
@@ -57,6 +58,7 @@ def generate_launch_description():
             ("sub_imu", TOPIC_NAMES["sensing"]["zedx"]["imu"]),
             ("sub_can", TOPIC_NAMES["sensing"]["input_can_data"]),
             ("pub_odometry", TOPIC_NAMES["sensing"]["odometry"]["gyro"]),
+            ("pub_actual_speed", TOPIC_NAMES["sensing"]["actual_speed"]),
         ],
     )
     rosbag_play = ExecuteProcess(
