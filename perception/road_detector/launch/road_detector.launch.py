@@ -11,7 +11,7 @@ def generate_launch_description():
     PACKAGE_NAME = "road_detector"
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "normalization.yaml"),
+        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "road_detector.yaml"),
     )
 
     launch_args = (
@@ -21,7 +21,7 @@ def generate_launch_description():
             description="Path to the weight pth file."),
         DeclareLaunchArgument(
             "use_architecture",
-            default_value= "0",
+            default_value="0",
             description="cuda device, i.e. 0 or cpu",),
     )
 
@@ -30,7 +30,7 @@ def generate_launch_description():
         executable=PACKAGE_NAME,
         name=PACKAGE_NAME,
         namespace="/aiformula_perception",
-        output = "screen",
+        output="screen",
         parameters=[
             [*ROS_PARAM_CONFIG],
             # Overriding

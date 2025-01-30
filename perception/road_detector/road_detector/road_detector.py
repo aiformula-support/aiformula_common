@@ -1,103 +1,148 @@
 import sys
+import numpy as np
+import os.path as osp
+import torch
+import torchvision.transforms as transforms
 import rclpy
 from rclpy.node import Node
 from sensor_msgs.msg import Image
 from cv_bridge import CvBridge, CvBridgeError
-import numpy as np
-import torch
-import torchvision.transforms as transforms
+from numpy import random
 
 from pathlib import Path
 from ament_index_python.packages import get_package_prefix
-package = str(Path(__file__).resolve().parent.name)
-workspace = Path(get_package_prefix(package)).parents[1]
-yolop_module_path = workspace/'..'/'YOLOP'
-if str(yolop_module_path) not in sys.path:
-    sys.path.insert(0, str(yolop_module_path))  # add ROOT to PATH
+package_name = str(Path(__file__).resolve().parent.name)
+workspace_dir = Path(get_package_prefix(package_name)).parents[1]
+yolop_dir = osp.join(workspace_dir, "..")
+if yolop_dir not in sys.path:
+    sys.path.insert(0, yolop_dir)
+    sys.path.insert(0, osp.join(yolop_dir, "YOLOP"))  # add ROOT to PATH
 
-from lib.config import cfg
-from lib.utils import letterbox_for_img
-from lib.utils.utils import select_device
-from lib.models import get_net
-from lib.utils import show_seg_result
+from typing import List  # noqa: E402
+from dataclasses import dataclass  # noqa: E402
+from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
 
-from common_python.get_ros_parameter import get_ros_parameter
+from YOLOP.lib.config import cfg  # noqa: E402
+from YOLOP.lib.utils import letterbox_for_img  # noqa: E402
+from YOLOP.lib.utils.utils import select_device  # noqa: E402
+from YOLOP.lib.models import get_net  # noqa: E402
+from YOLOP.lib.core.general import non_max_suppression, scale_coords  # noqa: E402
+from YOLOP.lib.utils import plot_one_box, show_seg_result  # noqa: E402
+
+
+@dataclass(frozen=True)
+class RoadDetectorParams:
+    architecture: str
+    path_to_weights: str
+    mean: List[float]
+    stdev: List[float]
+    confidence_threshold: float
+    iou_threshold: float
 
 
 class RoadDetector(Node):
 
     def __init__(self):
         super().__init__('road_detector')
-        buffer_size = 10
+        self.get_params()
+        self.parameters = RoadDetectorParams(architecture=self.architecture, path_to_weights=self.path_to_weights, mean=self.mean,
+                                             stdev=self.stdev, confidence_threshold=self.confidence_threshold, iou_threshold=self.iou_threshold)
+        self.init_detector()
         self.cv_bridge = CvBridge()
-        architecture, weights, mean, std = self.get_params()
-        self.architecture = select_device(device=architecture)
-        self.use_half_precision = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
-        # Load model
-        self.model = get_net(cfg)
-        checkpoint = torch.load(weights, map_location=self.architecture)
-        self.model.load_state_dict(checkpoint['state_dict'])
-        self.model = self.model.to(self.architecture)
-        if self.use_half_precision:
-            self.model.half()  # to FP16
-        # Nomalization and Tensor
-        normalize = transforms.Normalize(mean, std)
-        self.transform = transforms.Compose([
-            transforms.ToTensor(),
-            normalize,
-        ])
-
-        self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
-        self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
+        buffer_size = 10
         self.image_sub = self.create_subscription(
             Image, 'sub_image', self.image_callback, buffer_size)
+        self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
+        self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
+        # Get names and colors
+        self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
+        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
 
     def get_params(self):
-        architecture = get_ros_parameter(self, "use_architecture")
-        weights = get_ros_parameter(self, "weight_path")
-        mean = get_ros_parameter(self, "mean")
-        std = get_ros_parameter(self, "standard_deviation")
-        return architecture, weights, mean, std
+        self.architecture = get_ros_parameter(self, 'use_architecture')
+        self.path_to_weights = get_ros_parameter(self, 'weight_path')
+        self.mean = get_ros_parameter(self, 'normalization.mean')
+        self.stdev = get_ros_parameter(self, 'normalization.standard_deviation')
+        self.confidence_threshold = get_ros_parameter(self, 'confidence_threshold')
+        self.iou_threshold = get_ros_parameter(self, 'iou_threshold')
 
-    def padding_image(self, image):
-        # Padded resize
-        padding_image, (ratio_to_padding, _), (dw, dh) = letterbox_for_img(
-            image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
-        top, bottom = int(round(dh - 0.1)), int(round(dh + 0.1))
-        left, right = int(round(dw - 0.1)), int(round(dw + 0.1))
-        return np.ascontiguousarray(padding_image), ratio_to_padding, top, bottom, left, right
+    def init_detector(self):
+        self.load_model()
+        # Nomalization and Tensor
+        self.transform = transforms.Compose([
+            transforms.ToTensor(),
+            transforms.Normalize(self.parameters.mean, self.parameters.stdev),
+        ])
+
+    def load_model(self):
+        self.architecture = select_device(device=str(self.parameters.architecture))
+        self.use_half_precision = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
+        self.model = get_net(cfg)
+        checkpoint = torch.load(self.parameters.path_to_weights, map_location=self.architecture)
+        self.model.load_state_dict(checkpoint['state_dict'])
+        if self.architecture.type == 'cuda':
+            self.model = self.model.to(self.architecture)
+            self.model.half()  # to FP16
+        self.model.eval()
 
     def image_callback(self, msg):
         try:
             undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
-
-        padding_image, ratio_to_padding, top, bottom, left, right = self.padding_image(undistorted_image)
-        normalize_image = self.transform(padding_image).to(self.architecture)
+        paded_image, ratio_to_padding, top, bottom, left, right = self.pad_image(undistorted_image)
+        normalize_image = self.transform(paded_image).to(self.parameters.architecture)
         input_image = normalize_image.half() if self.use_half_precision else normalize_image.float()  # uint8 to fp16/32
         if input_image.ndimension() == 3:
             input_image = input_image.unsqueeze(0)
         # Inference
-        _, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
+        detect_out, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
+        ll_seg_mask = self.lane_line_detect(ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right)
+        detect = self.object_detect(detect_out)
+        self.publish_result(undistorted_image, input_image, ll_seg_mask, detect, msg.header.stamp)
+
+    def pad_image(self, image):
+        # Padded resize
+        paded_image, (ratio_to_padding, _), (dw, dh) = letterbox_for_img(
+            image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
+        top, bottom = round(dh - 0.1), round(dh + 0.1)
+        left, right = round(dw - 0.1), round(dw + 0.1)
+        return np.ascontiguousarray(paded_image), ratio_to_padding, top, bottom, left, right
+
+    def lane_line_detect(self, ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right):
         _, _, height, width = input_image.shape
         ll_predict = ll_seg_out[:, :, top:(height-bottom), left:(width-right)]
         ll_seg_mask_raw = torch.nn.functional.interpolate(
             ll_predict, scale_factor=int(1/ratio_to_padding), mode='bilinear')
-        _, ll_seg_poits = torch.max(ll_seg_mask_raw, 1)
+        _, ll_seg_poits = torch .max(ll_seg_mask_raw, 1)
         ll_seg_mask = ll_seg_poits.int().squeeze().cpu().numpy()
-        self.publish_result(undistorted_image, ll_seg_mask, msg.header.stamp)
+        return ll_seg_mask
 
-    def publish_result(self, image, ll_seg_mask, time_stamp):
+    def object_detect(self, detect_out):
+        inference_out, _ = detect_out
+        detect_predict = non_max_suppression(inference_out, conf_thres=self.parameters.confidence_threshold,
+                                             iou_thres=self.parameters.iou_threshold, classes=None, agnostic=False)
+        detect = detect_predict[0]
+        return detect
+
+    def publish_result(self, undistorted_image, input_image, ll_seg_mask, detect, time_stamp):
         # Publish annotated image
-        annotated_image = show_seg_result(image, (ll_seg_mask, None), None, None, is_demo=True)
+        annotated_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
+        if len(detect):
+            annotated_image = self.bounding_box(input_image, annotated_image, detect)
         self.annotated_mask_image_pub.publish(self.cv_bridge.cv2_to_imgmsg(annotated_image, "bgr8"))
-
         # Publish mask image
         ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
         ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
         ll_seg_mask_msg.header.stamp = time_stamp
         self.lane_mask_image_pub.publish(ll_seg_mask_msg)
+
+    def bounding_box(self, image, annotated_image, detect):
+        detect[:, :4] = scale_coords(image.shape[2:], detect[:, :4], annotated_image.shape).round()
+        for *xyxy, conf, cls in reversed(detect):
+            label_det_pred = f'{self.names[int(cls)]} {conf:.2f}'
+            plot_one_box(xyxy, annotated_image, label=label_det_pred, color=self.colors[int(cls)], line_thickness=2)
+        return annotated_image
 
 
 def main():
