@@ -136,24 +136,25 @@ class RoadDetector(Node):
         ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
         ll_seg_mask_msg.header = header
         self.lane_mask_image_pub.publish(ll_seg_mask_msg)
-        annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
         # Publish object point
-        annotated_box_image, object_poses = self.bounding_box(input_image, annotated_lane_image, detect)
-        rect_array = self.listToRects(object_poses)
+        detect_poses = []
+        for *xyxy, _, _ in reversed(detect):
+            detect_poses.append(xyxy)
+        rect_array = self.listToRects(detect_poses)
         rect_array.header = header
         self.object_pose_pub.publish(rect_array)
         # Publish annotated image
+        annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
+        annotated_box_image = self.bounding_box(input_image, annotated_lane_image, detect)
         self.annotated_mask_image_pub.publish(self.cv_bridge.cv2_to_imgmsg(annotated_box_image, "bgr8"))
 
     def bounding_box(self, image, annotated_image, detect):
         detect[:, :4] = scale_coords(image.shape[2:], detect[:, :4], annotated_image.shape).round()
-        object_poses = []
         for *xyxy, conf, cls in reversed(detect):
             label_detect_predict = f'{self.names[int(cls)]} {conf:.2f}'
             plot_one_box(xyxy, annotated_image, label=label_detect_predict,
                          color=self.colors[int(cls)], line_thickness=2)
-            object_poses.append(xyxy)
-        return annotated_image, object_poses
+        return annotated_image
 
     def listToRects(self, object_poses):
         rect_array = RectMultiArray()

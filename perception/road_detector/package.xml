@@ -13,6 +13,7 @@
   <test_depend>python3-pytest</test_depend>
   
   <depend>common_python</depend>
+  <depend>aiformula_interfaces</depend>
 
   <export>
     <build_type>ament_python</build_type>
