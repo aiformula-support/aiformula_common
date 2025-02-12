@@ -19,6 +19,7 @@ def generate_launch_description():
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
             "use_sim_time": "false",
+            "use_joint_state_publisher": "false",
         }.items(),
     )
     zed_node = IncludeLaunchDescription(

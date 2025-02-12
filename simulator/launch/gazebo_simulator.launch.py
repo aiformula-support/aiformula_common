@@ -45,6 +45,7 @@ def generate_launch_description():
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
             "use_sim_time": LaunchConfiguration("use_sim_time"),
+            "use_joint_state_publisher": "true",
         }.items(),
     )
     # ExecuteProcess(

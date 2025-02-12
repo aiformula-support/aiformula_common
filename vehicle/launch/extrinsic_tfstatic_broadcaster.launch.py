@@ -6,7 +6,7 @@ from launch.actions import DeclareLaunchArgument, OpaqueFunction
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
 from ament_index_python.packages import get_package_share_directory
-from vehicle.vehicle_util import convert_xacro_to_urdf
+from vehicle.vehicle_util import replace_wheel_joint_type, convert_xacro_to_urdf
 
 PACKAGE_NAME = "vehicle"
 PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
@@ -14,8 +14,12 @@ PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
 
 def get_robot_state_publisher(context: LaunchContext) -> Tuple[Node]:
     vehicle_name = LaunchConfiguration("vehicle_name").perform(context)
+    use_joint_state_publisher = LaunchConfiguration("use_joint_state_publisher").perform(context)
     xacro_path = osp.join(PACKAGE_DIR, "xacro", vehicle_name + ".xacro")
     urdf_path = osp.join(PACKAGE_DIR, "xacro", vehicle_name + ".urdf")
+
+    joint_type = "continuous" if use_joint_state_publisher.lower() == "true" else "fixed"
+    replace_wheel_joint_type(xacro_path, joint_type)
     convert_xacro_to_urdf(xacro_path, urdf_path)
     with open(urdf_path, 'r') as infp:
         robot_description = infp.read()
@@ -66,7 +70,7 @@ def generate_launch_description():
         ),
         DeclareLaunchArgument(
             "use_joint_state_publisher",
-            default_value="true",
+            default_value="false",
             description="If true, use joint_state_publisher",
         ),
         DeclareLaunchArgument(

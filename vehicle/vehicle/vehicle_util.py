@@ -1,4 +1,6 @@
 import os.path as osp
+import re
+
 import xacro
 from ament_index_python.packages import get_package_share_directory
 
@@ -44,3 +46,39 @@ def convert_xacro_to_urdf(xacro_path: str, urdf_path: str) -> None:
     f = open(urdf_path, "w")
     f.write(robot_desc)
     f.close()
+
+
+def replace_wheel_joint_type(xacro_path: str, joint_type: str) -> None:
+    """
+    Replace the WHEEL_JOINT_TYPE property in a xacro file with a specified joint type.
+
+    This function searches for the `<xacro:property>` tag with the name "WHEEL_JOINT_TYPE" 
+    in the given xacro file and replaces its `value` attribute with the provided joint type.
+
+    Parameters
+    ----------
+    xacro_path : str
+        The file path to the target `.xacro` file.
+    joint_type : str
+        The new joint type to be set for the `WHEEL_JOINT_TYPE` property 
+        (e.g., "fixed", "continuous", "revolute").
+
+    Examples
+    --------
+    >>> replace_wheel_joint_type("/path/to/robot.xacro", "continuous")
+    This will change:
+        <xacro:property name="WHEEL_JOINT_TYPE" value="fixed"/>
+    to:
+        <xacro:property name="WHEEL_JOINT_TYPE" value="continuous"/>
+
+    Notes
+    -----
+    - The function overwrites the installed file, so there is no need to worry about 
+      modifying the original file.
+    """
+    with open(xacro_path, 'r', encoding='utf-8') as file:
+        content = file.read()
+    pattern = r'(<xacro:property\s+name="WHEEL_JOINT_TYPE"\s+value=")([^"]*)(".*?/>)'
+    new_content = re.sub(pattern, rf'\1{joint_type}\3', content)
+    with open(xacro_path, 'w', encoding='utf-8') as file:
+        file.write(new_content)
