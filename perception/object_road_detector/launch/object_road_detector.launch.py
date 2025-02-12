@@ -8,16 +8,16 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    PACKAGE_NAME = "road_detector"
+    PACKAGE_NAME = "object_road_detector"
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "road_detector.yaml"),
+        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "object_road_detector.yaml"),
     )
 
     launch_args = (
         DeclareLaunchArgument(
             "weight_path",
-            default_value=osp.join(get_package_share_directory("road_detector"), "weights", "End-to-end.pth"),
+            default_value=osp.join(get_package_share_directory("object_road_detector"), "weights", "End-to-end.pth"),
             description="Path to the weight pth file."),
         DeclareLaunchArgument(
             "use_architecture",
@@ -25,7 +25,7 @@ def generate_launch_description():
             description="cuda device, i.e. 0 or cpu",),
     )
 
-    road_detector = Node(
+    object_road_detector = Node(
         package=PACKAGE_NAME,
         executable=PACKAGE_NAME,
         name=PACKAGE_NAME,
@@ -53,5 +53,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         *launch_args,
-        road_detector,
+        object_road_detector,
     ])

@@ -1,6 +1,10 @@
 import sys
 import numpy as np
 import os.path as osp
+from numpy import random
+from pathlib import Path
+from typing import List
+from dataclasses import dataclass
 import torch
 import torchvision.transforms as transforms
 import rclpy
@@ -8,21 +12,14 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
 from cv_bridge import CvBridge, CvBridgeError
-from numpy import random
-
-from pathlib import Path
 from ament_index_python.packages import get_package_prefix
+
 package_name = str(Path(__file__).resolve().parent.name)
 workspace_dir = Path(get_package_prefix(package_name)).parents[1]
 yolop_dir = osp.join(workspace_dir, "..")
 if yolop_dir not in sys.path:
     sys.path.insert(0, yolop_dir)
     sys.path.insert(0, osp.join(yolop_dir, "YOLOP"))  # add ROOT to PATH
-
-from typing import List  # noqa: E402
-from dataclasses import dataclass  # noqa: E402
-from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
-from aiformula_interfaces.msg import Rect, RectMultiArray  # noqa: E402
 
 from YOLOP.lib.config import cfg  # noqa: E402
 from YOLOP.lib.utils import letterbox_for_img  # noqa: E402
@@ -31,9 +28,12 @@ from YOLOP.lib.models import get_net  # noqa: E402
 from YOLOP.lib.core.general import non_max_suppression, scale_coords  # noqa: E402
 from YOLOP.lib.utils import plot_one_box, show_seg_result  # noqa: E402
 
+from aiformula_interfaces.msg import Rect, RectMultiArray  # noqa: E402
+from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
+
 
 @dataclass(frozen=True)
-class RoadDetectorParams:
+class ObjectRoadDetectorParams:
     architecture: str
     path_to_weights: str
     mean: List[float]
@@ -42,13 +42,13 @@ class RoadDetectorParams:
     iou_threshold: float
 
 
-class RoadDetector(Node):
+class ObjectRoadDetector(Node):
 
     def __init__(self):
-        super().__init__('road_detector')
+        super().__init__('object_road_detector')
         self.get_params()
-        self.parameters = RoadDetectorParams(architecture=self.architecture, path_to_weights=self.path_to_weights, mean=self.mean,
-                                             stdev=self.stdev, confidence_threshold=self.confidence_threshold, iou_threshold=self.iou_threshold)
+        self.parameters = ObjectRoadDetectorParams(architecture=self.architecture, path_to_weights=self.path_to_weights, mean=self.mean,
+                                                   stdev=self.stdev, confidence_threshold=self.confidence_threshold, iou_threshold=self.iou_threshold)
         self.init_detector()
         self.cv_bridge = CvBridge()
         buffer_size = 10
@@ -60,8 +60,7 @@ class RoadDetector(Node):
         # Get names and colors
         self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
-
-        self.header = Header
+        self.header = Header()
 
     def get_params(self):
         self.architecture = get_ros_parameter(self, 'use_architecture')
@@ -173,9 +172,9 @@ class RoadDetector(Node):
 def main():
     with torch.no_grad():
         rclpy.init()
-        road_detector = RoadDetector()
-        rclpy.spin(road_detector)
-        road_detector.destroy_node()
+        object_road_detector = ObjectRoadDetector()
+        rclpy.spin(object_road_detector)
+        object_road_detector.destroy_node()
         rclpy.shutdown()
 
 
