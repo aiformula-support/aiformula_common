@@ -59,9 +59,8 @@ class ObjectRoadDetector(Node):
         self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
         self.rects_pub = self.create_publisher(RectMultiArray, 'pub_object_pose', buffer_size)
         # Get names and colors
-        self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
-        self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
-        self.header = Header()
+        self.bbox_names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
+        self.bbox_colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.bbox_names))]
 
     def get_params(self):
         self.architecture = get_ros_parameter(self, 'use_architecture')
@@ -137,7 +136,7 @@ class ObjectRoadDetector(Node):
     def publish_result(self, undistorted_image, input_image, ll_seg_mask, object_detect, header):
         # Publish annotated image
         annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
-        annotated_box_image = self.bounding_box(input_image, annotated_lane_image, object_detect)
+        annotated_box_image = self.draw_bounding_box(input_image, annotated_lane_image, object_detect)
         annotated_mask_image = self.cv_bridge.cv2_to_imgmsg(annotated_box_image, "bgr8")
         annotated_mask_image.header = header
         self.annotated_mask_image_pub.publish(annotated_mask_image)
@@ -158,13 +157,13 @@ class ObjectRoadDetector(Node):
         rect_array.header = header
         self.rects_pub.publish(rect_array)
 
-    def bounding_box(self, image, annotated_image, object_detect) -> np.ndarray:
+    def draw_bounding_box(self, image, annotated_image, object_detect) -> np.ndarray:
         detect = object_detect
         detect[:, :4] = scale_coords(image.shape[2:], detect[:, :4], annotated_image.shape).round()
         for *xyxy, conf, cls in reversed(detect):
-            label_detect_predict = f'{self.names[int(cls)]} {conf:.2f}'
+            label_detect_predict = f'{self.bbox_names[int(cls)]} {conf:.2f}'
             plot_one_box(xyxy, annotated_image, label=label_detect_predict,
-                         color=self.colors[int(cls)], line_thickness=2)
+                         color=self.bbox_colors[int(cls)], line_thickness=2)
         return annotated_image
 
     def listToRects(self, object_poses) -> RectMultiArray:
