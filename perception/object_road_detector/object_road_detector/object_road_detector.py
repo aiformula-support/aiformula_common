@@ -2,6 +2,7 @@ import sys
 import numpy as np
 import os.path as osp
 from numpy import random
+import copy
 from pathlib import Path
 from typing import List
 from dataclasses import dataclass
@@ -26,10 +27,10 @@ from YOLOP.lib.utils import letterbox_for_img  # noqa: E402
 from YOLOP.lib.utils.utils import select_device  # noqa: E402
 from YOLOP.lib.models import get_net  # noqa: E402
 from YOLOP.lib.core.general import non_max_suppression, scale_coords  # noqa: E402
-from YOLOP.lib.utils import plot_one_box, show_seg_result  # noqa: E402
 
 from aiformula_interfaces.msg import Rect, RectMultiArray  # noqa: E402
 from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
+from .object_road_detector_util import show_seg_result, plot_one_box  # noqa: E402
 
 
 @dataclass(frozen=True)
@@ -56,7 +57,7 @@ class ObjectRoadDetector(Node):
             Image, 'sub_image', self.image_callback, buffer_size)
         self.annotated_mask_image_pub = self.create_publisher(Image, 'pub_annotated_mask_image', buffer_size)
         self.lane_mask_image_pub = self.create_publisher(Image, 'pub_mask_image', buffer_size)
-        self.object_pose_pub = self.create_publisher(RectMultiArray, 'pub_object_pose', buffer_size)
+        self.rects_pub = self.create_publisher(RectMultiArray, 'pub_object_pose', buffer_size)
         # Get names and colors
         self.names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
         self.colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.names))]
@@ -94,26 +95,30 @@ class ObjectRoadDetector(Node):
             undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, "bgr8")
         except CvBridgeError as e:
             print(e)
+        # Padded resize
         paded_image, ratio_to_padding, top, bottom, left, right = self.pad_image(undistorted_image)
         normalize_image = self.transform(paded_image).to(self.parameters.architecture)
+        # Input image
         input_image = normalize_image.half() if self.use_half_precision else normalize_image.float()  # uint8 to fp16/32
         if input_image.ndimension() == 3:
             input_image = input_image.unsqueeze(0)
         # Inference
         detect_out, _, ll_seg_out = self.model(input_image)  # ll_seg_out -> lane line segmentation output
         ll_seg_mask = self.decode_lane_line_output(ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right)
-        detect = self.decode_object_output(detect_out)
-        self.publish_result(undistorted_image, input_image, ll_seg_mask, detect, msg.header)
+        object_detect = self.decode_object_output(detect_out)
+        # Publish
+        self.publish_lane_line(ll_seg_mask, msg.header)
+        self.publish_rects(input_image, undistorted_image, object_detect, msg.header)
+        self.publish_result(undistorted_image, input_image, ll_seg_mask, object_detect, msg.header)
 
     def pad_image(self, image):
-        # Padded resize
         paded_image, (ratio_to_pad, _), (dw, dh) = letterbox_for_img(
             image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
         top, bottom = round(dh - 0.1), round(dh + 0.1)
         left, right = round(dw - 0.1), round(dw + 0.1)
         return np.ascontiguousarray(paded_image), ratio_to_pad, top, bottom, left, right
 
-    def decode_lane_line_output(self, ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right):
+    def decode_lane_line_output(self, ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right) -> np.ndarray:
         _, _, height, width = input_image.shape
         ll_predict = ll_seg_out[:, :, top:(height-bottom), left:(width-right)]
         ll_seg_mask_raw = torch.nn.functional.interpolate(
@@ -122,32 +127,39 @@ class ObjectRoadDetector(Node):
         ll_seg_mask = ll_seg_poits.int().squeeze().cpu().numpy()
         return ll_seg_mask
 
-    def decode_object_output(self, detect_out):
+    def decode_object_output(self, detect_out) -> torch.Tensor:
         object_out, _ = detect_out
         detect_predict = non_max_suppression(object_out, conf_thres=self.parameters.confidence_threshold,
                                              iou_thres=self.parameters.iou_threshold, classes=None, agnostic=False)
         detect = detect_predict[0]
         return detect
 
-    def publish_result(self, undistorted_image, input_image, ll_seg_mask, detect, header):
-        # Publish mask image
+    def publish_result(self, undistorted_image, input_image, ll_seg_mask, object_detect, header):
+        # Publish annotated image
+        annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
+        annotated_box_image = self.bounding_box(input_image, annotated_lane_image, object_detect)
+        annotated_mask_image = self.cv_bridge.cv2_to_imgmsg(annotated_box_image, "bgr8")
+        annotated_mask_image.header = header
+        self.annotated_mask_image_pub.publish(annotated_mask_image)
+
+    def publish_lane_line(self, ll_seg_mask, header):
         ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
         ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
         ll_seg_mask_msg.header = header
         self.lane_mask_image_pub.publish(ll_seg_mask_msg)
-        # Publish object point
-        detect_poses = []
-        for *xyxy, _, _ in reversed(detect):
-            detect_poses.append(xyxy)
-        rect_array = self.listToRects(detect_poses)
-        rect_array.header = header
-        self.object_pose_pub.publish(rect_array)
-        # Publish annotated image
-        annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
-        annotated_box_image = self.bounding_box(input_image, annotated_lane_image, detect)
-        self.annotated_mask_image_pub.publish(self.cv_bridge.cv2_to_imgmsg(annotated_box_image, "bgr8"))
 
-    def bounding_box(self, image, annotated_image, detect):
+    def publish_rects(self, input_image, undistorted_image, object_detect, header):
+        bbox_poses = []
+        bbox_detect = copy.deepcopy(object_detect)
+        bbox_detect[:, :4] = scale_coords(input_image.shape[2:], bbox_detect[:, :4], undistorted_image.shape).round()
+        for *xyxy, _, _ in reversed(bbox_detect):
+            bbox_poses.append(xyxy)
+        rect_array = self.listToRects(bbox_poses)
+        rect_array.header = header
+        self.rects_pub.publish(rect_array)
+
+    def bounding_box(self, image, annotated_image, object_detect) -> np.ndarray:
+        detect = object_detect
         detect[:, :4] = scale_coords(image.shape[2:], detect[:, :4], annotated_image.shape).round()
         for *xyxy, conf, cls in reversed(detect):
             label_detect_predict = f'{self.names[int(cls)]} {conf:.2f}'
@@ -155,7 +167,7 @@ class ObjectRoadDetector(Node):
                          color=self.colors[int(cls)], line_thickness=2)
         return annotated_image
 
-    def listToRects(self, object_poses):
+    def listToRects(self, object_poses) -> RectMultiArray:
         rect_array = RectMultiArray()
         for i in range(len(object_poses)):
             rect = Rect()
