@@ -40,12 +40,11 @@ def generate_launch_description():
     tf_static_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("vehicle"),
-                     "launch/extrinsic_tfstatic_broadcaster.launch.py"),
+                     "launch/vehicle_tf_broadcaster.launch.py"),
         ),
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
             "use_sim_time": LaunchConfiguration("use_sim_time"),
-            "use_joint_state_publisher": "true",
         }.items(),
     )
     # ExecuteProcess(

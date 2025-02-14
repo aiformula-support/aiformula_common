@@ -1,9 +1,9 @@
 <?xml version="1.0" ?>
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
   <xacro:macro name="caster_back_joint_macro"
-               params="caster_back parent joint_type
+               params="caster_back parent
                        x y z roll pitch yaw">
-    <joint name="${caster_back}_joint" type="${joint_type}">
+    <joint name="${caster_back}_joint" type="continuous">
       <parent link="${parent}_link"/>
       <child  link="${caster_back}_link"/>
       <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
