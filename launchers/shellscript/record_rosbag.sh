@@ -19,6 +19,7 @@ bag_dir="${HOME}/rosbag/${date_str}"
 mkdir -p ${bag_dir}
 
 ros2 bag record -o "${bag_dir}"/"${bag_name}" \
+    --qos-profile-overrides-path ${SCRIPT_DIR}/../config/qos_setting.yaml \
     $(read_yaml "['sensing']['zedx']['left_image']['undistorted']") \
     $(read_yaml "['sensing']['zedx']['imu']") \
     $(read_yaml "['sensing']['input_can_data']") \
