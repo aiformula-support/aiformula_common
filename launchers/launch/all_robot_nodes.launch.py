@@ -11,10 +11,10 @@ def generate_launch_description():
     CAMERA_SN = "SN48442725"
     CAMERA_RESOLUTION = "SVGA"
 
-    tf_static_publisher = IncludeLaunchDescription(
+    vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("vehicle"),
-                     "launch/extrinsic_tfstatic_broadcaster.launch.py"),
+                     "launch/vehicle_tf_broadcaster.launch.py"),
         ),
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
@@ -106,7 +106,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
-        tf_static_publisher,
+        vehicle_tf_broadcaster,
         zed_node,
         vectornav,
         lane_line_publisher,

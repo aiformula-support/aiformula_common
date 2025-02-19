@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="ai_car1" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="parts/base.xacro"/>
+  <xacro:include filename="parts/base_macro.xacro"/>
   <xacro:include filename="parts/wheel_macro.xacro"/>
   <xacro:include filename="parts/caster_back_macro.xacro"/>
   <xacro:include filename="parts/zed_macro.xacro"/>
