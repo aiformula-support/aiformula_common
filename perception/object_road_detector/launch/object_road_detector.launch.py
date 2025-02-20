@@ -8,29 +8,29 @@ from launch.substitutions import LaunchConfiguration
 
 
 def generate_launch_description():
-    PACKAGE_NAME = "road_detector"
+    PACKAGE_NAME = "object_road_detector"
     _, TOPIC_NAMES = get_frame_ids_and_topic_names()
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "normalization.yaml"),
+        osp.join(get_package_share_directory(PACKAGE_NAME), "config", "object_road_detector.yaml"),
     )
 
     launch_args = (
         DeclareLaunchArgument(
             "weight_path",
-            default_value=osp.join(get_package_share_directory("road_detector"), "weights", "End-to-end.pth"),
+            default_value=osp.join(get_package_share_directory("object_road_detector"), "weights", "End-to-end.pth"),
             description="Path to the weight pth file."),
         DeclareLaunchArgument(
             "use_architecture",
-            default_value= "0",
+            default_value="0",
             description="cuda device, i.e. 0 or cpu",),
     )
 
-    road_detector = Node(
+    object_road_detector = Node(
         package=PACKAGE_NAME,
         executable=PACKAGE_NAME,
         name=PACKAGE_NAME,
         namespace="/aiformula_perception",
-        output = "screen",
+        output="screen",
         parameters=[
             [*ROS_PARAM_CONFIG],
             # Overriding
@@ -44,6 +44,8 @@ def generate_launch_description():
              TOPIC_NAMES["sensing"]["zedx"]["left_image"]["undistorted"]),
             ("pub_mask_image",
              TOPIC_NAMES["perception"]["mask_image"]),
+            ("pub_object_pose",
+             TOPIC_NAMES["perception"]["bounding_box"]),
             ("pub_annotated_mask_image",
              TOPIC_NAMES["visualization"]["annotated_mask_image"]),
         ],
@@ -51,5 +53,5 @@ def generate_launch_description():
 
     return LaunchDescription([
         *launch_args,
-        road_detector,
+        object_road_detector,
     ])

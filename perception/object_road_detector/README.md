@@ -53,5 +53,5 @@ python3 setup.py install --user
 ## Running Example:
 To start road detector
 ```
-ros2 launch road_detector road_detector.launch.py
+ros2 launch object_road_detector object_road_detector.launch.py
 ```
