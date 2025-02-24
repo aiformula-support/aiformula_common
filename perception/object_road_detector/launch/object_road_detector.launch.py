@@ -45,7 +45,7 @@ def generate_launch_description():
             ("pub_mask_image",
              TOPIC_NAMES["perception"]["mask_image"]),
             ("pub_object_pose",
-             TOPIC_NAMES["perception"]["bounding_box"]),
+             TOPIC_NAMES["perception"]["objects"]["bounding_box"]),
             ("pub_annotated_mask_image",
              TOPIC_NAMES["visualization"]["annotated_mask_image"]),
         ],

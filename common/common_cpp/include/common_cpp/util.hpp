@@ -31,6 +31,14 @@ inline std::string toExceptionTypeString(const std::exception& e) {
     return type_name;
 }
 
+inline std::function<std::string(const std::string&)> createFormatter(int width) {
+    return [width](const std::string& label) {
+        std::ostringstream oss;
+        oss << "    " << std::setw(width) << std::right << label << ": ";
+        return oss.str();
+    };
+}
+
 }  // namespace aiformula
 
 #endif  // UTIL_HPP
