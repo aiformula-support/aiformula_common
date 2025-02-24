@@ -8,7 +8,7 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     VEHICLE_NAME = "ai_car1"
     CAMERA_NAME = "zedx"
-    CAMERA_SN = "SN48442725"
+    CAMERA_SN = "SN48311510"
     CAMERA_RESOLUTION = "SVGA"
 
     vehicle_tf_broadcaster = IncludeLaunchDescription(
@@ -104,6 +104,18 @@ def generate_launch_description():
                      "launch/image_compressor.launch.py"),
         ),
     )
+    object_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("object_publisher"),
+                     "launch/object_publisher.launch.py"),
+        ),
+        launch_arguments={
+            "camera_sn": CAMERA_SN,
+            "camera_resolution": CAMERA_RESOLUTION,
+            "use_rviz": "false",
+            "debug": "false",
+        }.items(),
+    )
 
     return LaunchDescription([
         vehicle_tf_broadcaster,
@@ -118,4 +130,5 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
+        object_publisher,
     ])
