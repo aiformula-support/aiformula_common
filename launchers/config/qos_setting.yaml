@@ -72,7 +72,7 @@
   history: keep_last
   reliability: best_effort
 
-/aiformula_perception/object_publisher/object_positions:
+/aiformula_perception/object_publisher/object_info:
   depth: 2
   durability: volatile
   history: keep_last

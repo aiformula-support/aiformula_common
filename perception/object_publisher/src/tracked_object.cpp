@@ -31,8 +31,9 @@ void TrackedObject::printStaticMembers() {
     RCLCPP_INFO(node_ptr_->get_logger(), "%s", log_stream.str().c_str());
 }
 
-TrackedObject::TrackedObject(const int& id, const float& initial_x, const float& initial_y, const double& timestamp)
-    : kf_(cv::KalmanFilter(2, 2, 0)), id_(id), last_seen_time_(timestamp) {
+TrackedObject::TrackedObject(const int& id, const float& left_x, const float& left_y, const float& right_x,
+                             const float& right_y, const double& timestamp)
+    : kf_(cv::KalmanFilter(4, 4, 0)), id_(id), last_seen_time_(timestamp), confidence_(1.0) {
     cv::setIdentity(kf_.transitionMatrix);
     cv::setIdentity(kf_.measurementMatrix);
 
@@ -40,43 +41,29 @@ TrackedObject::TrackedObject(const int& id, const float& initial_x, const float&
     cv::setIdentity(kf_.measurementNoiseCov, cv::Scalar::all(measurement_noise_variance_));
     cv::setIdentity(kf_.errorCovPost, cv::Scalar::all(initial_error_covariance_));
 
-    kf_.statePost.at<float>(0) = initial_x;
-    kf_.statePost.at<float>(1) = initial_y;
-    generateMarker();
-}
-
-void TrackedObject::generateMarker() {
-    this->id_marker.ns = "tracked_objects/id";
-    this->id_marker.id = id_;
-    this->id_marker.type = visualization_msgs::msg::Marker::TEXT_VIEW_FACING;
-    this->id_marker.action = visualization_msgs::msg::Marker::ADD;
-    this->id_marker.text = std::to_string(id_);
-
-    this->id_marker.scale.x = 1.0;
-    this->id_marker.scale.y = 1.0;
-    this->id_marker.scale.z = 1.0;
-
-    this->id_marker.color.r = 1.0;
-    this->id_marker.color.g = 1.0;
-    this->id_marker.color.b = 1.0;
-    this->id_marker.color.a = 1.0;
+    kf_.statePost.at<float>(0) = left_x;
+    kf_.statePost.at<float>(1) = left_y;
+    kf_.statePost.at<float>(2) = right_x;
+    kf_.statePost.at<float>(3) = right_y;
 }
 
 float TrackedObject::computeDistanceSquared(const float& x_in, const float& y_in) const {
-    const int obj_x = getX();
-    const int obj_y = getY();
+    const int obj_x = getCenterX();
+    const int obj_y = getCenterY();
     return (obj_x - x_in) * (obj_x - x_in) + (obj_y - y_in) * (obj_y - y_in);
 }
 
-void TrackedObject::update(const float& x_in, const float& y_in, const double& current_time) {
-    cv::Mat measurement = (cv::Mat_<float>(2, 1) << x_in, y_in);
+void TrackedObject::update(const float& left_x, const float& left_y, const float& right_x, const float& right_y,
+                           const double& current_time) {
+    cv::Mat measurement = (cv::Mat_<float>(4, 1) << left_x, left_y, right_x, right_y);
     kf_.predict();
     kf_.correct(measurement);
     last_seen_time_ = current_time;
 }
 
-bool TrackedObject::isExpired(const double& current_time) const {
-    return current_time - last_seen_time_ > expiration_duration_;
+bool TrackedObject::isExpired(const double& current_time) {
+    confidence_ = 1.0 - (current_time - last_seen_time_) / expiration_duration_;
+    return confidence_ < 0.0;
 }
 
 }  // namespace aiformula

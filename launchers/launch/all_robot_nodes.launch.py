@@ -9,7 +9,7 @@ def generate_launch_description():
     VEHICLE_NAME = "ai_car1"
     CAMERA_NAME = "zedx"
     CAMERA_SN = "SN48311510"
-    CAMERA_RESOLUTION = "SVGA"
+    CAMERA_RESOLUTION = "nHD"
 
     vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(

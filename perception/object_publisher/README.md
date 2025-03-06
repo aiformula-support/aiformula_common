@@ -2,7 +2,7 @@
 
 ## Overview
 - This package subscribes to `aiformula_interfaces::msg::RectMultiArray`, converts the detected objects into the odom coordinate system, and applies a Kalman filter to track them while reducing detection instability.
-- The filtered objects are then published as `geometry_msgs::msg::PoseArray`.
+- The filtered objects are then published as `aiformula_interfaces::msg::ObjectInfoMultiArray`.
 
 ## Features
 - Kalman Filtering:Smooths object detection and reduces noise.
@@ -19,9 +19,8 @@ $ ros2 launch object_publisher object_publisher.launch.py
 - Subscribe
     - `/aiformula_perception/object_road_detector/rect`
 - Publish
-    - `/aiformula_perception/object_publisher/object_positions`
+    - `/aiformula_perception/object_publisher/object_info`
     - `/aiformula_visualization/object_publisher/unfiltered_object` (In debug mode)
-    - `/aiformula_visualization/object_publisher/object_id` (In debug mode)
 
 ## Parameters
 ### object_publisher.yaml

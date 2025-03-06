@@ -4,32 +4,34 @@
 // ROS
 #include <rclcpp/rclcpp.hpp>
 
-// ROS msg
-#include <visualization_msgs/msg/marker.hpp>
-
 // OpenCV
 #include <opencv2/opencv.hpp>
 
 // Original
-#include "common_cpp/camera.hpp"
 #include "common_cpp/get_ros_parameter.hpp"
 
 namespace aiformula {
 
 class TrackedObject {
 public:
-    explicit TrackedObject(const int& id, const float& initial_x, const float& initial_y, const double& timestamp);
-    ~TrackedObject() = default;
     static void initStaticMembers(rclcpp::Node* const node_ptr);
     static void printStaticMembers();
-    void generateMarker();
+    TrackedObject(const int& id, const float& left_x, const float& left_y, const float& right_x, const float& right_y,
+                  const double& timestamp);
+    ~TrackedObject() = default;
     float computeDistanceSquared(const float& x_in, const float& y_in) const;
-    void update(const float& x_in, const float& y_in, const double& timestamp);
-    bool isExpired(const double& current_time) const;
-    float getX() const { return kf_.statePost.at<float>(0); }
-    float getY() const { return kf_.statePost.at<float>(1); }
+    void update(const float& left_x, const float& left_y, const float& right_x, const float& right_y,
+                const double& current_time);
+    bool isExpired(const double& current_time);
 
-    visualization_msgs::msg::Marker id_marker;
+    float getId() const { return id_; }
+    float getConfidence() const { return confidence_; }
+    float getLeftX() const { return kf_.statePost.at<float>(0); }
+    float getLeftY() const { return kf_.statePost.at<float>(1); }
+    float getRightX() const { return kf_.statePost.at<float>(2); }
+    float getRightY() const { return kf_.statePost.at<float>(3); }
+    float getCenterX() const { return (getLeftX() + getRightX()) / 2.0f; }
+    float getCenterY() const { return (getLeftY() + getRightY()) / 2.0f; }
 
 private:
     static rclcpp::Node* node_ptr_;
@@ -41,6 +43,7 @@ private:
     cv::KalmanFilter kf_;
     unsigned int id_;
     double last_seen_time_;
+    double confidence_;
 };
 
 }  // namespace aiformula

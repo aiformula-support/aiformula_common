@@ -47,9 +47,8 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
                         }],
             remappings=[
                 ("sub_bbox", TOPIC_NAMES["perception"]["objects"]["bounding_box"]),
-                ("pub_object", TOPIC_NAMES["perception"]["objects"]["position"]),
+                ("pub_object", TOPIC_NAMES["perception"]["objects"]["info"]),
                 ("pub_unfiltered_object", "/aiformula_visualization/object_publisher/unfiltered_object"),
-                ("pub_object_id", "/aiformula_visualization/object_publisher/object_id"),
             ],
         ),
     )
@@ -86,7 +85,7 @@ def generate_launch_description():
         DeclareLaunchArgument(
             "debug",
             default_value="false",
-            description="If true, publish object id and unfiltered object pose",
+            description="If true, publish unfiltered object pose",
         ),
     )
 
@@ -117,7 +116,6 @@ def generate_launch_description():
         arguments=["-d", osp.join(PACKAGE_DIR, "rviz", PACKAGE_NAME + ".rviz")],
         condition=IfCondition(LaunchConfiguration("use_rviz")),
     )
-
     return LaunchDescription([
         *launch_args,
         object_publisher,
