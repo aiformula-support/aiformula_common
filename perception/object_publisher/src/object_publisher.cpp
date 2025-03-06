@@ -36,9 +36,10 @@ void ObjectPublisher::initValues() {
     const int buffer_size = 10;
     bbox_sub_ = this->create_subscription<aiformula_interfaces::msg::RectMultiArray>(
         "sub_bbox", buffer_size, std::bind(&ObjectPublisher::bboxCallback, this, std::placeholders::_1));
-    object_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("pub_object", buffer_size);
-    unfilered_object_pub_ = this->create_publisher<geometry_msgs::msg::PoseArray>("pub_unfilered_object", buffer_size);
-    object_id_pub_ = this->create_publisher<visualization_msgs::msg::MarkerArray>("pub_object_id", buffer_size);
+    object_pub_ = this->create_publisher<aiformula_interfaces::msg::ObjectInfoMultiArray>("pub_object", buffer_size);
+    if (debug_)
+        unfilered_object_pub_ =
+            this->create_publisher<geometry_msgs::msg::PoseArray>("pub_unfiltered_object", buffer_size);
 
     getCameraParams(this, "zedx", camera_matrix_);
     invert_camera_matrix_ = camera_matrix_.inv();
@@ -82,29 +83,42 @@ void ObjectPublisher::bboxCallback(const aiformula_interfaces::msg::RectMultiArr
     const auto odom_T_vehicle = getTf2Transform(this, odom_frame_id_, vehicle_frame_id_);
     const double current_time = toTimeStampDouble(msg->header.stamp);
     for (const auto& rect : msg->rects) {
-        tf2::Vector3 object_position_in_vehicle;
-        if (!toPositionInVehicle(rect, object_position_in_vehicle)) continue;
-        const auto object_position_in_odom = odom_T_vehicle * object_position_in_vehicle;
-        updateOrAddObject(object_position_in_odom, current_time);
-        if (debug_) unfiltered_object_msg.poses.emplace_back(toPoseMsg(object_position_in_vehicle));
+        tf2::Vector3 bottom_left_in_vehicle, bottom_right_in_vehicle;
+        if (!toPositionInVehicle(rect, bottom_left_in_vehicle, bottom_right_in_vehicle)) continue;
+        const auto bottom_left_in_odom = odom_T_vehicle * bottom_left_in_vehicle;
+        const auto bottom_right_in_odom = odom_T_vehicle * bottom_right_in_vehicle;
+        updateOrAddObject(bottom_left_in_odom, bottom_right_in_odom, current_time);
+
+        const float center_x_in_vehicle = (bottom_left_in_vehicle.x() + bottom_right_in_vehicle.x()) * 0.5;
+        const float center_y_in_vehicle = (bottom_left_in_vehicle.y() + bottom_right_in_vehicle.y()) * 0.5;
+        if (debug_)
+            unfiltered_object_msg.poses.emplace_back(
+                toPoseMsg(tf2::Vector3(center_x_in_vehicle, center_y_in_vehicle, 0.0)));
     }
     deleteExpiredObjects(current_time);
-    publishCorrectedPositions(header, odom_T_vehicle.inverse());
+    publishObjectInfo(header, odom_T_vehicle.inverse());
     if (debug_) unfilered_object_pub_->publish(unfiltered_object_msg);
 }
 
-bool ObjectPublisher::toPositionInVehicle(const aiformula_interfaces::msg::Rect& rect, tf2::Vector3& position) const {
-    const cv::Point2f bottom_midpoint(rect.x + rect.width * 0.5, rect.y + rect.height);
-    return pixelToPoint(bottom_midpoint, invert_camera_matrix_, vehicle_T_camera_, position);
+bool ObjectPublisher::toPositionInVehicle(const aiformula_interfaces::msg::Rect& rect, tf2::Vector3& bottom_left_point,
+                                          tf2::Vector3& bottom_right_point) const {
+    const cv::Point2f bottom_left(rect.x, rect.y + rect.height);
+    const cv::Point2f bottom_right(rect.x + rect.width, rect.y + rect.height);
+    return pixelToPoint(bottom_left, invert_camera_matrix_, vehicle_T_camera_, bottom_left_point) &&
+           pixelToPoint(bottom_right, invert_camera_matrix_, vehicle_T_camera_, bottom_right_point);
 }
 
-void ObjectPublisher::updateOrAddObject(const tf2::Vector3& obj_pos, const double& current_time) {
-    TrackedObject* closest_object = findClosestObject(obj_pos.x(), obj_pos.y());
+void ObjectPublisher::updateOrAddObject(const tf2::Vector3& bottom_left, const tf2::Vector3& bottom_right,
+                                        const double& current_time) {
+    const float center_x = (bottom_left.x() + bottom_right.x()) * 0.5;
+    const float center_y = (bottom_left.y() + bottom_right.y()) * 0.5;
+    TrackedObject* closest_object = findClosestObject(center_x, center_y);
     if (closest_object) {
-        closest_object->update(obj_pos.x(), obj_pos.y(), current_time);
+        closest_object->update(bottom_left.x(), bottom_left.y(), bottom_right.x(), bottom_right.y(), current_time);
     } else {
         static unsigned int next_object_id = 0;
-        tracked_objects_.emplace_back(next_object_id++, obj_pos.x(), obj_pos.y(), current_time);
+        tracked_objects_.emplace_back(next_object_id++, bottom_left.x(), bottom_left.y(), bottom_right.x(),
+                                      bottom_right.y(), current_time);
     }
 }
 
@@ -125,43 +139,29 @@ TrackedObject* ObjectPublisher::findClosestObject(const double& obj_x, const dou
 }
 
 void ObjectPublisher::deleteExpiredObjects(const double& current_time) {
-    tracked_objects_.erase(
-        std::remove_if(tracked_objects_.begin(), tracked_objects_.end(),
-                       [current_time](const TrackedObject& obj) { return obj.isExpired(current_time); }),
-        tracked_objects_.end());
+    tracked_objects_.erase(std::remove_if(tracked_objects_.begin(), tracked_objects_.end(),
+                                          [current_time](TrackedObject& obj) { return obj.isExpired(current_time); }),
+                           tracked_objects_.end());
 }
 
-void ObjectPublisher::publishCorrectedPositions(const std_msgs::msg::Header& header,
-                                                const tf2::Transform& vehicle_T_odom) {
-    geometry_msgs::msg::PoseArray pub_msg;
+void ObjectPublisher::publishObjectInfo(const std_msgs::msg::Header& header, const tf2::Transform& vehicle_T_odom) {
+    aiformula_interfaces::msg::ObjectInfoMultiArray pub_msg;
     pub_msg.header = header;
 
-    for (auto& tracked_object : tracked_objects_) {
-        const auto object_position_in_odom = tf2::Vector3(tracked_object.getX(), tracked_object.getY(), 0.0);
-        const auto object_position_in_vehicle = vehicle_T_odom * object_position_in_odom;
-        pub_msg.poses.emplace_back(toPoseMsg(object_position_in_vehicle));
+    for (const auto& tracked_object : tracked_objects_) {
+        const auto bottom_left_in_odom = tf2::Vector3(tracked_object.getLeftX(), tracked_object.getLeftY(), 0.0);
+        const auto bottom_right_in_odom = tf2::Vector3(tracked_object.getRightX(), tracked_object.getRightY(), 0.0);
+        const auto bottom_left_in_vehicle = vehicle_T_odom * bottom_left_in_odom;
+        const auto bottom_right_in_vehicle = vehicle_T_odom * bottom_right_in_odom;
+        auto& object_info = pub_msg.objects.emplace_back();
+        object_info.x = (bottom_left_in_vehicle.x() + bottom_right_in_vehicle.x()) * 0.5;
+        object_info.y = (bottom_left_in_vehicle.y() + bottom_right_in_vehicle.y()) * 0.5;
+        object_info.width = std::abs(bottom_left_in_vehicle.y() - bottom_right_in_vehicle.y());
+        object_info.id = tracked_object.getId();
+        object_info.confidence = tracked_object.getConfidence();
     };
     object_pub_->publish(pub_msg);
-    RCLCPP_INFO_ONCE(this->get_logger(), "Publish Object Position !");
-
-    if (debug_) publishObjectIDs(pub_msg);
-}
-
-void ObjectPublisher::publishObjectIDs(const geometry_msgs::msg::PoseArray& pose_array) {
-    visualization_msgs::msg::MarkerArray id_markers;
-
-    visualization_msgs::msg::Marker delete_all_marker;
-    delete_all_marker.action = visualization_msgs::msg::Marker::DELETEALL;
-    id_markers.markers.emplace_back(delete_all_marker);
-
-    const double id_marker_offset_x = -0.6;  // [m]
-    for (size_t idx = 0; idx < tracked_objects_.size(); ++idx) {
-        tracked_objects_[idx].id_marker.header = pose_array.header;
-        tracked_objects_[idx].id_marker.pose = pose_array.poses[idx];
-        tracked_objects_[idx].id_marker.pose.position.x += id_marker_offset_x;
-        id_markers.markers.emplace_back(tracked_objects_[idx].id_marker);
-    }
-    object_id_pub_->publish(id_markers);
+    RCLCPP_INFO_ONCE(this->get_logger(), "Publish Object Info !");
 }
 
 }  // namespace aiformula
