@@ -1,9 +1,6 @@
 #ifndef COMPRESSED_IMAGE_VIEWER_EXCEPTION_HPP
 #define COMPRESSED_IMAGE_VIEWER_EXCEPTION_HPP
 
-// Original
-#include "common_cpp/util.hpp"
-
 namespace aiformula {
 
 class GdkVersionException : public std::logic_error {

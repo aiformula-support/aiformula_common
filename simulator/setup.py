@@ -1,4 +1,4 @@
-from setuptools import setup
+from setuptools import find_packages, setup
 from common_python.setup_util import get_data_files
 
 package_name = 'simulator'
@@ -6,7 +6,7 @@ package_name = 'simulator'
 setup(
     name=package_name,
     version='0.0.0',
-    packages=[package_name],
+    packages=find_packages(),
     data_files=get_data_files(package_name, ("models", "launch", "worlds")),
     install_requires=['setuptools'],
     zip_safe=True,

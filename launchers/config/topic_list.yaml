@@ -6,6 +6,7 @@ sensing:
       undistorted: "/aiformula_sensing/zed_node/right_image/undistorted"
     imu: "/aiformula_sensing/zed_node/imu"
   input_can_data: "/aiformula_sensing/vehicle_info"
+  actual_speed: "/aiformula_sensing/actual_vehicle_speed"
   vectornav:
     imu: "/aiformula_sensing/vectornav/imu"
     gnss: "/aiformula_sensing/vectornav/gnss"
@@ -24,13 +25,22 @@ perception:
     center: "/aiformula_perception/lane_line_publisher/lane_lines/center"
 
 control:
-  game_pad: "/aiformula_control/joy_node/joy"
+  joy:
+    gamepad: "/aiformula_control/gamepad/joy"
+    handle_controller: "/aiformula_control/handle_controller/joy"
   speed_command:
-    game_pad: "/aiformula_control/game_pad/cmd_vel"
+    gamepad: "/aiformula_control/gamepad/cmd_vel"
     handle_controller: "/aiformula_control/handle_controller/cmd_vel"
+    mpc: "/aiformula_control/extremum_seeking_mpc/cmd_vel"
+    multiplexed: "/aiformula_control/twist_mux/cmd_vel"
+  twist_mux_lock:
+    all: "/aiformula_control/twist_mux/all/lock"
+    handle_controller: "/aiformula_control/twist_mux/handle_controller/lock"
+    gamepad: "/aiformula_control/twist_mux/gamepad/lock"
   output_can_data: "/aiformula_control/motor_controller/reference_signal"
 
-# planning:
+planning:
+  twist_command: "/aiformula_planning/extremum_seeking_mpc/cmd_vel"
 
 visualization:
   annotated_mask_image: "/aiformula_visualization/road_detector/annotated_mask_image"

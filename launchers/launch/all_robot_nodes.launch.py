@@ -1,7 +1,9 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -10,6 +12,14 @@ def generate_launch_description():
     CAMERA_NAME = "zedx"
     CAMERA_SN = "SN48442725"
     CAMERA_RESOLUTION = "SVGA"
+
+    launch_args = (
+        DeclareLaunchArgument(
+            "autopilot",
+            default_value="true",
+            description="If true, robot runs autonomously",
+        )
+    )
 
     tf_static_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -37,7 +47,8 @@ def generate_launch_description():
     # --- Perception --- #
     lane_line_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("lane_line_publisher"), "launch/lane_line_publisher.launch.py"),
+            osp.join(get_package_share_directory("lane_line_publisher"),
+                     "launch/lane_line_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -45,19 +56,30 @@ def generate_launch_description():
             "camera_resolution": CAMERA_RESOLUTION,
         }.items(),
     )
-    # --- GamePad --- #
-    joy_node = IncludeLaunchDescription(
+    # --- Command input from gamepad --- #
+    gamepad_joy = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("launchers"),
-                     "launch/joy.launch.py"),
+                     "launch/gamepad_joy.launch.py"),
         ),
     )
-    # --- Output velocity and angular velocity --- #
-    teleop_node = IncludeLaunchDescription(
+    # --- Output velocity and angular velocity from gamepad --- #
+    gamepad_teleop = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("launchers"),
-                     "launch/teleop.launch.py"),
+                     "launch/gamepad_teleop.launch.py"),
         ),
+    )
+    # --- Multiplex velocities --- #
+    twist_mux = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("launchers"),
+                     "launch/twist_mux.launch.py"),
+        ),
+        launch_arguments={
+            "use_rviz": "false",
+            "use_runtime_monitor": "false",
+        }.items(),
     )
     motor_controller = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -86,6 +108,13 @@ def generate_launch_description():
                      "launch/rear_potentiometer.launch.py"),
         ),
     )
+    extremum_seeking_mpc = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("extremum_seeking_mpc"),
+                     "launch/extremum_seeking_mpc.launch.py"),
+        ),
+        condition=IfCondition([LaunchConfiguration("autopilot")]),
+    )
     # --- Compress Zed Image for AI Formula Pilot --- #
     image_compressor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -95,15 +124,18 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        launch_args,
         tf_static_publisher,
         zed_node,
         vectornav,
         lane_line_publisher,
-        joy_node,
-        teleop_node,
+        gamepad_joy,
+        gamepad_teleop,
+        twist_mux,
         motor_controller,
         can_receiver_and_sender,
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
+        extremum_seeking_mpc,
     ])

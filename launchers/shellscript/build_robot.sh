@@ -14,6 +14,7 @@ TARGET_PACKEGES=(
 
     # perception
     lane_line_publisher
+    road_detector
 
     # control
     motor_controller
@@ -24,6 +25,10 @@ TARGET_PACKEGES=(
     # external repository
     vectornav
     ros2_socketcan
+    twist_mux
+
+    # planning
+    extremum_seeking_mpc
 )
 
 echo "Build Targets:"

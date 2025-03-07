@@ -1,0 +1,35 @@
+/**:
+  ros__parameters:
+    mpc_parameters:
+      # --- exs_mpc_script ---
+      seek_gain: -0.2 # -0.2
+      seek_amp: 0.08 # 0.08
+      esc_max: 0.2
+      esc_min: -0.2
+
+      # --- extremum_seeking_mpc ---
+      horizon_times: [2.0, 3.0, 4.0] #[s]
+      planned_speed: [1.6, 0.0] #linear_velocity[m/s], angular_velocity[rad/s]
+      curvature_limit: 0.2
+      curvature_gain: 25
+      benefit_gain: 2
+      curvature_radius_threshold: 1000
+    
+    velocity_control:
+      deceleration_curvature_threshold: 0.16
+      deceleration_gain: 5
+
+    # --- exs_objrisk_script ---
+    object_risk_potential:
+      pedestrian_risk_table_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
+      pedestrian_risk_table_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
+    
+    # --- exs_road_script ---
+    road_risk_potential:
+      road_risk_table_u: [-2.4, -2.0, -1.6, -1.2, -0.8, -0.4, 0., 0.4, 0.8, 1.2, 1.6, 2.0, 2.4] #[m]
+      road_risk_table_y: [0., 0., 0., 0., 0., 0., 0., 0., 0.2, 0.4, 0.6, 0.8, 1.0]
+        #left: [0., 0., 0., 0., 0., 0., 0., 0., 0.2, 0.4, 0.6, 0.8, 1.0]
+        #right: [1.0, 0.8, 0.6, 0.4, 0.2, 0., 0., 0., 0., 0., 0., 0., 0.]
+      road_risk_left_gradient: 0.2
+      road_risk_right_gradient: 0.2
+      road_risk_margin: 0.2

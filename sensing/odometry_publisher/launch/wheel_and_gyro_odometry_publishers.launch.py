@@ -37,7 +37,8 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = (
-        osp.join(PACKAGE_DIR, "config", "wheel.yaml"),
+        osp.join(get_package_share_directory(
+            "vehicle"), "config", "wheel.yaml"),
     )
     wheel_odometry_publisher = Node(
         package=PACKAGE_NAME,
@@ -54,10 +55,12 @@ def generate_launch_description():
         remappings=[
             ("sub_can", TOPIC_NAMES["sensing"]["input_can_data"]),
             ("pub_odometry", TOPIC_NAMES["sensing"]["odometry"]["wheel"]),
+            ("pub_actual_speed", TOPIC_NAMES["sensing"]["actual_speed"]),
         ],
     )
     ROS_PARAM_CONFIG = (
-        osp.join(PACKAGE_DIR, "config", "wheel.yaml"),
+        osp.join(get_package_share_directory(
+            "vehicle"), "config", "wheel.yaml"),
         osp.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     gyro_odometry_publisher = Node(
@@ -96,7 +99,8 @@ def generate_launch_description():
         package="rviz2",
         executable="rviz2",
         name="rviz2_wheel_and_gyro_odometry_publishers",
-        arguments=["-d", osp.join(PACKAGE_DIR, "rviz", "wheel_and_gyro_odometry_publishers.rviz")],
+        arguments=["-d", osp.join(PACKAGE_DIR, "rviz",
+                                  "wheel_and_gyro_odometry_publishers.rviz")],
         condition=IfCondition(LaunchConfiguration("use_rviz")),
     )
 

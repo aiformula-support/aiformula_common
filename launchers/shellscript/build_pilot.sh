@@ -7,6 +7,7 @@ TARGET_PACKEGES=(
 
     # remote control
     compressed_image_viewer
+    teleop_twist_handle_controller
 )
 
 echo "Build Targets:"
