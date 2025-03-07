@@ -19,7 +19,7 @@ from .exs_geometric_position import GeometricPoseCurvatures
 from .exs_objrisk_script import ObjectEstimation
 from common_python.get_ros_parameter import get_ros_parameter
 from .util import Velocity, Side
-from aiformula_interfaces.msg import ObjectInfo, ObjectInfoMultiArray
+from aiformula_interfaces.msg import ObjectInfoMultiArray
 
 
 class ExtremumSeekingMpc(Node):
@@ -123,28 +123,18 @@ class ExtremumSeekingMpc(Node):
     # New!
 
     def object_position_callback(self, msg):
-        # print("callback")
-        # print(msg.objects)
-        # print(msg.objects.x)
         x = 0.0
         y = 0.0
-        obj_width = 0.0
+        object_width = 0.0
         confidence = 0.0
-        points2 = []
-        for obj in msg.objects:
-            x = obj.x
-            y = obj.y
-            obj_width = obj.width
-            confidence = obj.confidence
-            points2.append([x, y, obj_width, confidence])
-        points = list([x, y])
-        # print(points2)
-        # self.get_logger().info(f"received pose: x = {x}, y = {y}")
-        # if not points:
-        #    self.object_position = []
-        #    return
-        # print(points)
-        self.object_position = points2
+        points = []
+        for object in msg.objects:
+            x = object.x
+            y = object.y
+            object_width = object.width
+            confidence = object.confidence
+            points.append([x, y, object_width, confidence])
+        self.object_position = points
 
     def predict_ego_position(self):
         self.ego_position, self.ego_angle = self.prediction_position.predict_relative_ego_positions(
@@ -155,11 +145,8 @@ class ExtremumSeekingMpc(Node):
             self.ego_position, self.seek_position_relative)
 
     def calculate_object_risk(self):
-        # self.object_risk = self.object_estimation.risk_3step(
-        #    self.object_position, self.ego_position, self.ego_angle, self.seek_position_relative)  # list [5x1] x 3
-        self.object_risk = self.object_estimation.risk3step_simple(
+        self.object_risk = self.object_estimation.calculation_object_risk(
             self.object_position, self.seek_position_absolute)  # list [5x1] x 3
-        # print(f"obj_risk:{self.object_risk}")
 
     def calculate_road_risk(self):
         self.left_road_risk, left_y_hat = self.road_estimation.calculation_road_risk(
