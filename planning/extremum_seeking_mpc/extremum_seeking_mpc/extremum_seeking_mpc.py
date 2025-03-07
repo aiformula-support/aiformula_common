@@ -120,21 +120,19 @@ class ExtremumSeekingMpc(Node):
         self.actual_ego_v = Velocity(linear=twist_msg.linear.x,
                                      angular=twist_msg.angular.z)
 
-    # New!
-
     def object_position_callback(self, msg):
-        x = 0.0
-        y = 0.0
+        object_x = 0.0
+        object_y = 0.0
         object_width = 0.0
         confidence = 0.0
-        points = []
+        object_points = []
         for object in msg.objects:
-            x = object.x
-            y = object.y
+            object_x = object.x
+            object_y = object.y
             object_width = object.width
             confidence = object.confidence
-            points.append([x, y, object_width, confidence])
-        self.object_position = points
+            object_points.append([object_x, object_y, object_width, confidence])
+        self.object_position = object_points
 
     def predict_ego_position(self):
         self.ego_position, self.ego_angle = self.prediction_position.predict_relative_ego_positions(
@@ -211,13 +209,11 @@ class ExtremumSeekingMpc(Node):
         self.tf_broadcaster.sendTransform(ts)
 
     def publish_cmd_vel_timer_callback(self):
-        # ---- get object position ----
-        # self.object_position = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
         # ---- start exs_mpc sequence ----
         # predict egocar position
         self.predict_ego_position()
 
-        # object risk (fixed position only, not yet dynamic position (ex. kalmanfilter))
+        # object risk
         self.calculate_object_risk()
 
         # road risk

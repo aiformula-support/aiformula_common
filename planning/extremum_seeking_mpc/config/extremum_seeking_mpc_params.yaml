@@ -9,7 +9,7 @@
 
       # --- extremum_seeking_mpc ---
       horizon_times: [2.0, 3.0, 4.0] #[s]
-      planned_speed: [1.6, 0.0] #linear_velocity[m/s], angular_velocity[rad/s]
+      planned_speed: [1.6, 0.0] # linear_velocity[m/s], angular_velocity[rad/s]
       curvature_limit: 0.2
       curvature_gain: 25
       benefit_gain: 2
@@ -21,8 +21,10 @@
 
     # --- exs_objrisk_script ---
     object_risk_potential:
-      pedestrian_risk_table_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
-      pedestrian_risk_table_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
+      pedestrian_risk_table_x_u: [-3., -2., -0.6, -0.5, -0.35, -0.2, 0., 0.2, 0.35, 0.5, 0.6, 2., 3.]
+      pedestrian_risk_table_x_y: [0., 0.3, 0.4, 0.6, 0.8, 1., 1., 1., 0.8, 0.6, 0.4, 0.3, 0.]
+      pedestrian_risk_table_y_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
+      pedestrian_risk_table_y_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
     
     # --- exs_road_script ---
     road_risk_potential:
