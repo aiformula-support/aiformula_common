@@ -4,6 +4,7 @@ from scipy.interpolate import interp1d
 from scipy.stats import multivariate_normal
 
 from common_python.get_ros_parameter import get_ros_parameter
+from .util import Side
 
 
 class RoadEstimation:
@@ -29,7 +30,7 @@ class RoadEstimation:
         self.forget_vector = np.array([0.99995, 0.99995, 0.98])
         self.mem_lim = 0.3
         self.theta_base = [0., 0., 0.]
-        self.risk_gain = 10
+        self.risk_gain = 5
         self.sigma_max = max(self.road_sigma)
         self.sigma_min = min(self.road_sigma)
 
@@ -44,6 +45,12 @@ class RoadEstimation:
             node, "road_risk_potential.road_risk_table_u")  # sigma is distance between seek_point and road_bound
         self.road_risk_table = get_ros_parameter(
             node, "road_risk_potential.road_risk_table_y")
+        self.road_risk_left_gradient = get_ros_parameter(
+            node, "road_risk_potential.road_risk_left_gradient")
+        self.road_risk_right_gradient = get_ros_parameter(
+            node, "road_risk_potential.road_risk_right_gradient")
+        self.road_risk_margin = get_ros_parameter(
+            node, "road_risk_potential.road_risk_margin")
 
     def line_identification(self, xys):
         xs = np.ravel(xys[:, :1].T)
@@ -143,7 +150,7 @@ class RoadEstimation:
 
         return y_hat
 
-    def calculation_road_risk(self, seek_ps, normalize_denominator, normalize_offset, thetas):
+    def calculation_road_risk(self, seek_ps, normalize_denominator, normalize_offset, thetas, side):
         # seeks_ps: 3 x (2x5)
         risks = []
         for seek_p in seek_ps:
@@ -155,16 +162,23 @@ class RoadEstimation:
                 y_hat = self.estimate_yhat(
                     seek_x, normalize_denominator, normalize_offset, thetas)
 
-            if y_hat:
+            # if y_hat:
                 for i in range(len(seek_ys)):
                     # distance between seek_point and road_bound
                     sigma = seek_ys[i] - y_hat
                     # sigma range check
                     sigma = np.clip(sigma, self.sigma_min, self.sigma_max)
-                    if sigma > 0:
-                        risk[i] = self.risk_gain * self.left_road_risk(sigma)
-                    elif sigma < 0:
-                        risk[i] = self.risk_gain * self.right_road_risk(sigma)
+
+                    if side == Side.RIGHT:
+                        # risk[i] = self.risk_gain * self.left_road_risk(sigma)
+                        risk[i] = self.risk_gain * \
+                            (-np.arctan(self.road_risk_left_gradient *
+                             (sigma+self.road_risk_margin))+1.7)  # road_risk potential
+                    elif side == Side.LEFT:
+                        # risk[i] = self.risk_gain * self.right_road_risk(sigma)
+                        risk[i] = self.risk_gain * \
+                            (np.arctan(self.road_risk_right_gradient *
+                             (sigma+self.road_risk_margin))+1.7)  # road_risk potential
             risks.append(risk)
         return risks, y_hat  # list [5x1] x 3
 

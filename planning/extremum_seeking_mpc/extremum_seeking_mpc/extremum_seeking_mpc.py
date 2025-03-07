@@ -4,7 +4,8 @@ import sys
 import rclpy
 from rclpy.node import Node
 
-from geometry_msgs.msg import Twist, TransformStamped
+from std_msgs.msg import Float32
+from geometry_msgs.msg import Twist, TransformStamped, PoseArray
 from sensor_msgs.msg import PointCloud2
 import sensor_msgs_py.point_cloud2 as pc2
 
@@ -18,6 +19,7 @@ from .exs_geometric_position import GeometricPoseCurvatures
 from .exs_objrisk_script import ObjectEstimation
 from common_python.get_ros_parameter import get_ros_parameter
 from .util import Velocity, Side
+from aiformula_interfaces.msg import ObjectInfo, ObjectInfoMultiArray
 
 
 class ExtremumSeekingMpc(Node):
@@ -32,8 +34,8 @@ class ExtremumSeekingMpc(Node):
         # for debug
         # self.actual_ego_v = None
         # self.actual_ego_v = Velocity(linear=self.ego_v_target, angular=0.0)
-        self.actual_ego_v = Velocity(linear=1.0, angular=0.0)
-        self.get_logger().info(f'ego_v_target : {self.actual_ego_v.linear}')
+        self.actual_ego_v = Velocity(linear=2.0, angular=0.0)
+        self.get_logger().info(f'ego_v_target : {self.ego_v_target}')
 
         # initialize tf
         self.tf_buffer = Buffer()
@@ -56,6 +58,7 @@ class ExtremumSeekingMpc(Node):
         self.road_offset = np.zeros(Side.NUM_SIDES)
         self.thetas = np.zeros((Side.NUM_SIDES, 5, 3))
         self.benefit = []
+        self.object_position = []
 
         # Ctrl + C
         signal.signal(signal.SIGINT, self.reset_command)
@@ -99,6 +102,10 @@ class ExtremumSeekingMpc(Node):
         self.actucal_speed_sub = self.create_subscription(
             Twist, 'sub_actual_speed', self.actual_speed_callback, buffer_size)
 
+        # New!
+        self.object_position_sub = self.create_subscription(
+            ObjectInfoMultiArray, '/aiformula_perception/object_publisher/object_info', self.object_position_callback, buffer_size)
+
     def lane_line_callback(self, msg_pointcloud2: PointCloud2, side: Side) -> None:
         pc_data = pc2.read_points(msg_pointcloud2)
         pc_data = np.array(list(pc_data))
@@ -110,9 +117,34 @@ class ExtremumSeekingMpc(Node):
             return
 
     def actual_speed_callback(self, twist_msg):
-        # self.ego_v = [twist_msg.linear.x, twist_msg.angular.z]
         self.actual_ego_v = Velocity(linear=twist_msg.linear.x,
                                      angular=twist_msg.angular.z)
+
+    # New!
+
+    def object_position_callback(self, msg):
+        # print("callback")
+        # print(msg.objects)
+        # print(msg.objects.x)
+        x = 0.0
+        y = 0.0
+        obj_width = 0.0
+        confidence = 0.0
+        points2 = []
+        for obj in msg.objects:
+            x = obj.x
+            y = obj.y
+            obj_width = obj.width
+            confidence = obj.confidence
+            points2.append([x, y, obj_width, confidence])
+        points = list([x, y])
+        # print(points2)
+        # self.get_logger().info(f"received pose: x = {x}, y = {y}")
+        # if not points:
+        #    self.object_position = []
+        #    return
+        # print(points)
+        self.object_position = points2
 
     def predict_ego_position(self):
         self.ego_position, self.ego_angle = self.prediction_position.predict_relative_ego_positions(
@@ -123,14 +155,17 @@ class ExtremumSeekingMpc(Node):
             self.ego_position, self.seek_position_relative)
 
     def calculate_object_risk(self):
-        self.object_risk = self.object_estimation.risk_3step(
-            self.object_position, self.ego_position, self.ego_angle, self.seek_position_relative)  # list [5x1] x 3
+        # self.object_risk = self.object_estimation.risk_3step(
+        #    self.object_position, self.ego_position, self.ego_angle, self.seek_position_relative)  # list [5x1] x 3
+        self.object_risk = self.object_estimation.risk3step_simple(
+            self.object_position, self.seek_position_absolute)  # list [5x1] x 3
+        # print(f"obj_risk:{self.object_risk}")
 
     def calculate_road_risk(self):
         self.left_road_risk, left_y_hat = self.road_estimation.calculation_road_risk(
-            self.seek_position_absolute, self.point_length[Side.LEFT], self.road_offset[Side.LEFT], self.thetas[Side.LEFT])  # list [5x1] x 3
+            self.seek_position_absolute, self.point_length[Side.LEFT], self.road_offset[Side.LEFT], self.thetas[Side.LEFT], Side.LEFT)  # list [5x1] x 3
         self.right_road_risk, right_y_hat = self.road_estimation.calculation_road_risk(
-            self.seek_position_absolute, self.point_length[Side.RIGHT], self.road_offset[Side.RIGHT], self.thetas[Side.RIGHT])
+            self.seek_position_absolute, self.point_length[Side.RIGHT], self.road_offset[Side.RIGHT], self.thetas[Side.RIGHT], Side.RIGHT)
         self.benefit = self.road_estimation.benefit_path(
             self.seek_position_absolute, left_y_hat, right_y_hat)
 
@@ -190,7 +225,7 @@ class ExtremumSeekingMpc(Node):
 
     def publish_cmd_vel_timer_callback(self):
         # ---- get object position ----
-        self.object_position = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
+        # self.object_position = [[0.0, 0.0], [0.0, 0.0], [0.0, 0.0]]
         # ---- start exs_mpc sequence ----
         # predict egocar position
         self.predict_ego_position()

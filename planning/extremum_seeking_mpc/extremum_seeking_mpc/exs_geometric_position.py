@@ -4,6 +4,7 @@ from rclpy.node import Node
 from common_python.get_ros_parameter import get_ros_parameter
 from .util import Position, Pose
 
+import copy
 
 # --- predict egpcar position from curvatures ---
 
@@ -30,11 +31,18 @@ class GeometricPoseCurvatures:
             Pose(pos=Position(x=0.0, y=0.0), yaw=0.0)] * self.horizon_length
         predicted_positions_rotate_transformed = list(
             np.zeros(self.horizon_length-1))
+        predicted_position_tmp_pos = [Position(x=0.0, y=0.0)]
+        predicted_position_tmp_yaw = 0.0
+        predicted_position_tmp = [Pose(pos=Position(x=0.0, y=0.0), yaw=0.0)]
 
         for idx, (curvature, horizon_duration, predicted_position) in enumerate(zip(curvatures, self.horizon_durations, predicted_positions)):
             predicted_positions[idx].pos, predicted_positions[idx].yaw = self.predict_position(
                 ego_velocity, curvature, horizon_duration)
-
+            if idx == 0:
+                predicted_position_tmp_pos = predicted_positions[idx].pos
+                predicted_position_tmp_yaw = predicted_positions[idx].yaw
+        predicted_position_tmp = [Pose(pos=predicted_position_tmp_pos, yaw=predicted_position_tmp_yaw)]
+        predicted_positions[0] = predicted_position_tmp[0]
         # Rotate Point
         for horizon_idx in range(self.horizon_length - 1):
             if horizon_idx == 0:
@@ -47,7 +55,7 @@ class GeometricPoseCurvatures:
         for horizon_idx in range(self.horizon_length - 1):
             predicted_positions[horizon_idx +
                                 1].yaw = predicted_positions[horizon_idx].yaw
-
+        
         self.ego_positions = np.vstack(
             [predicted_positions[0].pos, predicted_positions_rotate_transformed])
         self.ego_angles = np.array(

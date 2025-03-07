@@ -35,6 +35,15 @@ class ExtremumSeekingController:
         # 5 points -> [0.7, 0.4949747468305832, 0.0, -0.4949747468305832, -0.7]
         self.seek_points = (self.seek_points * self.seek_amp).tolist()
 
+        # LowPass Filter Patameter
+        # Fc = 0.01 Hz -> A = 0.9937, B = 0.01, C = 0.6283, D = 0
+        self.A = 0.9937
+        self.B = 0.01
+        self.C = 0.6283
+        self.x = 0
+        self.x_next = 0
+        self.y = 0
+
     def init_parameters(self, node: Node):
         self.seek_gain = get_ros_parameter(
             node, "mpc_parameters.seek_gain")
@@ -55,6 +64,11 @@ class ExtremumSeekingController:
             2 * self.sin_array[1] * valueB + self.sin_array[2] * valueA
             + 2 * self.sin_array[5] * valueC + self.sin_array[6] * valueD
         ) / self.num_moving_average
+
+        # LowPass Filter
+        self.x_next = self.A * self.x + self.B * self.moving_average_out
+        self.moving_average_out = self.C * self.x
+        self.x = self.x_next
 
         return self.moving_average_out  # for backpropagation
 
@@ -99,7 +113,14 @@ class OptimizePath:
         params = MpcParameters(seek_gain=self.seek_gain, seek_amp=self.seek_amp,
                                curvature_max=self.curvature_limit, curvature_min=-(self.curvature_limit))
 
-        self.extremum_seeking_controller = ExtremumSeekingController(params)
+        self.extremum_seeking_controller = ExtremumSeekingController(
+            params)
+        self.extremum_seeking_controller_step1 = ExtremumSeekingController(
+            params)
+        self.extremum_seeking_controller_step2 = ExtremumSeekingController(
+            params)
+        self.extremum_seeking_controller_step3 = ExtremumSeekingController(
+            params)
 
         self.backpropagation_21 = backpropagation()
         self.backpropagation_31 = backpropagation()
@@ -114,11 +135,11 @@ class OptimizePath:
             node, "mpc_parameters.curvature_limit")
 
     def extremum_seeking_mpc_3step(self, risk1, risk2, risk3):
-        risk1_moving_average = self.extremum_seeking_controller.risk_moving_average(
+        risk1_moving_average = self.extremum_seeking_controller_step1.risk_moving_average(
             risk1)  # in: list [5x1], out: scalar
-        risk2_moving_average = self.extremum_seeking_controller.risk_moving_average(
+        risk2_moving_average = self.extremum_seeking_controller_step2.risk_moving_average(
             risk2)
-        risk3_moving_average = self.extremum_seeking_controller.risk_moving_average(
+        risk3_moving_average = self.extremum_seeking_controller_step3.risk_moving_average(
             risk3)
 
         backpropagation_value_32 = self.backpropagation_32.backward(
@@ -128,11 +149,11 @@ class OptimizePath:
         backpropagation_value_21 = self.backpropagation_21.backward(
             risk1_moving_average, risk2_moving_average)
 
-        curvature1 = self.extremum_seeking_controller.extremum_seeking_optimize(
-            risk1_moving_average, backpropagation_value_21 + backpropagation_value_31)
-        curvature2 = self.extremum_seeking_controller.extremum_seeking_optimize(
+        curvature1 = self.extremum_seeking_controller_step1.extremum_seeking_optimize(
+            risk1_moving_average, backpropagation_value_31 + backpropagation_value_21)
+        curvature2 = self.extremum_seeking_controller_step2.extremum_seeking_optimize(
             risk2_moving_average, backpropagation_value_32)
-        curvature3 = self.extremum_seeking_controller.extremum_seeking_optimize(
+        curvature3 = self.extremum_seeking_controller_step3.extremum_seeking_optimize(
             risk3_moving_average, 0)
 
         # scalars, vectors (3 points)

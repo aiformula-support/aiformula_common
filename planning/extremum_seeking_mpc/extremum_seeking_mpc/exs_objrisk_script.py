@@ -1,3 +1,4 @@
+import math
 import numpy as np
 from rclpy.node import Node
 from scipy.interpolate import interp1d
@@ -9,9 +10,10 @@ class ObjectEstimation:
     def __init__(self, node: Node):
         self.init_parameters(node)
         # it will be ros paramter
-        PedestrianRisk_X_u = [-2, -1, -0.6, -0.5, -
-                              0.35, -0.2, 0, 0.2, 0.35, 0.5, 0.6, 1, 2]
-        PedestrianRisk_X_y = [0, 0, 0, 0.1, 1., 1., 1, 1., 1., 0.1, 0, 0, 0]
+        PedestrianRisk_X_u = [-3, -2, -0.6, -0.5, -
+                              0.35, -0.2, 0, 0.2, 0.35, 0.5, 0.6, 2, 3]
+        PedestrianRisk_X_y = [0, 0.3, 0.4, 0.6,
+                              0.8, 1., 1., 1., 0.8, 0.6, 0.4, 0.3, 0]
         PedestrianRisk_Y_u = self.object_risk_table_u
         PedestrianRisk_Y_y = self.object_risk_table_y
 
@@ -70,3 +72,48 @@ class ObjectEstimation:
             risks.append(sum_risk)
 
         return risks  # list 5x1
+
+    # --- New! --- #
+
+    def risk3step_simple(self, objs, seekpos_abs):
+        # print(f"objs: {objs}")
+        # print(f"seekpos_abs: {seekpos_abs[0]}")
+        if len(objs) == 0:
+            curvature_risk = np.zeros(5)
+            return [curvature_risk, curvature_risk, curvature_risk]
+        else:
+            # list num x (5x1), np.array 2x5
+            curvature1_risk = self.risk_obj(objs, seekpos_abs[0])
+            # list num x (5x1), np.array 2x5
+            curvature2_risk = self.risk_obj(objs, seekpos_abs[1])
+            # list num x (5x1), np.array 2x5
+            curvature3_risk = self.risk_obj(objs, seekpos_abs[2])
+
+            # list [5x1] x 3
+            return [curvature1_risk, curvature2_risk, curvature3_risk]
+
+    def risk_obj(self, objs, seekpos_abs):
+        # obj: (x, y) * 2 list, ego_pos: (x, y) * 5 np.array
+        risks = []
+        for turb in range(seekpos_abs.shape[1]):
+            sum_risk = 0
+            # print(f"objs:{objs}")
+            for obj in objs:
+                # print(f"obj:{obj[2]}")
+                u = obj[0:2] - seekpos_abs[:, turb]
+                u_x = np.clip(u[0], self.risk_min[0], self.risk_max[0])
+                u_y = np.clip(u[1], self.risk_min[1], self.risk_max[1])
+                sum_risk += self.risk_function_x(u_x).tolist() * \
+                    self.risk_function_y(u_y).tolist() * \
+                    4000.0 * obj[2] * obj[3]
+                if sum_risk > 0:
+                    print(f"obj_risk:{sum_risk}")
+
+            risks.append(sum_risk)
+        return risks  # list 5x1
+
+    def gaussian_func(obj_x, obj_y, seek_x, seek_y, sigma):
+        exponent = - ((obj_x - seek_x) ** 2 + (obj_y - seek_y)
+                      ** 2) / (2 * pow(sigma, 2))
+        denominator = 2 * math.pi * pow(sigma, 2)
+        return pow(math.e, exponent) / denominator
