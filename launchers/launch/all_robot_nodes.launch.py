@@ -35,9 +35,9 @@ def generate_launch_description():
         ),
     )
     # --- Perception --- #
-    lane_line_publisher = IncludeLaunchDescription(
+    road_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("lane_line_publisher"), "launch/lane_line_publisher.launch.py"),
+            osp.join(get_package_share_directory("road_publisher"), "launch/road_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -121,7 +121,7 @@ def generate_launch_description():
         vehicle_tf_broadcaster,
         zed_node,
         vectornav,
-        lane_line_publisher,
+        road_publisher,
         gamepad_joy,
         gamepad_teleop,
         twist_mux,
