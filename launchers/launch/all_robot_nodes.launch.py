@@ -8,13 +8,13 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     VEHICLE_NAME = "ai_car1"
     CAMERA_NAME = "zedx"
-    CAMERA_SN = "SN48442725"
-    CAMERA_RESOLUTION = "SVGA"
+    CAMERA_SN = "SN48311510"
+    CAMERA_RESOLUTION = "nHD"
 
-    tf_static_publisher = IncludeLaunchDescription(
+    vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("vehicle"),
-                     "launch/extrinsic_tfstatic_broadcaster.launch.py"),
+                     "launch/vehicle_tf_broadcaster.launch.py"),
         ),
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
@@ -104,9 +104,21 @@ def generate_launch_description():
                      "launch/image_compressor.launch.py"),
         ),
     )
+    object_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("object_publisher"),
+                     "launch/object_publisher.launch.py"),
+        ),
+        launch_arguments={
+            "camera_sn": CAMERA_SN,
+            "camera_resolution": CAMERA_RESOLUTION,
+            "use_rviz": "false",
+            "debug": "false",
+        }.items(),
+    )
 
     return LaunchDescription([
-        tf_static_publisher,
+        vehicle_tf_broadcaster,
         zed_node,
         vectornav,
         lane_line_publisher,
@@ -118,4 +130,5 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
+        object_publisher,
     ])

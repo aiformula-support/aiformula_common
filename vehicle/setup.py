@@ -7,7 +7,7 @@ setup(
     name=package_name,
     version='0.0.0',
     packages=find_packages(),
-    data_files=get_data_files(package_name, ("config", "launch", "xacro")),
+    data_files=get_data_files(package_name, ("config", "launch", "xacro", "rviz")),
     install_requires=['setuptools'],
     zip_safe=True,
     maintainer='Yuki Akimoto',

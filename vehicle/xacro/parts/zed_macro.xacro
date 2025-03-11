@@ -2,9 +2,8 @@
 <robot xmlns:xacro="http://www.ros.org/wiki/xacro">
 
   <xacro:macro name="zed_macro"
-               params="camera parent zed_serial_number">
-
-    <xacro:property name="ZED_PARAM_YAML_PATH" value="$(find vehicle)/config/zedx/camera_params/${zed_serial_number}/extrinsic.yaml" />
+               params="camera parent">
+    <xacro:property name="ZED_PARAM_YAML_PATH" value="$(find vehicle)/config/zedx/extrinsic/extrinsic.yaml" />
     <xacro:property name="POSITION" value="${load_yaml(ZED_PARAM_YAML_PATH)['position']}" />
     <xacro:property name="ORIENTATION" value="${load_yaml(ZED_PARAM_YAML_PATH)['orientation']}" />
     <xacro:property name="MESH_FILE" value="package://vehicle/xacro/meshes/zedx.stl"/>

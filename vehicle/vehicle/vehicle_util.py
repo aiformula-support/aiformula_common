@@ -21,7 +21,7 @@ def get_zed_intrinsic_param_path(serial_number: str, resolution: str) -> str:
     /path/to/colcon_ws/install/vehicle/share/vehicle/config/zedx/camera_params/SN48442725/HD1080.yaml\
     """
     intrinsic_yaml_path = osp.join(get_package_share_directory("vehicle"),
-                                   "config/zedx/camera_params/", serial_number, "intrinsic_" + resolution + ".yaml")
+                                   "config/zedx/intrinsic/", serial_number, resolution + ".yaml")
     if not osp.exists(intrinsic_yaml_path):
         raise FileNotFoundError(intrinsic_yaml_path)
     return intrinsic_yaml_path

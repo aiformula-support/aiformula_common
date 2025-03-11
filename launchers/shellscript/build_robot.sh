@@ -14,7 +14,8 @@ TARGET_PACKEGES=(
 
     # perception
     lane_line_publisher
-    road_detector
+    object_road_detector
+    object_publisher
 
     # control
     motor_controller

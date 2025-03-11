@@ -9,5 +9,5 @@ This package provides robot parameters.
 ### Running Example:
 To start extrinsic tf publisher
 ```
-ros2 launch vehicle extrinsic_tfstatic_broadcaster.launch.py
+ros2 launch vehicle vehicle_tf_broadcaster.launch.py
 ```
