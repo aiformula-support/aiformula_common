@@ -12,10 +12,6 @@ from common_python.launch_util import get_frame_ids_and_topic_names
 from vehicle.vehicle_util import get_zed_intrinsic_param_path
 
 
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-
-
 PACKAGE_NAME = "object_publisher"
 PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
 FRAME_IDS, TOPIC_NAMES = get_frame_ids_and_topic_names()
@@ -55,7 +51,6 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
 
 
 def generate_launch_description():
-
     launch_args = (
         DeclareLaunchArgument(
             "camera_sn",
@@ -92,7 +87,6 @@ def generate_launch_description():
     object_publisher = OpaqueFunction(function=create_object_publisher_node)
 
     topics = [
-        TOPIC_NAMES["sensing"]["odometry"]["gyro"],
         TOPIC_NAMES["perception"]["objects"]["bounding_box"],
         TOPIC_NAMES["visualization"]["annotated_mask_image"],
         "/tf",
