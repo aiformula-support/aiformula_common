@@ -1,6 +1,6 @@
 /**:
   ros__parameters:
-    process_noise_variance: 0.0001
+    process_noise_variance: 0.001
     measurement_noise_variance: 0.1
     initial_error_covariance: 1.0
     expiration_duration: 2.5  # [sec]

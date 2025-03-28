@@ -34,7 +34,7 @@ void ObjectInfoMultiArrayDisplayer::displayObjectPositions(
         auto &shape = *position_shapes_.emplace_back(
             std::make_unique<rviz_rendering::Shape>(rviz_rendering::Shape::Type::Cube, scene_manager_, scene_node_));
         shape.setPosition(Ogre::Vector3(object.x, object.y, 0.0));
-        shape.setScale(Ogre::Vector3(0.8, 0.8, 0.1));
+        shape.setScale(Ogre::Vector3(0.6, 0.6, 0.1));
         Ogre::ColourValue color = rviz_common::properties::qtToOgre(position_color_property_->getColor());
         shape.setColor(getColorWithConfidence(color, object.confidence));
     }
