@@ -28,7 +28,7 @@ $ ros2 launch object_publisher object_publisher.launch.py
     - If the distance between objects is greater than this value, they are considered separate.
 
 ### tracked_object.yaml
-- `process_noise_variance` (double, default: 0.0001)
+- `process_noise_variance` (double, default: 0.001)
     - Process noise for the Kalman filter.
 - `measurement_noise_variance` (double, default: 0.1)
     - Measurement noise for the Kalman filter.
