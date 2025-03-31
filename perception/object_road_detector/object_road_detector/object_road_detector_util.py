@@ -17,20 +17,18 @@ if yolop_dir not in sys.path:
     sys.path.insert(0, osp.join(yolop_dir, "YOLOP"))  # add ROOT to PATH
 
 
-from YOLOP.lib.config import cfg  # noqa: E402
-from YOLOP.lib.utils import letterbox_for_img  # noqa: E402
+from YOLOP.lib.config import cfg                 # noqa: E402
+from YOLOP.lib.utils import letterbox_for_img    # noqa: E402
 from YOLOP.lib.utils.utils import select_device  # noqa: E402
-from YOLOP.lib.models import get_net  # noqa: E402
+from YOLOP.lib.models import get_net             # noqa: E402
 from YOLOP.lib.core.general import non_max_suppression, scale_coords  # noqa: E402
 
 
 from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
-from aiformula_interfaces.msg import Rect, RectMultiArray  # noqa: E402
-
-# get ros parameters
+from aiformula_interfaces.msg import Rect, RectMultiArray      # noqa: E402
 
 
-def get_params(self) -> Any:
+def get_params(self) -> Any:  # get ros parameters
     architecture = get_ros_parameter(self, 'use_architecture')
     path_to_weights = get_ros_parameter(self, 'weight_path')
     mean = get_ros_parameter(self, 'normalization.mean')
@@ -39,10 +37,8 @@ def get_params(self) -> Any:
     iou_threshold = get_ros_parameter(self, 'iou_threshold')
     return architecture, path_to_weights, mean, stdev, confidence_threshold, iou_threshold
 
-# initialize model and parameters
 
-
-def init_detector(self):
+def init_detector(self):   # initialize model and parameters
     load_model(self)
     # Nomalization and Tensor
     self.transform = transforms.Compose([
@@ -53,10 +49,8 @@ def init_detector(self):
     self.bbox_names = self.model.module.names if hasattr(self.model, 'module') else self.model.names
     self.bbox_colors = [[random.randint(0, 255) for _ in range(3)] for _ in range(len(self.bbox_names))]
 
-# model load
 
-
-def load_model(self):
+def load_model(self):  # model load
     self.architecture = select_device(device=str(self.parameters.architecture))
     self.use_half_precision = (self.architecture.type != 'cpu')  # half precision only supported on CUDA
     self.model = get_net(cfg)
@@ -68,8 +62,7 @@ def load_model(self):
     self.model.eval()
 
 
-# Pad image
-def pad_image(image):
+def pad_image(image) -> Any:  # Pad image
     paded_image, (ratio_to_pad, _), (dw, dh) = letterbox_for_img(
         image, new_shape=640, auto=True)    # ratio_to_padding (width, height)
     top, bottom = round(dh - 0.1), round(dh + 0.1)
@@ -77,8 +70,7 @@ def pad_image(image):
     return np.ascontiguousarray(paded_image), ratio_to_pad, top, bottom, left, right
 
 
-# Lane Line decodor
-def decode_lane_line_output(self, ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right) -> np.ndarray:
+def decode_lane_line_output(self, ll_seg_out, input_image, ratio_to_padding, top, bottom, left, right) -> np.ndarray:   # Lane Line decodor
     _, _, height, width = input_image.shape
     ll_predict = ll_seg_out[:, :, top:(height-bottom), left:(width-right)]
     ll_seg_mask_raw = torch.nn.functional.interpolate(
@@ -88,27 +80,22 @@ def decode_lane_line_output(self, ll_seg_out, input_image, ratio_to_padding, top
     return ll_seg_mask
 
 
-# Object decodor
-def decode_object_output(self, detect_out) -> torch.Tensor:
+def decode_object_output(self, detect_out) -> torch.Tensor:  # Object decodor
     object_out, _ = detect_out
     detect_predict = non_max_suppression(object_out, conf_thres=self.parameters.confidence_threshold,
                                          iou_thres=self.parameters.iou_threshold, classes=None, agnostic=False)
     detect = detect_predict[0]
     return detect
 
-# publish lane line mask image
 
-
-def publish_lane_line(self, ll_seg_mask, header):
+def publish_lane_line(self, ll_seg_mask, header):   # publish lane line mask image
     ll_seg_mask = np.array(ll_seg_mask, dtype='uint8')
     ll_seg_mask_msg = self.cv_bridge.cv2_to_imgmsg(ll_seg_mask, "mono8")
     ll_seg_mask_msg.header = header
     self.lane_mask_image_pub.publish(ll_seg_mask_msg)
 
-# punlish rects for bbox
 
-
-def publish_rects(self, input_image, undistorted_image, bbox_detect, header):
+def publish_rects(self, input_image, undistorted_image, bbox_detect, header):   # punlish rects for bbox
     bbox_poses = []
     bbox_detect[:, :4] = scale_coords(input_image.shape[2:], bbox_detect[:, :4], undistorted_image.shape).round()
     for *xyxy, _, _ in reversed(bbox_detect):
@@ -132,9 +119,7 @@ def listToRects(object_poses) -> RectMultiArray:
     return rect_array
 
 
-# Publish result image for visualization
-def publish_result(self, undistorted_image, input_image, ll_seg_mask, object_detect, header):
-    # Publish annotated image
+def publish_result(self, undistorted_image, input_image, ll_seg_mask, object_detect, header):   # Publish result image for visualization
     annotated_lane_image = show_seg_result(undistorted_image, (ll_seg_mask, None), None, None, is_demo=True)
     annotated_box_image = draw_bounding_box(self, input_image, annotated_lane_image, object_detect)
     annotated_mask_image = self.cv_bridge.cv2_to_imgmsg(annotated_box_image, "bgr8")
@@ -142,7 +127,7 @@ def publish_result(self, undistorted_image, input_image, ll_seg_mask, object_det
     self.annotated_mask_image_pub.publish(annotated_mask_image)
 
 
-def show_seg_result(img, result, index, epoch, save_dir=None, is_ll=False, palette=None, is_demo=False, is_gt=False):
+def show_seg_result(img, result, index, epoch, save_dir=None, is_ll=False, palette=None, is_demo=False, is_gt=False) -> np.uint8:
     if palette is None:
         palette = np.random.randint(
             0, 255, size=(3, 3))
@@ -168,8 +153,7 @@ def show_seg_result(img, result, index, epoch, save_dir=None, is_ll=False, palet
     return img
 
 
-# draw bbox with opencv
-def draw_bounding_box(self, image, annotated_image, object_detect) -> np.ndarray:
+def draw_bounding_box(self, image, annotated_image, object_detect) -> np.ndarray:   # draw bbox with opencv
     detect = object_detect
     detect[:, :4] = scale_coords(image.shape[2:], detect[:, :4], annotated_image.shape).round()
     for *xyxy, conf, cls in reversed(detect):
@@ -179,8 +163,7 @@ def draw_bounding_box(self, image, annotated_image, object_detect) -> np.ndarray
     return annotated_image
 
 
-def plot_one_box(x, img, color=None, label=None, line_thickness=None):
-    # Plots one bounding box on image img
+def plot_one_box(x, img, color=None, label=None, line_thickness=None):   # Plots one bounding box on image img
     tl = line_thickness or round(
         0.0001 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
     color = color or [random.randint(0, 255) for _ in range(3)]
