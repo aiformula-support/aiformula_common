@@ -33,6 +33,7 @@ def get_ros_parameter(node: rclpy.node.Node, param_name: str) -> Any:
             else:
                 return param.value
         else:
+            # Raise `TypeError` exception if no parameter is passed
             node.declare_parameter(param_name, rclpy.Parameter.Type.NOT_SET)
             return node.get_parameter(param_name).value
     except TypeError:

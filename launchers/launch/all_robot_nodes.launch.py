@@ -1,6 +1,6 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
+from launch.actions import IncludeLaunchDescription
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
@@ -10,21 +10,13 @@ from ament_index_python.packages import get_package_share_directory
 def generate_launch_description():
     VEHICLE_NAME = "ai_car1"
     CAMERA_NAME = "zedx"
-    CAMERA_SN = "SN48442725"
-    CAMERA_RESOLUTION = "SVGA"
+    CAMERA_SN = "SN48311510"
+    CAMERA_RESOLUTION = "nHD"
 
-    launch_args = (
-        DeclareLaunchArgument(
-            "autopilot",
-            default_value="true",
-            description="If true, robot runs autonomously",
-        )
-    )
-
-    tf_static_publisher = IncludeLaunchDescription(
+    vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("vehicle"),
-                     "launch/extrinsic_tfstatic_broadcaster.launch.py"),
+                     "launch/vehicle_tf_broadcaster.launch.py"),
         ),
         launch_arguments={
             "vehicle_name": VEHICLE_NAME,
@@ -45,10 +37,9 @@ def generate_launch_description():
         ),
     )
     # --- Perception --- #
-    lane_line_publisher = IncludeLaunchDescription(
+    road_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("lane_line_publisher"),
-                     "launch/lane_line_publisher.launch.py"),
+            osp.join(get_package_share_directory("road_publisher"), "launch/road_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -122,13 +113,24 @@ def generate_launch_description():
                      "launch/image_compressor.launch.py"),
         ),
     )
+    object_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("object_publisher"),
+                     "launch/object_publisher.launch.py"),
+        ),
+        launch_arguments={
+            "camera_sn": CAMERA_SN,
+            "camera_resolution": CAMERA_RESOLUTION,
+            "use_rviz": "false",
+            "debug": "false",
+        }.items(),
+    )
 
     return LaunchDescription([
-        launch_args,
-        tf_static_publisher,
+        vehicle_tf_broadcaster,
         zed_node,
         vectornav,
-        lane_line_publisher,
+        road_publisher,
         gamepad_joy,
         gamepad_teleop,
         twist_mux,
@@ -138,4 +140,5 @@ def generate_launch_description():
         rear_potentiometer,
         image_compressor,
         extremum_seeking_mpc,
+        object_publisher,
     ])

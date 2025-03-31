@@ -35,7 +35,8 @@ def generate_launch_description():
         parameters=[*ROS_PARAM_CONFIG],
         remappings=[
             ("sub_joy", TOPIC_NAMES["control"]["joy"]["handle_controller"]),
-            ("pub_cmd_vel", TOPIC_NAMES["control"]["speed_command"]["handle_controller"]),
+            ("pub_cmd_vel", TOPIC_NAMES["control"]["speed_command"]["handle_controller"]["normal"]),
+            ("pub_cmd_vel_coasting", TOPIC_NAMES["control"]["speed_command"]["handle_controller"]["coasting"]),
             ("pub_twist_mux_lock", TOPIC_NAMES["control"]["twist_mux_lock"]["gamepad"]),
         ],
     )

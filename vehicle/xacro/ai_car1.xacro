@@ -1,6 +1,6 @@
 <?xml version="1.0" ?>
 <robot name="ai_car1" xmlns:xacro="http://www.ros.org/wiki/xacro">
-  <xacro:include filename="parts/base.xacro"/>
+  <xacro:include filename="parts/base_macro.xacro"/>
   <xacro:include filename="parts/wheel_macro.xacro"/>
   <xacro:include filename="parts/caster_back_macro.xacro"/>
   <xacro:include filename="parts/zed_macro.xacro"/>
@@ -17,8 +17,6 @@
   <xacro:property name="WHEEL_RIGHT" value="wheel_right"/>
   <xacro:property name="CASTER_BACK" value="caster_back"/>
 
-  <xacro:property name="ZED_SERIAL_NUMBER" value="SN48442725"/>
-
   <!-- base_footprint -->
   <link name="${BASE_FOOTPRINT}"/>
 
@@ -30,8 +28,8 @@
 
   <!-- zedx -->
   <xacro:zed_macro
-    camera="${ZEDX}" parent="${BASE}" zed_serial_number="${ZED_SERIAL_NUMBER}"/>
-
+    camera="${ZEDX}" parent="${BASE}"/>
+    
   <!-- wheel -->
   <xacro:wheel_joint_macro
     wheel="${WHEEL_LEFT}" parent="${BASE}"

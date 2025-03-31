@@ -32,7 +32,7 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = (
-        osp.join(LAUNCHERS_DIR, "config", "twist_mux", "twist_mux.yaml"),
+        osp.join(LAUNCHERS_DIR, "config", "twist_mux.yaml"),
     )
     twist_mux = Node(
         package=PACKAGE_NAME,
@@ -44,9 +44,10 @@ def generate_launch_description():
         arguments=["--ros-args", "--log-level", LaunchConfiguration('log_level')],
         parameters=[*ROS_PARAM_CONFIG,
                     {
-                        "topics.handle_controller.topic": TOPIC_NAMES["control"]["speed_command"]["handle_controller"],
+                        "topics.handle_controller.topic": TOPIC_NAMES["control"]["speed_command"]["handle_controller"]["normal"],
                         "topics.gamepad.topic": TOPIC_NAMES["control"]["speed_command"]["gamepad"],
                         "topics.mpc.topic": TOPIC_NAMES["control"]["speed_command"]["mpc"],
+                        "topics.handle_controller_coasting.topic": TOPIC_NAMES["control"]["speed_command"]["handle_controller"]["coasting"],
                         "locks.gamepad.topic": TOPIC_NAMES["control"]["twist_mux_lock"]["gamepad"],
                     }],
         remappings=[

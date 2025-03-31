@@ -64,6 +64,8 @@ def generate_launch_description():
             "ros2 bag play",
             " --topics ",
             TOPIC_NAMES["sensing"]["input_can_data"],
+            "/tf",
+            "/tf_static",
             " -r ",
             LaunchConfiguration("rosbag_play_speed"),
             " -- ",

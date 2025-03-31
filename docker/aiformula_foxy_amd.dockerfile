@@ -121,6 +121,6 @@ RUN echo "source /opt/ros/${ROS_DISTRO}/setup.bash" >> ${HOME}/.bashrc && \
 
 RUN echo "alias cb='cd ${HOME}/workspace/ros && colcon build --symlink-install --packages-up-to'" >> ${HOME}/.bash_aliases && \
     echo "alias cbcc='cd ${HOME}/workspace/ros && colcon build --cmake-clean-cache --symlink-install --packages-up-to'" >> ${HOME}/.bash_aliases && \
-    echo "alias cc='rm -rf ${HOME}/workspace/ros/build ${HOME}/workspace/ros/install ${HOME}/workspace/ros/log && unset AMENT_PREFIX_PATH && unset CMAKE_PREFIX_PATH'" >> ${HOME}/.bash_aliases
+    echo "alias cc='rm -rf ${HOME}/workspace/ros/build ${HOME}/workspace/ros/install ${HOME}/workspace/ros/log && unset AMENT_PREFIX_PATH && unset CMAKE_PREFIX_PATH && source /opt/ros/${ROS_DISTRO}/setup.bash'" >> ${HOME}/.bash_aliases
 
 CMD ["bash"]
