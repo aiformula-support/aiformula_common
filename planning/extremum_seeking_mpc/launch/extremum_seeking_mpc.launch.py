@@ -28,6 +28,7 @@ def generate_launch_description():
             ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),
             ('sub_road_r', TOPIC_NAMES["perception"]["lane_lines"]["right"]),
             ('sub_actual_speed', TOPIC_NAMES["sensing"]["actual_speed"]),
+            ('sub_object_info', TOPIC_NAMES["perception"]["objects"]["info"])
         ],
     )
 

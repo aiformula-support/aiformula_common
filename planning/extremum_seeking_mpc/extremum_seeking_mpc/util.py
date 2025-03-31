@@ -28,6 +28,13 @@ class MpcParameters:
     curvature_min: float
 
 
+@dataclass
+class LowPassFilterParameters:  # LowPassFilter x+1 = A*x + B*u , y = C * x
+    A: float
+    B: float
+    C: float
+
+
 class Side(IntEnum):
     LEFT = 0
     RIGHT = 1

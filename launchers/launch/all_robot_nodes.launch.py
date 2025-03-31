@@ -1,6 +1,6 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
 from launch.substitutions import LaunchConfiguration
 from launch.conditions import IfCondition
@@ -12,6 +12,14 @@ def generate_launch_description():
     CAMERA_NAME = "zedx"
     CAMERA_SN = "SN48311510"
     CAMERA_RESOLUTION = "nHD"
+
+    launch_args = (
+        DeclareLaunchArgument(
+            "autopilot",
+            default_value="true",
+            description="If true, robot runs autonomously",
+        )
+    )
 
     vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -39,7 +47,8 @@ def generate_launch_description():
     # --- Perception --- #
     road_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("road_publisher"), "launch/road_publisher.launch.py"),
+            osp.join(get_package_share_directory("road_publisher"),
+                     "launch/road_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -127,6 +136,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        launch_args,
         vehicle_tf_broadcaster,
         zed_node,
         vectornav,

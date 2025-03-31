@@ -12,7 +12,7 @@ setup(
     zip_safe=True,
     maintainer='Issa Omura',
     maintainer_email='issa_omura@jp.honda',
-    description='Collision Avoidance MPC with Extremum Seeking Controller',
+    description='Model Predictive Control using Extremum Seeking Controller',
     license='LGPL-3.0-only',
     tests_require=['pytest'],
     entry_points={

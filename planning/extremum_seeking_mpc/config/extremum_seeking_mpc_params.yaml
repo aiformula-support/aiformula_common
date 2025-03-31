@@ -1,11 +1,16 @@
 /**:
   ros__parameters:
+    control_time: 0.01
+    buffer_size: 10
+
     mpc_parameters:
       # --- exs_mpc_script ---
       seek_gain: -0.2 # -0.2
       seek_amp: 0.08 # 0.08
       esc_max: 0.2
       esc_min: -0.2
+      feedback_gain: 0.9
+      sin_period: 0.08
 
       # --- extremum_seeking_mpc ---
       horizon_times: [2.0, 3.0, 4.0] #[s]
@@ -13,18 +18,37 @@
       curvature_limit: 0.2
       curvature_gain: 25
       benefit_gain: 2
-      curvature_radius_threshold: 1000
+      curvature_radius_threshold: 1000 #[m]
     
+    # --- extremum_seeking_mpc ---
     velocity_control:
       deceleration_curvature_threshold: 0.16
       deceleration_gain: 5
+    
+    # --- exs_mpc_script ---
+    lowpassfilter: # ex) Fc = 0.01 Hz -> A = 0.9937, B = 0.01, C = 0.6283
+      A: 0.9937
+      B: 0.01
+      C: 0.6283
+
+    # --- exs_mpc_script ---
+    backpropagation:
+      backpropagation_gain_u: [-1., -0.5, -0.05, 0., 0.05, 0.5, 1.]
+      backpropagation_gain_positive_y: [0., 0., 0., 0.5, 0.9, 1., 1.]
+      backpropagation_gain_negative_y: [1., 1., 0.9, 0.5, 0., 0., 0.]
+      backpropagation_gain: 0
 
     # --- exs_objrisk_script ---
     object_risk_potential:
-      pedestrian_risk_table_x_u: [-3., -2., -0.6, -0.5, -0.35, -0.2, 0., 0.2, 0.35, 0.5, 0.6, 2., 3.]
-      pedestrian_risk_table_x_y: [0., 0.3, 0.4, 0.6, 0.8, 1., 1., 1., 0.8, 0.6, 0.4, 0.3, 0.]
-      pedestrian_risk_table_y_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
-      pedestrian_risk_table_y_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
+      object_risk_table_x_u: [-3., -2., -0.6, -0.5, -0.35, -0.2, 0., 0.2, 0.35, 0.5, 0.6, 2., 3.]
+      object_risk_table_x_y: [0., 0.3, 0.4, 0.6, 0.8, 1., 1., 1., 0.8, 0.6, 0.4, 0.3, 0.]
+      object_risk_table_y_u: [2., 1., 0.6, 0.5, 0.35, 0.2, 0., -0.2, -0.35, -0.5, -0.6, -1., -2.] #[m]
+      object_risk_table_y_y: [0., 0., 0., 0.1, 0.5, 0.9, 1., 0.9, 0.5, 0.1, 0., 0., 0.]
+      object_risk_variance_x: 0.8
+      object_risk_variance_y: 0.8
+      object_risk_correlation_coefficient: 0.0
+      object_risk_gain: 100
+
     
     # --- exs_road_script ---
     road_risk_potential:
@@ -35,3 +59,16 @@
       road_risk_left_gradient: 0.2
       road_risk_right_gradient: 0.2
       road_risk_margin: 0.2
+      road_risk_gain: 5
+    road_weight:
+      weight_u: [-0.1, 0., 0.41, 0.69, 0.83, 1., 1.1]
+      weight_y1: [1., 1., 0., 0., 0., 0., 0.]
+      weight_y2: [0., 0., 1., 0., 0., 0., 0.]
+      weight_y3: [0., 0., 0., 1., 0., 0., 0.]
+      weight_y4: [0., 0., 0., 0., 1., 0., 0.]
+      weight_y5: [0., 0., 0., 0., 0., 1., 1.]
+    road_identification:
+      max_point_length: 50
+      identification_gain: 10
+      forget_vector: [0.99995, 0.99995, 0.98]
+      mem_lim: 0.3

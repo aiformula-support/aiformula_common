@@ -31,10 +31,7 @@ class ExtremumSeekingMpc(Node):
         self.init_members()
         self.init_connections()
 
-        # for debug
-        # self.actual_ego_v = None
-        # self.actual_ego_v = Velocity(linear=self.ego_v_target, angular=0.0)
-        self.actual_ego_v = Velocity(linear=2.0, angular=0.0)
+        self.actual_ego_v = None
         self.get_logger().info(f'ego_v_target : {self.ego_v_target}')
 
         # initialize tf
@@ -48,7 +45,7 @@ class ExtremumSeekingMpc(Node):
         # EXS_MPC parameter
         self.curvatures = [0] * len(self.predict_horizon)
         self.seek_y_positions = [
-            self.exs_mpc.extremum_seeking_controller.seek_points] * len(self.predict_horizon)  # sin is divided by fixed value of 5
+            self.exs_mpc.extremum_seeking_controller_step1.seek_points] * len(self.predict_horizon)  # sin is divided by fixed value of 5
 
         # for risk calculation
         self.object_risk = []
@@ -64,7 +61,7 @@ class ExtremumSeekingMpc(Node):
         signal.signal(signal.SIGINT, self.reset_command)
 
         self.timer = self.create_timer(
-            0.01, self.publish_cmd_vel_timer_callback)
+            self.control_time, self.publish_cmd_vel_timer_callback)
 
     def init_parameters(self):
         self.ego_v_target = get_ros_parameter(
@@ -81,30 +78,31 @@ class ExtremumSeekingMpc(Node):
             self, "velocity_control.deceleration_gain")
         self.base_footprint_frame_id = get_ros_parameter(
             self, "base_footprint_frame_id")
+        self.control_time = get_ros_parameter(
+            self, "control_time")
+        self.buffer_size = get_ros_parameter(
+            self, "buffer_size")
 
     def init_members(self):
         self.object_estimation = ObjectEstimation(self)
         self.road_estimation = RoadEstimation(self)
         self.prediction_position = GeometricPoseCurvatures(
             self, self.predict_horizon)
-        self.exs_mpc = OptimizePath(self)
+        self.exs_mpc = OptimizePath(self, self.control_time)
 
     def init_connections(self):
-        buffer_size = 10
         # initialize publishers
         self.twist_pub = self.create_publisher(
-            Twist, 'pub_twist_command', buffer_size)
+            Twist, 'pub_twist_command', self.buffer_size)
         # initialize subscribers
         self.left_lane_line_sub = self.create_subscription(
-            PointCloud2, 'sub_road_l', lambda msg: self.lane_line_callback(msg, Side.LEFT), buffer_size)
+            PointCloud2, 'sub_road_l', lambda msg: self.lane_line_callback(msg, Side.LEFT), self.buffer_size)
         self.right_lane_line_sub = self.create_subscription(
-            PointCloud2, 'sub_road_r', lambda msg: self.lane_line_callback(msg, Side.RIGHT), buffer_size)
+            PointCloud2, 'sub_road_r', lambda msg: self.lane_line_callback(msg, Side.RIGHT), self.buffer_size)
         self.actucal_speed_sub = self.create_subscription(
-            Twist, 'sub_actual_speed', self.actual_speed_callback, buffer_size)
-
-        # New!
+            Twist, 'sub_actual_speed', self.actual_speed_callback, self.buffer_size)
         self.object_position_sub = self.create_subscription(
-            ObjectInfoMultiArray, '/aiformula_perception/object_publisher/object_info', self.object_position_callback, buffer_size)
+            ObjectInfoMultiArray, 'sub_object_info', self.object_position_callback, self.buffer_size)
 
     def lane_line_callback(self, msg_pointcloud2: PointCloud2, side: Side) -> None:
         pc_data = pc2.read_points(msg_pointcloud2)
@@ -121,17 +119,10 @@ class ExtremumSeekingMpc(Node):
                                      angular=twist_msg.angular.z)
 
     def object_position_callback(self, msg):
-        object_x = 0.0
-        object_y = 0.0
-        object_width = 0.0
-        confidence = 0.0
         object_points = []
         for object in msg.objects:
-            object_x = object.x
-            object_y = object.y
-            object_width = object.width
-            confidence = object.confidence
-            object_points.append([object_x, object_y, object_width, confidence])
+            object_points.append(
+                [object.x, object.y, object.width, object.confidence])
         self.object_position = object_points
 
     def predict_ego_position(self):

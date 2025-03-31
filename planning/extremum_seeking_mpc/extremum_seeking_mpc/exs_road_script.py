@@ -10,27 +10,22 @@ from .util import Side
 class RoadEstimation:
     def __init__(self, node: Node):
         self.init_parameters(node)
-        Weight_u = [-0.1, 0., 0.41, 0.69, 0.83, 1., 1.1]
-        Weight_y1 = [1., 1., 0., 0., 0., 0., 0.]
-        Weight_y2 = [0., 0., 1., 0., 0., 0., 0.]
-        Weight_y3 = [0., 0., 0., 1., 0., 0., 0.]
-        Weight_y4 = [0., 0., 0., 0., 1., 0., 0.]
-        Weight_y5 = [0., 0., 0., 0., 0., 1., 1.]
+        Weight_u = self.road_weight_u
+        Weight_y1 = self.road_weight_y1
+        Weight_y2 = self.road_weight_y2
+        Weight_y3 = self.road_weight_y3
+        Weight_y4 = self.road_weight_y4
+        Weight_y5 = self.road_weight_y5
         self.Weight1_function = interp1d(Weight_u, Weight_y1)
         self.Weight2_function = interp1d(Weight_u, Weight_y2)
         self.Weight3_function = interp1d(Weight_u, Weight_y3)
         self.Weight4_function = interp1d(Weight_u, Weight_y4)
         self.Weight5_function = interp1d(Weight_u, Weight_y5)
-        self.max_point_length = 50
-        identification_gain = 10
         self.identification_gain_matrix = np.zeros((3, 3))
         np.fill_diagonal(
-            self.identification_gain_matrix, identification_gain)
-
-        self.forget_vector = np.array([0.99995, 0.99995, 0.98])
-        self.mem_lim = 0.3
+            self.identification_gain_matrix, self.identification_gain)
+        self.forget_vector = np.array(self.forget_vector)
         self.theta_base = [0., 0., 0.]
-        self.risk_gain = 5
         self.sigma_max = max(self.road_sigma)
         self.sigma_min = min(self.road_sigma)
 
@@ -51,6 +46,28 @@ class RoadEstimation:
             node, "road_risk_potential.road_risk_right_gradient")
         self.road_risk_margin = get_ros_parameter(
             node, "road_risk_potential.road_risk_margin")
+        self.road_risk_gain = get_ros_parameter(
+            node, "road_risk_potential.road_risk_gain")
+        self.road_weight_u = get_ros_parameter(
+            node, "road_weight.weight_u")
+        self.road_weight_y1 = get_ros_parameter(
+            node, "road_weight.weight_y1")
+        self.road_weight_y2 = get_ros_parameter(
+            node, "road_weight.weight_y2")
+        self.road_weight_y3 = get_ros_parameter(
+            node, "road_weight.weight_y3")
+        self.road_weight_y4 = get_ros_parameter(
+            node, "road_weight.weight_y4")
+        self.road_weight_y5 = get_ros_parameter(
+            node, "road_weight.weight_y5")
+        self.max_point_length = get_ros_parameter(
+            node, "road_identification.max_point_length")
+        self.identification_gain = get_ros_parameter(
+            node, "road_identification.identification_gain")
+        self.forget_vector = get_ros_parameter(
+            node, "road_identification.forget_vector")
+        self.mem_lim = get_ros_parameter(
+            node, "road_identification.mem_lim")
 
     def line_identification(self, xys):
         xs = np.ravel(xys[:, :1].T)
@@ -162,21 +179,17 @@ class RoadEstimation:
                 y_hat = self.estimate_yhat(
                     seek_x, normalize_denominator, normalize_offset, thetas)
 
-            # if y_hat:
                 for i in range(len(seek_ys)):
                     # distance between seek_point and road_bound
-                    sigma = seek_ys[i] - y_hat
-                    # sigma range check
-                    sigma = np.clip(sigma, self.sigma_min, self.sigma_max)
+                    sigma = np.clip(seek_ys[i] - y_hat,
+                                    self.sigma_min, self.sigma_max)
 
                     if side == Side.RIGHT:
-                        # risk[i] = self.risk_gain * self.left_road_risk(sigma)
-                        risk[i] = self.risk_gain * \
+                        risk[i] = self.road_risk_gain * \
                             (-np.arctan(self.road_risk_left_gradient *
                              (sigma+self.road_risk_margin))+1.7)  # road_risk potential
                     elif side == Side.LEFT:
-                        # risk[i] = self.risk_gain * self.right_road_risk(sigma)
-                        risk[i] = self.risk_gain * \
+                        risk[i] = self.road_risk_gain * \
                             (np.arctan(self.road_risk_right_gradient *
                              (sigma+self.road_risk_margin))+1.7)  # road_risk potential
             risks.append(risk)
