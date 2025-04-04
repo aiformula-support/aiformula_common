@@ -20,7 +20,7 @@ def generate_launch_description():
             default_value=osp.join(get_package_share_directory("object_road_detector"), "weights", "End-to-end.pth"),
             description="Path to the weight pth file."),
         DeclareLaunchArgument(
-            "use_architecture",
+            "use_device",
             default_value="0",
             description="cuda device, i.e. 0 or cpu",),
     )
@@ -36,7 +36,7 @@ def generate_launch_description():
             # Overriding
             {
                 "weight_path": LaunchConfiguration("weight_path"),
-                "use_architecture": LaunchConfiguration("use_architecture"),
+                "use_device": LaunchConfiguration("use_device"),
             },
         ],
         remappings=[
@@ -44,7 +44,7 @@ def generate_launch_description():
              TOPIC_NAMES["sensing"]["zedx"]["left_image"]["undistorted"]),
             ("pub_mask_image",
              TOPIC_NAMES["perception"]["mask_image"]),
-            ("pub_object_pose",
+            ("pub_bbox",
              TOPIC_NAMES["perception"]["bounding_box"]),
             ("pub_annotated_mask_image",
              TOPIC_NAMES["visualization"]["annotated_mask_image"]),
