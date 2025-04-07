@@ -80,8 +80,6 @@ void GyroOdometryPublisher::publishOdometryCallback() {
                 yaw_angle_ = tf2::impl::getYaw(yaw_angle_slerp.valueAt(current_can_time)) - yaw_angle_offset;
                 yaw_rate_ = yaw_rate_lerp.valueAt(current_can_time);
 
-                acturalspeedpublish(vehicle_linear_velocity,yaw_rate_);
-
                 const double dt = current_can_time - prev_can_time;
                 updatePosition(vehicle_linear_velocity, dt);
                 nav_msgs::msg::Odometry odometry = createOdometryMsg(can_msgs_[can_idx]->header.stamp);

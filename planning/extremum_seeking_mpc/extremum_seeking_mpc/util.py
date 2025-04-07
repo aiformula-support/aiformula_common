@@ -39,3 +39,8 @@ class Side(IntEnum):
     LEFT = 0
     RIGHT = 1
     NUM_SIDES = 2
+
+
+class Vector2(IntEnum):
+    X = 0
+    Y = 1

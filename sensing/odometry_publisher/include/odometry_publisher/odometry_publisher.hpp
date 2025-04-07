@@ -7,7 +7,6 @@
 #include <rclcpp/rclcpp.hpp>
 
 // ROS msg
-#include <geometry_msgs/msg/twist.hpp>
 #include <geometry_msgs/msg/point.hpp>
 #include <geometry_msgs/msg/vector3.hpp>
 #include <nav_msgs/msg/odometry.hpp>
@@ -29,9 +28,7 @@ protected:
     void updatePosition(const double& vehicle_linear_velocity, const double& dt);
     nav_msgs::msg::Odometry createOdometryMsg(const builtin_interfaces::msg::Time& msg_time) const;
     void broadcastTf(const nav_msgs::msg::Odometry& odom);
-    void acturalspeedpublish(const double& vehicle_linear_velocity, const double& yaw_rate);
 
-    rclcpp::Publisher<geometry_msgs::msg::Twist>::SharedPtr actural_speed_pub_;
     rclcpp::Publisher<nav_msgs::msg::Odometry>::SharedPtr odometry_pub_;
     geometry_msgs::msg::Point pos_;
     geometry_msgs::msg::Vector3 vehicle_linear_velocity_;

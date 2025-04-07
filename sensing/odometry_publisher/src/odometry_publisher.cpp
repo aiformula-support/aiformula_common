@@ -22,7 +22,6 @@ void OdometryPublisher::getRosParams() {
 
 void OdometryPublisher::initValues() {
     const int buffer_size = 10;
-    actural_speed_pub_ = this->create_publisher<geometry_msgs::msg::Twist>("pub_actual_speed",10);
     odometry_pub_ = this->create_publisher<nav_msgs::msg::Odometry>("pub_odometry", buffer_size);
     odometry_br_ = std::make_unique<tf2_ros::TransformBroadcaster>(this);
 }
@@ -72,14 +71,6 @@ void OdometryPublisher::broadcastTf(const nav_msgs::msg::Odometry& odom) {
     ts.transform.translation = toVector3Msg(odom.pose.pose.position);
     ts.transform.rotation = odom.pose.pose.orientation;
     odometry_br_->sendTransform(ts);
-}
-
-void OdometryPublisher::acturalspeedpublish(const double& vehicle_linear_velocity,const double& yaw_rate){
-    // actual speed publish
-    auto actual_speed_msg = geometry_msgs::msg::Twist();
-    actual_speed_msg.linear.x = vehicle_linear_velocity;
-    actual_speed_msg.angular.z = yaw_rate;
-    actural_speed_pub_->publish(actual_speed_msg);
 }
 
 }  // namespace aiformula

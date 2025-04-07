@@ -55,12 +55,10 @@ def generate_launch_description():
         remappings=[
             ("sub_can", TOPIC_NAMES["sensing"]["input_can_data"]),
             ("pub_odometry", TOPIC_NAMES["sensing"]["odometry"]["wheel"]),
-            ("pub_actual_speed", TOPIC_NAMES["sensing"]["actual_speed"]),
         ],
     )
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(
-            "vehicle"), "config", "wheel.yaml"),
+        osp.join(get_package_share_directory("vehicle"), "config", "wheel.yaml"),
         osp.join(PACKAGE_DIR, "config", "gyro_odometry_publisher.yaml"),
     )
     gyro_odometry_publisher = Node(

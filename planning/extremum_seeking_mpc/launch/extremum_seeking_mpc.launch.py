@@ -27,7 +27,7 @@ def generate_launch_description():
             ('pub_twist_command', TOPIC_NAMES["planning"]["twist_command"]),
             ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),
             ('sub_road_r', TOPIC_NAMES["perception"]["lane_lines"]["right"]),
-            ('sub_actual_speed', TOPIC_NAMES["sensing"]["actual_speed"]),
+            ('sub_odom', TOPIC_NAMES["sensing"]["odometry"]["gyro"]),
             ('sub_object_info', TOPIC_NAMES["perception"]["objects"]["info"])
         ],
     )

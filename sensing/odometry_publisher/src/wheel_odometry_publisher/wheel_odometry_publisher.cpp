@@ -35,8 +35,6 @@ void WheelOdometryPublisher::canFrameCallback(const can_msgs::msg::Frame::Shared
     const double vehicle_linear_velocity = odometry_publisher::calcLinearVelocity(msg, wheel_diameter_);
     yaw_rate_ = odometry_publisher::calcYawRateFromWheelRpm(msg, wheel_diameter_, wheel_tread_);
 
-    acturalspeedpublish(vehicle_linear_velocity,yaw_rate_);
-
     const double dt = calcTimeDelta(msg->header.stamp);
     yaw_angle_ += yaw_rate_ * dt;
     updatePosition(vehicle_linear_velocity, dt);

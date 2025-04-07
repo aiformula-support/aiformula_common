@@ -38,8 +38,7 @@ def generate_launch_description():
     )
 
     ROS_PARAM_CONFIG = (
-        osp.join(get_package_share_directory(
-            "vehicle"), "config", "wheel.yaml"),
+        osp.join(get_package_share_directory("vehicle"), "config", "wheel.yaml"),
     )
     wheel_odometry_publisher = Node(
         package=PACKAGE_NAME,
@@ -56,7 +55,6 @@ def generate_launch_description():
         remappings=[
             ("sub_can", TOPIC_NAMES["sensing"]["input_can_data"]),
             ("pub_odometry", TOPIC_NAMES["sensing"]["odometry"]["wheel"]),
-            ("pub_actual_speed", TOPIC_NAMES["sensing"]["actual_speed"]),
         ],
     )
     rosbag_play = ExecuteProcess(

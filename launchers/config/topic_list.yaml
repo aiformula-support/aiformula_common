@@ -6,7 +6,6 @@ sensing:
       undistorted: "/aiformula_sensing/zed_node/right_image/undistorted"
     imu: "/aiformula_sensing/zed_node/imu"
   input_can_data: "/aiformula_sensing/vehicle_info"
-  actual_speed: "/aiformula_sensing/actual_vehicle_speed"
   vectornav:
     imu: "/aiformula_sensing/vectornav/imu"
     gnss: "/aiformula_sensing/vectornav/gnss"
