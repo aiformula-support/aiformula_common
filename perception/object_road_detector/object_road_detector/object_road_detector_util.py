@@ -26,36 +26,23 @@ def to_rect(object_poses: torch.Tensor) -> Rect:
     return rect
 
 
-def draw_lane_lines(image: np.ndarray, result: np.ndarray) -> np.uint8:
-    palette = np.random.randint(0, 255, size=(3, 3))
-    palette[0] = [0, 0, 0]
-    palette[1] = [0, 255, 0]
-    palette = np.array(palette)
-    assert palette.shape[0] == 3  # len(classes)
-    assert palette.shape[1] == 3
-    assert len(palette.shape) == 2
-    color_area = np.zeros(
-        (result.shape[0], result.shape[1], 3), dtype=np.uint8)
-    color_area[result == 1] = [0, 255, 0]
-    color_seg = color_area
-    # convert to BGR
-    color_seg = color_seg[..., ::-1]
-    color_mask = np.mean(color_seg, 2)
-    image[color_mask != 0] = image[color_mask != 0] * \
-        0.5 + color_seg[color_mask != 0] * 0.5
-    image = image.astype(np.uint8)
-    return image
+def draw_lane_lines(image: np.ndarray, ll_seg_mask: np.ndarray, alpha: bool = 0.5) -> None:
+    overlay = np.zeros_like(image, dtype=np.uint8)
+    LANE_LINE_VALUE = 1
+    overlay[ll_seg_mask == LANE_LINE_VALUE] = [0, 255, 0]  # Green in BGR
+    mask = ll_seg_mask.astype(bool)
+    image[mask] = cv2.addWeighted(image[mask], 1 - alpha, overlay[mask], alpha, gamma=0.0)
 
 
-def draw_bounding_boxes(image_shepe: torch.Size, annotated_image: np.ndarray, objects: torch.Tensor) -> None:   # draw bbox with opencv
-    bboxes_coords = scale_coords(image_shepe, objects[:, :4], annotated_image.shape).round()
+def draw_bounding_boxes(image: np.ndarray, objects: torch.Tensor, input_image_shepe: torch.Size) -> None:   # draw bbox with opencv
+    bboxes_coords = scale_coords(input_image_shepe, objects[:, :4], image.shape).round()
     for bboxes_coord in bboxes_coords:
-        plot_one_box(bboxes_coord, annotated_image)
+        plot_one_box(image, bboxes_coord)
 
 
-def plot_one_box(bboxes_coords: torch.Tensor, image: np.ndarray) -> None:   # Plots one bounding box on image
-    line_thickness = round(0.0001 * (image.shape[0] + image.shape[1]) / 2) + 1  # line/font thickness
+def plot_one_box(image: np.ndarray, bboxes_coords: torch.Tensor) -> None:   # Plots one bounding box on image
+    top_left = (int(bboxes_coords[0]), int(bboxes_coords[1]))
+    bottom_right = (int(bboxes_coords[2]), int(bboxes_coords[3]))
     color = [255, 0, 0]
-    top_left, bottom_right = (int(bboxes_coords[0]), int(bboxes_coords[1])
-                              ), (int(bboxes_coords[2]), int(bboxes_coords[3]))
-    cv2.rectangle(image, top_left, bottom_right, color, line_thickness, lineType=cv2.LINE_AA)
+    thickness = int(image.shape[0] * 0.002)
+    cv2.rectangle(image, top_left, bottom_right, color, thickness, lineType=cv2.LINE_AA)
