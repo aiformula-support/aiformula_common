@@ -1,12 +1,17 @@
 import numpy as np
+from scipy.stats import multivariate_normal
+
 from rclpy.node import Node
 
+from aiformula_interfaces.msg import ObjectInfoMultiArray
 from common_python.get_ros_parameter import get_ros_parameter
 
 
 class ObjectRiskCalculator:
-    def __init__(self, node: Node):
+    def __init__(self, node: Node, buffer_size: int):
         self.init_parameters(node)
+        self.init_connections(node, buffer_size)
+        self.object_infos = []
 
     def init_parameters(self, node: Node):
         self.object_risk_variance_x = get_ros_parameter(
@@ -18,36 +23,40 @@ class ObjectRiskCalculator:
         self.object_risk_gain = get_ros_parameter(
             node, "object_risk_potential.object_risk_gain")
 
-    def compute_object_risk(self, objects: list[float], seek_position: list[float]) -> list[np.ndarray]:
+    def init_connections(self, node: Node, buffer_size):
+        self.object_position_sub = node.create_subscription(
+            ObjectInfoMultiArray, 'sub_object_info', self.object_info_callback, buffer_size)
+
+    def object_info_callback(self, msg: ObjectInfoMultiArray) -> None:
+        self.object_infos = msg.objects
+
+    def compute_object_risk(self, seek_positions: np.ndarray) -> np.ndarray:
         seek_points_risk = []
-        if len(objects) == 0:
-            seek_points_risk = [np.zeros(5)] * 3
-            return seek_points_risk
+        if not self.object_infos:
+            seek_points_risk = [np.zeros(seek_positions[0].shape[1]) for _ in range(len(seek_positions))]
+            return np.array(seek_points_risk)
         else:
-            for idx in range(3):
-                seek_point_risk = self.object_risk(objects, seek_position[idx])
+            for seek_position in seek_positions:
+                seek_point_risk = self.object_risk(self.object_infos, seek_position)
                 seek_points_risk.append(seek_point_risk)
 
-            return seek_points_risk
+            return np.array(seek_points_risk)
 
-    def object_risk(self, objects: list[float], seek_position: list[float]) -> list[float]:
+    def object_risk(self, objects: list[float], seek_positions: np.ndarray) -> np.ndarray:
         risks = []
-        for turb in range(seek_position.shape[1]):
+        gaussian_cov = [
+            [self.object_risk_variance_x**2,
+                self.object_risk_correlation_coefficient*self.object_risk_variance_x*self.object_risk_variance_y],
+            [self.object_risk_correlation_coefficient*self.object_risk_variance_x *
+                self.object_risk_variance_y, self.object_risk_variance_y**2]
+        ]
+        for seek_points_idx in range(seek_positions.shape[1]):
             sum_risk = 0.
             for object in objects:
+                gaussian_mean = [seek_positions[0, seek_points_idx], seek_positions[1, seek_points_idx]]
                 # risk_potential by 2-dimention gauss function
-                risk_value = self.bivariate_gaussian(object.x, object.y, seek_position[:, turb][0], seek_position[:, turb]
-                                                     [1], self.object_risk_variance_x, self.object_risk_variance_y, self.object_risk_correlation_coefficient)
+                risk_value = multivariate_normal.pdf([object.x, object.y], mean=gaussian_mean, cov=gaussian_cov)
                 sum_risk += risk_value * self.object_risk_gain * object.width * (object.confidence ** 2)
 
             risks.append(sum_risk)
-        return risks
-
-    def bivariate_gaussian(self, object_x: float, object_y: float, seekpoint_x: float, seekpoint_y: float, sigma_x: float, sigma_y: float, coefficient: float) -> float:
-        denominator = 2 * np.pi * sigma_x * sigma_y * np.sqrt(1 - coefficient**2)
-        exponent = -1 / (2 * (1 - coefficient**2)) * (
-            (object_x - seekpoint_x)**2 / sigma_x**2 - 2 * coefficient * (object_x - seekpoint_x) *
-            (object_y - seekpoint_y) / (sigma_x * sigma_y) +
-            (object_y - seekpoint_y)**2 / sigma_y**2
-        )
-        return np.exp(exponent) / denominator
+        return np.array(risks)

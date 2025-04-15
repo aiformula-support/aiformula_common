@@ -1,17 +1,17 @@
-from enum import IntEnum
 from dataclasses import dataclass
+from enum import IntEnum
 
 
 @dataclass
-class Position:
-    x: float
-    y: float
+class Position2d:
+    x: float = 0.0
+    y: float = 0.0
 
 
 @dataclass
 class Pose:
-    pos: Position
-    yaw: float
+    pos: Position2d = Position2d()
+    yaw: float = 0.0
 
 
 @dataclass
@@ -21,15 +21,17 @@ class Velocity:
 
 
 @dataclass
-class MpcParameters:
+class ControllerParameters:
     seek_gain: float
     seek_amp: float
     curvature_max: float
     curvature_min: float
+    feedback_gain: float
+    sin_period: float
 
 
 @dataclass
-class LowPassFilterParameters:  # LowPassFilter x+1 = A*x + B*u , y = C * x
+class LowPassFilterParameters:  # LowPassFilter x(k+1) = A*x(k) + B*u(k) , y(k) = C * x(k)
     A: float
     B: float
     C: float

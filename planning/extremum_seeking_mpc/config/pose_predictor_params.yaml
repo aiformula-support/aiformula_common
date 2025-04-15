@@ -1,0 +1,4 @@
+/**:
+  ros__parameters:
+    curvature_radius_threshold: 1000 #[m]
+  

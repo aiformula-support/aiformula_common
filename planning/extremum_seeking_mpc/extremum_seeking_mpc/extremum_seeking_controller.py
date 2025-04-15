@@ -1,25 +1,20 @@
-# --- Extremum Seeking Controller for Optimization ---
-
 import numpy as np
 
-from .util import MpcParameters, LowPassFilterParameters
+from .util import ControllerParameters, LowPassFilterParameters
 
 
 class ExtremumSeekingController:
-    def __init__(self, params: MpcParameters, control_time: float, feedback_gain: float, sin_period: float, lowpass_params: LowPassFilterParameters):
-        # Control Time
-        sim_time = control_time
-
+    def __init__(self, params: ControllerParameters, lowpass_params: LowPassFilterParameters, control_period: float):
         # MPC Parameters
         self.seek_gain = params.seek_gain
         self.seek_amp = params.seek_amp
         self.curvature_max = params.curvature_max
         self.curvature_min = params.curvature_min
-        self.feedback_gain = feedback_gain
+        self.feedback_gain = params.feedback_gain
 
         # Setting Sin Wave
-        sin_period = sin_period
-        sin_time = np.arange(0, sin_period, sim_time)
+        sin_period = params.sin_period
+        sin_time = np.arange(0, sin_period, control_period)
         self.sin_array = np.sin(2*np.pi*(sin_time/sin_period))
 
         # Setting Seek Points
@@ -27,10 +22,10 @@ class ExtremumSeekingController:
         # [1., 0.70710678, 0., -0.70710678, -1.]
         self.seek_points = np.hstack(
             [np.flip(self.sin_array[0:3]), self.sin_array[-3: -1]])
-        self.seek_points = (self.seek_points * self.seek_amp).tolist()
+        self.seek_points = self.seek_points * self.seek_amp
 
         # Moving Average
-        self.num_moving_average = int(sin_period / sim_time)
+        self.num_moving_average = int(sin_period / control_period)
 
         # LowPass Filter Parameters
         self.lowpass_A = lowpass_params.A
@@ -39,34 +34,33 @@ class ExtremumSeekingController:
         self.state = 0.
         self.state_next = 0.
 
-        # Output Memory
-        self.optimize_out_memory = 0.
+        # Previous Output
+        self.prev_optimal_control_input = 0.
 
-    def risk_moving_average(self, risk_in: list[float]) -> float:  # list [5x1]
+    def risk_moving_average(self, risk_in: np.ndarray) -> float:
+        risk_in = np.array(risk_in)
+        highpass_indices = [0, 1, 3, 4]
+        sin_indices = [2, 1, 5, 6]
+        weights = [1.0, 2.0, 2.0, 1.0]
+
         # Highpass filter
-        valueA = risk_in[0] - risk_in[2]
-        valueB = risk_in[1] - risk_in[2]
-        valueC = risk_in[3] - risk_in[2]
-        valueD = risk_in[4] - risk_in[2]
+        differences = risk_in[highpass_indices] - risk_in[2]
 
-        # Risk mutilplied by Reference Signal (Sin Wave) and Moving Average
-        moving_average_out = (
-            2 * self.sin_array[1] * valueB + self.sin_array[2] * valueA
-            + 2 * self.sin_array[5] * valueC + self.sin_array[6] * valueD
-        ) / self.num_moving_average
+        # Risk Moving Average
+        sin_values = self.sin_array[sin_indices]
+        risk_moving_average_out = np.sum(weights * sin_values * differences) / self.num_moving_average
 
         # LowPass Filter
-        self.state_next = self.lowpass_A * self.state + self.lowpass_B * moving_average_out
-        moving_average_out = self.lowpass_C * self.state
+        self.state_next = self.lowpass_A * self.state + self.lowpass_B * risk_moving_average_out
+        risk_moving_average_out = self.lowpass_C * self.state
         self.state = self.state_next
 
-        return moving_average_out  # for backpropagation
+        return risk_moving_average_out
 
-    def extremum_seeking_optimize(self, moving_average: float, back_in: float) -> float:
-        optimize_out = moving_average + back_in
-        optimize_out = self.seek_gain * optimize_out
-        optimize_out = optimize_out + self.feedback_gain * self.optimize_out_memory
-        optimize_out = np.clip(optimize_out, self.curvature_min, self.curvature_max)
-        self.optimize_out_memory = optimize_out
+    def optimize_input(self, moving_average: float, backpropagation_value: float) -> float:
+        total_input = moving_average + backpropagation_value
+        optimal_control_input = self.seek_gain * total_input + self.feedback_gain * self.prev_optimal_control_input
+        optimal_control_input = np.clip(optimal_control_input, self.curvature_min, self.curvature_max)
+        self.prev_optimal_control_input = optimal_control_input
 
-        return optimize_out
+        return optimal_control_input
