@@ -23,8 +23,8 @@ class BackPropagation:
         self.propagation_gain = get_ros_parameter(
             node, "backpropagation.propagation_gain")
 
-    def backward(self, forward_risk_in, backward_risk_in):
-        forward_risk_in = np.clip(forward_risk_in, -1, 1)
+    def apply_backpropagation(self, forward_risk_in, backward_risk_in):
+        forward_risk_in = np.clip(forward_risk_in, -1., 1.)
         if (backward_risk_in < 0.0):
             propagation_gain = self.bpgain_function_negative(forward_risk_in)
         else:

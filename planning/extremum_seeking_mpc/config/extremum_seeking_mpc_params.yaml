@@ -9,5 +9,5 @@
     benefit_gain: 2
     
     velocity_control:
-      deceleration_curvature_threshold: 0.16
+      deceleration_angle_maximum: 0.16
       deceleration_gain: 5

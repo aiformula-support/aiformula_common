@@ -14,8 +14,8 @@ class ExtremumSeekingController:
 
         # Setting Sin Wave
         sin_period = params.sin_period
-        sin_time = np.arange(0, sin_period, control_period)
-        self.sin_array = np.sin(2*np.pi*(sin_time/sin_period))
+        sin_time = np.arange(0., sin_period, control_period)
+        self.sin_array = np.sin(2.*np.pi*(sin_time/sin_period))
 
         # Setting Seek Points
         # sin divided by 5: fixed value
@@ -25,7 +25,7 @@ class ExtremumSeekingController:
         self.seek_points = self.seek_points * self.seek_amp
 
         # Moving Average
-        self.num_moving_average = int(sin_period / control_period)
+        self.num_moving_average = len(sin_time)
 
         # LowPass Filter Parameters
         self.lowpass_A = lowpass_params.A
@@ -37,7 +37,7 @@ class ExtremumSeekingController:
         # Previous Output
         self.prev_optimal_control_input = 0.
 
-    def risk_moving_average(self, risk_in: np.ndarray) -> float:
+    def apply_risk_moving_average(self, risk_in: np.ndarray) -> float:
         risk_in = np.array(risk_in)
         highpass_indices = [0, 1, 3, 4]
         sin_indices = [2, 1, 5, 6]

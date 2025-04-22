@@ -4,14 +4,20 @@
       road_risk_left_gradient: 0.2
       road_risk_right_gradient: 0.2
       road_risk_margin: 0.2
+      road_risk_offset: 1.7
       road_risk_gain: 5
+    
     road_weight:
       weight_u: [0., 0.2, 0.4, 0.6, 0.7, 0.9, 1.0]
+      num_weight_function: 5
+      num_weight_function_coefficients: 3 # ex) max_function_order: 2 -> 3 (a * x^2 + b * x + c)
+    
     road_identification:
       max_point_length: 50
       identification_gain: 10
       forget_vector: [0.99995, 0.99995, 0.98]
       road_parameter_limit: 0.3
+    
     road_benefit_function:
       scale: 1.0
       covariance: 1.0

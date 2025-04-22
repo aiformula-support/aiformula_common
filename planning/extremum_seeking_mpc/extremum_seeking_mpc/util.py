@@ -1,16 +1,20 @@
-from dataclasses import dataclass
+from dataclasses import dataclass, field
 from enum import IntEnum
+import numpy as np
 
 
 @dataclass
 class Position2d:
     x: float = 0.0
-    y: float = 0.0
+    y: float = 0.
+
+    def as_array(self) -> np.ndarray:
+        return np.array([self.x, self.y])
 
 
 @dataclass
 class Pose:
-    pos: Position2d = Position2d()
+    pos: Position2d = field(default_factory=Position2d)
     yaw: float = 0.0
 
 

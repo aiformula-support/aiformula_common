@@ -33,35 +33,33 @@ class PathOptimizer:
             A=lowpass_A, B=lowpass_B, C=lowpass_C
         )
 
-        self.extremum_seeking_controller_step1 = ExtremumSeekingController(mpc_params, lowpass_params, control_period)
-        self.extremum_seeking_controller_step2 = ExtremumSeekingController(mpc_params, lowpass_params, control_period)
-        self.extremum_seeking_controller_step3 = ExtremumSeekingController(mpc_params, lowpass_params, control_period)
+        self.extremum_seeking_controllers = [
+            ExtremumSeekingController(mpc_params, lowpass_params, control_period)
+            for _ in range(3)
+        ]
 
         self.backpropagation = BackPropagation(node)
 
-    def extremum_seeking_control(self, risk: np.ndarray) -> np.ndarray:
-        controllers = [
-            self.extremum_seeking_controller_step1,
-            self.extremum_seeking_controller_step2,
-            self.extremum_seeking_controller_step3
-        ]
+    def apply_extremum_seeking_control(self, risk: np.ndarray) -> np.ndarray:
+        controllers = self.extremum_seeking_controllers
 
         # Calculate moving averages
-        risk_moving_averages = [ctrl.risk_moving_average(r) for ctrl, r in zip(controllers, risk)]
+        risk_moving_averages = [controller.apply_risk_moving_average(
+            risk) for controller, risk in zip(controllers, risk)]
 
         # Calculate backpropagation values
         backprop_values = {
-            "32": self.backpropagation.backward(risk_moving_averages[1], risk_moving_averages[2]),
-            "31": self.backpropagation.backward(risk_moving_averages[0], risk_moving_averages[2]),
-            "21": self.backpropagation.backward(risk_moving_averages[0], risk_moving_averages[1])
+            "21": self.backpropagation.apply_backpropagation(risk_moving_averages[1], risk_moving_averages[2]),
+            "20": self.backpropagation.apply_backpropagation(risk_moving_averages[0], risk_moving_averages[2]),
+            "10": self.backpropagation.apply_backpropagation(risk_moving_averages[0], risk_moving_averages[1])
         }
 
         # Optimize control inputs
         curvatures = [
             controllers[0].optimize_input(
-                risk_moving_averages[0], backprop_values["31"] + backprop_values["21"]),
+                risk_moving_averages[0], backprop_values["20"] + backprop_values["10"]),
             controllers[1].optimize_input(
-                risk_moving_averages[1], backprop_values["32"]),
+                risk_moving_averages[1], backprop_values["21"]),
             controllers[2].optimize_input(
                 risk_moving_averages[2], 0)
         ]

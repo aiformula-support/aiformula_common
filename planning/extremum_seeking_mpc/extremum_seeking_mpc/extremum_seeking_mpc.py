@@ -19,7 +19,7 @@ class ExtremumSeekingMpc(Node):
 
     def __init__(self):
         super().__init__('extremum_seeking_mpc')
-        # Initialize
+        # initialize
         self.init_parameters()
         self.init_members()
         self.init_connections()
@@ -31,8 +31,7 @@ class ExtremumSeekingMpc(Node):
         self.tf_listener = TransformListener(self.tf_buffer, self)
         self.tf_broadcaster = TransformBroadcaster(self)
 
-        # Extremum_Seeking_MPC parameter
-        # self.curvatures = [0.] * len(self.predict_horizon)
+        # Extremum Seeking MPC parameter
         self.curvatures = np.zeros(len(self.predict_horizon))
 
         self.timer = self.create_timer(self.control_period, self.publish_cmd_vel_timer_callback)
@@ -46,8 +45,8 @@ class ExtremumSeekingMpc(Node):
             self, "curvature_gain")
         self.benefit_gain = get_ros_parameter(
             self, "benefit_gain")
-        self.deceleration_curvature_threshold = get_ros_parameter(
-            self, "velocity_control.deceleration_curvature_threshold")
+        self.deceleration_angle_maximum = get_ros_parameter(
+            self, "velocity_control.deceleration_angle_maximum")
         self.deceleration_gain = get_ros_parameter(
             self, "velocity_control.deceleration_gain")
         self.base_footprint_frame_id = get_ros_parameter(
@@ -61,8 +60,10 @@ class ExtremumSeekingMpc(Node):
         self.object_risk_calculator = ObjectRiskCalculator(self, self.buffer_size)
         self.road_risk_calculator = RoadRiskCalculator(self, self.buffer_size)
         self.path_optimizer = PathOptimizer(self, self.control_period)
-        self.pose_predictor = PosePredictor(self, self.predict_horizon, [
-            self.path_optimizer.extremum_seeking_controller_step1.seek_points] * len(self.predict_horizon), self.buffer_size)
+        init_seek_points_array = np.array([
+            controller.seek_points for controller in self.path_optimizer.extremum_seeking_controllers
+        ])
+        self.pose_predictor = PosePredictor(self, self.predict_horizon, init_seek_points_array, self.buffer_size)
 
     def init_connections(self):
         self.twist_pub = self.create_publisher(Twist, 'pub_twist_command', self.buffer_size)
@@ -81,30 +82,26 @@ class ExtremumSeekingMpc(Node):
     def calculate_road_risk(self, seek_positions: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
         left_road_risk, left_y_hat = self.road_risk_calculator.compute_road_risk(seek_positions, Side.LEFT)
         right_road_risk, right_y_hat = self.road_risk_calculator.compute_road_risk(seek_positions, Side.RIGHT)
-        benefit = self.road_risk_calculator.benefit_path(seek_positions, left_y_hat, right_y_hat)
+        benefit = self.road_risk_calculator.get_benefit_value(seek_positions, left_y_hat, right_y_hat)
         return left_road_risk, right_road_risk, benefit
 
     def calculate_total_risk(self, object_risk: np.ndarray, left_road_risk: np.ndarray, right_road_risk: np.ndarray, benefit: np.ndarray) -> np.ndarray:
-        total_risk = []
-        for idx in range(len(self.predict_horizon)):
-            risk_tmp = (object_risk[idx] + left_road_risk[idx] +
-                        right_road_risk[idx] - self.benefit_gain * benefit[idx])
-            total_risk.append(risk_tmp)
+        total_risk = object_risk + left_road_risk + right_road_risk - self.benefit_gain * benefit
 
         return total_risk
 
     def calculate_yaw_rate(self, total_risk: np.ndarray) -> tuple[float, float, np.ndarray]:
-        curvatures = self.path_optimizer.extremum_seeking_control(total_risk)
-        _, yaw_angle = self.pose_predictor.predict_position(self.curvatures[0], self.predict_horizon[0])
+        curvatures = self.path_optimizer.apply_extremum_seeking_control(total_risk)
+        predicted_pose = self.pose_predictor.predict_pose(self.curvatures[0], self.predict_horizon[0])
+        yaw_angle = predicted_pose.yaw
         yaw_rate = yaw_angle / self.predict_horizon[0]
 
         return yaw_angle, yaw_rate, curvatures
 
     def calculate_linear_velocity(self, yaw_angle: float) -> float:
-        ang_circle = max(
-            (abs(yaw_angle) - self.deceleration_curvature_threshold), 0.)
-        vehicle_linear_velocity = max(self.ego_target_velocity[0] -
-                                      (ang_circle * self.deceleration_gain), 0.)
+        excess_yaw_angle_for_deceleration = max((abs(yaw_angle) - self.deceleration_angle_maximum), 0.)
+        vehicle_linear_velocity = max(
+            self.ego_target_velocity[0] - (excess_yaw_angle_for_deceleration * self.deceleration_gain), 0.)
 
         return vehicle_linear_velocity
 

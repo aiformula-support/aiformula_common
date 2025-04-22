@@ -1,4 +1,5 @@
 from dataclasses import dataclass
+from functools import partial
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.stats import multivariate_normal
@@ -12,21 +13,16 @@ from .util import Side
 
 
 class RoadRiskCalculator:
-    @dataclass
-    class Params:
-        identification_gain: int
-        forget_vector: list[float]
-
     def __init__(self, node: Node, buffer_size: int):
-        params = self.init_parameters(node)
+        self.init_parameters(node)
         self.init_connections(node, buffer_size)
 
         self.point_length = np.zeros((Side.NUM_SIDES))
         self.road_offset = np.zeros(Side.NUM_SIDES)
-        self.road_thetas = np.zeros((Side.NUM_SIDES, 5, 3))
+        self.road_thetas = np.zeros((Side.NUM_SIDES, self.num_weight_function, self.num_weight_function_coefficients))
 
         weight_u = self.road_weight_u
-        weight_y = np.zeros((5, len(weight_u)))
+        weight_y = np.zeros((self.num_weight_function, len(weight_u)))
 
         weight_indices = [
             slice(None, 2),
@@ -43,29 +39,34 @@ class RoadRiskCalculator:
             interpolated_function = interp1d(weight_u, weight_y[idx, :])
             self.Weight_functions.append(interpolated_function)
 
-        self.identification_gain_matrix = np.zeros((3, 3))
-        np.fill_diagonal(self.identification_gain_matrix, params.identification_gain)
-        self.forget_vector = np.array(params.forget_vector)
-        self.theta_base = np.zeros(3)
-        self.thetas = np.zeros((5, 3))
-        self.dthetas = np.zeros((5, 3))
+        self.identification_gain_matrix = self.identification_gain * np.eye(self.num_weight_function_coefficients)
+        self.forget_vector = np.array(self.forget_vector)
+        self.theta_base = np.zeros(self.num_weight_function_coefficients)
+        self.thetas = np.zeros((self.num_weight_function, self.num_weight_function_coefficients))
+        self.dthetas = np.zeros((self.num_weight_function, self.num_weight_function_coefficients))
 
-    def init_parameters(self, node: Node) -> Params:
+    def init_parameters(self, node: Node):
         self.road_risk_left_gradient = get_ros_parameter(
             node, "road_risk_potential.road_risk_left_gradient")
         self.road_risk_right_gradient = get_ros_parameter(
             node, "road_risk_potential.road_risk_right_gradient")
         self.road_risk_margin = get_ros_parameter(
             node, "road_risk_potential.road_risk_margin")
+        self.road_risk_offset = get_ros_parameter(
+            node, "road_risk_potential.road_risk_offset")
         self.road_risk_gain = get_ros_parameter(
             node, "road_risk_potential.road_risk_gain")
         self.road_weight_u = get_ros_parameter(
             node, "road_weight.weight_u")
+        self.num_weight_function = get_ros_parameter(
+            node, "road_weight.num_weight_function")
+        self.num_weight_function_coefficients = get_ros_parameter(
+            node, "road_weight.num_weight_function_coefficients")
         self.max_point_length = get_ros_parameter(
             node, "road_identification.max_point_length")
-        identification_gain = get_ros_parameter(
+        self.identification_gain = get_ros_parameter(
             node, "road_identification.identification_gain")
-        forget_vector = get_ros_parameter(
+        self.forget_vector = get_ros_parameter(
             node, "road_identification.forget_vector")
         self.road_parameter_limit = get_ros_parameter(
             node, "road_identification.road_parameter_limit")
@@ -74,21 +75,17 @@ class RoadRiskCalculator:
         self.benefit_covariance = get_ros_parameter(
             node, "road_benefit_function.covariance")
 
-        return self.Params(
-            identification_gain=identification_gain,
-            forget_vector=forget_vector
-        )
-
     def init_connections(self, node: Node, buffer_size):
         self.left_lane_line_sub = node.create_subscription(
-            PointCloud2, 'sub_road_l', lambda msg: self.lane_line_callback(msg, Side.LEFT), buffer_size)
+            PointCloud2, 'sub_road_l', partial(self.lane_line_callback, side=Side.LEFT), buffer_size)
         self.right_lane_line_sub = node.create_subscription(
-            PointCloud2, 'sub_road_r', lambda msg: self.lane_line_callback(msg, Side.RIGHT), buffer_size)
+            PointCloud2, 'sub_road_r', partial(self.lane_line_callback, side=Side.RIGHT), buffer_size)
 
     def lane_line_callback(self, msg_pointcloud2: PointCloud2, side: Side) -> None:
         pc_iter = pc2.read_points(msg_pointcloud2, field_names=['x', 'y'], skip_nans=True)
         lane_points = np.array(pc_iter.tolist())
-        if lane_points.shape[0] < 2:
+        num_points = len(lane_points)
+        if num_points < 2:
             return
         self.point_length[side], self.road_offset[side], self.road_thetas[side] = self.line_identification(lane_points)
 
@@ -109,16 +106,16 @@ class RoadRiskCalculator:
         for x_vector, weights, y_coord in zip(x_vectors, weights_list, y_coords):
             adaptive_gain_numerator = self.identification_gain_matrix @ x_vector
             zp = x_vector @ self.identification_gain_matrix
-            adaptive_gain_denominator = 1 + np.dot(zp, x_vector)
+            adaptive_gain_denominator = 1. + np.dot(zp, x_vector)
             adaptive_gain = adaptive_gain_numerator / adaptive_gain_denominator
             weighted_y_hats = self.thetas @ x_vector * weights
             y_error = y_coord - weighted_y_hats.sum()
             weighted_y_errors = np.outer((y_error * weights), adaptive_gain)
-            self.thetas, self.dthetas = self.f_identifier(weighted_y_errors, self.dthetas)
+            self.thetas, self.dthetas = self.identify_function_coefficients(weighted_y_errors, self.dthetas)
 
         return x_range, x_min, self.thetas
 
-    def f_identifier(self, ddtheta: np.ndarray, dtheta_memory: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def identify_function_coefficients(self, ddtheta: np.ndarray, dtheta_memory: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
         dtheta = ddtheta + (dtheta_memory * self.forget_vector)
         dtheta[:, 0] = np.clip(dtheta[:, 0], -self.road_parameter_limit, self.road_parameter_limit)
         theta = dtheta + np.array(self.theta_base)
@@ -142,10 +139,11 @@ class RoadRiskCalculator:
         risks = []
         y_hat_last = 0.
 
-        for seek_p in seek_positions:
-            seek_x = seek_p[0][2]  # center of seek_points
-            seek_ys = seek_p[1]
-            risk = np.zeros(5)
+        for seek_position in seek_positions:
+            num_seek_position = len(seek_position[0])
+            seek_x = seek_position[0][2]  # center of seek_points
+            seek_y_positions = seek_position[1]
+            risk = np.zeros(num_seek_position)
 
             if not (self.road_offset[side] < seek_x < self.road_offset[side] + self.point_length[side]):
                 risks.append(risk)
@@ -154,34 +152,35 @@ class RoadRiskCalculator:
             y_hat = self.estimate_yhat(seek_x, self.point_length[side], self.road_offset[side], self.road_thetas[side])
             y_hat_last = y_hat
 
-            risk = self.compute_risk_for_position(seek_ys, y_hat, side)
+            risk = self.get_road_risk_value(seek_y_positions, y_hat, side)
             risks.append(risk)
 
         return np.array(risks), y_hat_last
 
-    def compute_risk_for_position(self, seek_ys: np.ndarray, y_hat: float, side: Side) -> np.ndarray:
-        risk = np.zeros(len(seek_ys))
-        for idx, y in enumerate(seek_ys):
-            sigma = y - y_hat
+    def get_road_risk_value(self, seek_y_positions: np.ndarray, y_hat: float, side: Side) -> np.ndarray:
+        risk = np.zeros(len(seek_y_positions))
+        for idx, seek_y_position in enumerate(seek_y_positions):
+            sigma = seek_y_position - y_hat
             if side == Side.RIGHT:
                 risk[idx] = self.road_risk_gain * \
-                    (-np.arctan(self.road_risk_left_gradient * (sigma + self.road_risk_margin)) + 1.7)
+                    (-np.arctan(self.road_risk_left_gradient * (sigma + self.road_risk_margin)) + self.road_risk_offset)
             elif side == Side.LEFT:
                 risk[idx] = self.road_risk_gain * \
-                    (np.arctan(self.road_risk_right_gradient * (sigma + self.road_risk_margin)) + 1.7)
+                    (np.arctan(self.road_risk_right_gradient * (sigma + self.road_risk_margin)) + self.road_risk_offset)
         return risk
 
-    def benefit_path(self, seek_positions: np.ndarray, y_hat_l: float, y_hat_r: float) -> np.ndarray:
+    def get_benefit_value(self, seek_positions: np.ndarray, y_hat_l: float, y_hat_r: float) -> np.ndarray:
         benefits = []
-        for seek_p in seek_positions:
-            benefit = np.zeros(5)
-            y_hat_c = (y_hat_l + y_hat_r) / 2
+        for seek_position in seek_positions:
+            num_seek_position = len(seek_position[0])
+            benefit = np.zeros(num_seek_position)
+            y_hat_center = (y_hat_l + y_hat_r) * 0.5
             scale = self.benefit_scale
             covariance = [self.benefit_covariance]
-            seek_ys = [p for p in seek_p[1]]
+            seek_y_positions = [position for position in seek_position[1]]
 
-            for i in range(len(seek_ys)):
-                benefit[i] = scale * multivariate_normal.pdf(seek_ys[i], mean=y_hat_c, cov=covariance)
+            for idx in range(len(seek_y_positions)):
+                benefit[idx] = scale * multivariate_normal.pdf(seek_y_positions[idx], mean=y_hat_center, cov=covariance)
             benefits.append(benefit)
 
         return np.array(benefits)
