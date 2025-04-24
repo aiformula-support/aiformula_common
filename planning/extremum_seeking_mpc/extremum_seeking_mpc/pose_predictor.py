@@ -83,7 +83,7 @@ class PosePredictor:
 
         travel_distance = self.ego_current_velocity.linear * horizon_time
         arc_angle = float(travel_distance / radius)
-        if (radius < self.curvature_radius_maximum):  # curve
+        if radius < self.curvature_radius_maximum:  # curve
             x = radius * np.sin(arc_angle)
             y = radius * (1. - np.cos(arc_angle))
         else:  # straight

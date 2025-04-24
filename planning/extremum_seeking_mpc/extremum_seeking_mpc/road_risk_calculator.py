@@ -47,21 +47,21 @@ class RoadRiskCalculator:
 
     def init_parameters(self, node: Node):
         self.road_risk_left_gradient = get_ros_parameter(
-            node, "road_risk_potential.road_risk_left_gradient")
+            node, "road_risk_potential.left_gradient")
         self.road_risk_right_gradient = get_ros_parameter(
-            node, "road_risk_potential.road_risk_right_gradient")
+            node, "road_risk_potential.right_gradient")
         self.road_risk_margin = get_ros_parameter(
-            node, "road_risk_potential.road_risk_margin")
+            node, "road_risk_potential.margin")
         self.road_risk_offset = get_ros_parameter(
-            node, "road_risk_potential.road_risk_offset")
+            node, "road_risk_potential.offset")
         self.road_risk_gain = get_ros_parameter(
-            node, "road_risk_potential.road_risk_gain")
+            node, "road_risk_potential.gain")
         self.road_weight_u = get_ros_parameter(
-            node, "road_weight.weight_u")
+            node, "road_weight.u")
         self.num_weight_function = get_ros_parameter(
-            node, "road_weight.num_weight_function")
+            node, "road_weight.num_function")
         self.num_weight_function_coefficients = get_ros_parameter(
-            node, "road_weight.num_weight_function_coefficients")
+            node, "road_weight.num_function_coefficients")
         self.max_point_length = get_ros_parameter(
             node, "road_identification.max_point_length")
         self.identification_gain = get_ros_parameter(
@@ -103,6 +103,7 @@ class RoadRiskCalculator:
 
         weights_list = np.array([f(normalized_x) for f in self.Weight_functions]).T
 
+        # Calculate the road function parameters(thetas) using the fixed gain method (sequential identification)
         for x_vector, weights, y_coord in zip(x_vectors, weights_list, y_coords):
             adaptive_gain_numerator = self.identification_gain_matrix @ x_vector
             zp = x_vector @ self.identification_gain_matrix
@@ -136,26 +137,27 @@ class RoadRiskCalculator:
         return sum(y_hats)
 
     def compute_road_risk(self, seek_positions: np.ndarray, side: Side) -> tuple[np.ndarray, float]:
-        risks = []
-        y_hat_last = 0.
+        num_positions = len(seek_positions)
+        num_seek_position = len(seek_positions[0][0])
+        risks = np.zeros((num_positions, num_seek_position))
+        y_hat = 0.
 
-        for seek_position in seek_positions:
+        for idx, seek_position in enumerate(seek_positions):
             num_seek_position = len(seek_position[0])
             seek_x = seek_position[0][2]  # center of seek_points
             seek_y_positions = seek_position[1]
             risk = np.zeros(num_seek_position)
 
-            if not (self.road_offset[side] < seek_x < self.road_offset[side] + self.point_length[side]):
-                risks.append(risk)
+            if not self.road_offset[side] < seek_x < self.road_offset[side] + self.point_length[side]:
+                risks[idx] = risk
                 continue
 
             y_hat = self.estimate_yhat(seek_x, self.point_length[side], self.road_offset[side], self.road_thetas[side])
-            y_hat_last = y_hat
 
             risk = self.get_road_risk_value(seek_y_positions, y_hat, side)
-            risks.append(risk)
+            risks[idx] = risk
 
-        return np.array(risks), y_hat_last
+        return risks, y_hat
 
     def get_road_risk_value(self, seek_y_positions: np.ndarray, y_hat: float, side: Side) -> np.ndarray:
         risk = np.zeros(len(seek_y_positions))
@@ -170,17 +172,19 @@ class RoadRiskCalculator:
         return risk
 
     def get_benefit_value(self, seek_positions: np.ndarray, y_hat_l: float, y_hat_r: float) -> np.ndarray:
-        benefits = []
-        for seek_position in seek_positions:
-            num_seek_position = len(seek_position[0])
-            benefit = np.zeros(num_seek_position)
-            y_hat_center = (y_hat_l + y_hat_r) * 0.5
-            scale = self.benefit_scale
-            covariance = [self.benefit_covariance]
-            seek_y_positions = [position for position in seek_position[1]]
+        num_positions = len(seek_positions)
+        num_seek_position = len(seek_positions[0][0])
 
-            for idx in range(len(seek_y_positions)):
-                benefit[idx] = scale * multivariate_normal.pdf(seek_y_positions[idx], mean=y_hat_center, cov=covariance)
-            benefits.append(benefit)
+        y_hat_center = (y_hat_l + y_hat_r) * 0.5
+        scale = self.benefit_scale
+        covariance = [self.benefit_covariance]
 
-        return np.array(benefits)
+        benefits = np.zeros((num_positions, num_seek_position))
+
+        for idx, seek_position in enumerate(seek_positions):
+            seek_y_positions = [seek_y_position for seek_y_position in seek_position[1]]
+
+            pdf_values = multivariate_normal.pdf(seek_y_positions, mean=y_hat_center, cov=covariance)
+            benefits[idx] = scale * pdf_values
+
+        return benefits

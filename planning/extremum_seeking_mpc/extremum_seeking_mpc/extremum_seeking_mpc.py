@@ -99,11 +99,15 @@ class ExtremumSeekingMpc(Node):
         return yaw_angle, yaw_rate, curvatures
 
     def calculate_linear_velocity(self, yaw_angle: float) -> float:
-        excess_yaw_angle_for_deceleration = max((abs(yaw_angle) - self.deceleration_angle_maximum), 0.)
-        vehicle_linear_velocity = max(
-            self.ego_target_velocity[0] - (excess_yaw_angle_for_deceleration * self.deceleration_gain), 0.)
-
-        return vehicle_linear_velocity
+        target_linear_velocity = self.ego_target_velocity[0]
+        # If the yaw angle exceeds the threshold value,
+        # the speed command value is lowered according to the excess.
+        excess_yaw_angle_for_deceleration = abs(yaw_angle) - self.deceleration_angle_maximum
+        if excess_yaw_angle_for_deceleration <= 0.:
+            return target_linear_velocity
+        else:
+            target_linear_velocity -= excess_yaw_angle_for_deceleration * self.deceleration_gain
+            return max(target_linear_velocity, 0.)
 
     def publish_cmd_vel(self, vehicle_linear_velocity: float, yaw_rate: float) -> None:
         twist_msg = Twist()

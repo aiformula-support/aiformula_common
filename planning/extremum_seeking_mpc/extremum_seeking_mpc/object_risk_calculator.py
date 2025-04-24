@@ -17,13 +17,13 @@ class ObjectRiskCalculator:
 
     def init_parameters(self, node: Node):
         self.object_risk_variance_x = get_ros_parameter(
-            node, "object_risk_potential.object_risk_variance_x")
+            node, "object_risk_potential.variance_x")
         self.object_risk_variance_y = get_ros_parameter(
-            node, "object_risk_potential.object_risk_variance_y")
+            node, "object_risk_potential.variance_y")
         self.object_risk_correlation_coefficient = get_ros_parameter(
-            node, "object_risk_potential.object_risk_correlation_coefficient")
+            node, "object_risk_potential.correlation_coefficient")
         self.object_risk_gain = get_ros_parameter(
-            node, "object_risk_potential.object_risk_gain")
+            node, "object_risk_potential.gain")
 
     def init_connections(self, node: Node, buffer_size):
         self.object_position_sub = node.create_subscription(
@@ -37,9 +37,11 @@ class ObjectRiskCalculator:
         with self.lock:
             object_infos = self.object_infos
 
-        seek_points_risk = []
         num_seek_points = seek_positions[0].shape[1]
         num_horizon_steps = len(seek_positions)
+
+        seek_points_risk = []
+
         if not object_infos:
             return np.zeros((num_horizon_steps, num_seek_points))
         else:
@@ -50,7 +52,6 @@ class ObjectRiskCalculator:
             return np.array(seek_points_risk)
 
     def get_object_risk_value(self, objects: list[float], seek_positions: np.ndarray) -> np.ndarray:
-        risks = []
         num_seek_points = seek_positions.shape[1]
         var_x = self.object_risk_variance_x**2
         var_y = self.object_risk_variance_y**2
@@ -62,6 +63,8 @@ class ObjectRiskCalculator:
         obj_width = np.array([obj.width for obj in objects])
         obj_conf = np.array([obj.confidence for obj in objects])
         obj_weight = self.object_risk_gain * obj_width * (obj_conf ** 2)
+
+        risks = []
 
         for seek_points_idx in range(num_seek_points):
             gaussian_mean = seek_positions[:, seek_points_idx]

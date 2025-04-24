@@ -44,11 +44,12 @@ class PathOptimizer:
         controllers = self.extremum_seeking_controllers
 
         # Calculate moving averages
-        risk_moving_averages = [controller.apply_risk_moving_average(
-            risk) for controller, risk in zip(controllers, risk)]
+        risk_moving_averages = [
+            controller.apply_risk_moving_average(risk) for controller, risk in zip(controllers, risk)
+        ]
 
         # Calculate backpropagation values
-        backprop_values = {
+        backpropagation_values = {
             "21": self.backpropagation.apply_backpropagation(risk_moving_averages[1], risk_moving_averages[2]),
             "20": self.backpropagation.apply_backpropagation(risk_moving_averages[0], risk_moving_averages[2]),
             "10": self.backpropagation.apply_backpropagation(risk_moving_averages[0], risk_moving_averages[1])
@@ -57,9 +58,9 @@ class PathOptimizer:
         # Optimize control inputs
         curvatures = [
             controllers[0].optimize_input(
-                risk_moving_averages[0], backprop_values["20"] + backprop_values["10"]),
+                risk_moving_averages[0], backpropagation_values["20"] + backpropagation_values["10"]),
             controllers[1].optimize_input(
-                risk_moving_averages[1], backprop_values["21"]),
+                risk_moving_averages[1], backpropagation_values["21"]),
             controllers[2].optimize_input(
                 risk_moving_averages[2], 0)
         ]
