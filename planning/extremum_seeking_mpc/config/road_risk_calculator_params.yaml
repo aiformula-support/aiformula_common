@@ -21,4 +21,3 @@
     road_benefit_function:
       scale: 1.0
       covariance: 1.0
-

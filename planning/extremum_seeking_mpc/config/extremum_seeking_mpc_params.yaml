@@ -11,4 +11,3 @@
     velocity_control:
       deceleration_angle_maximum: 0.16 #[rad]
       deceleration_gain: 5.
-
