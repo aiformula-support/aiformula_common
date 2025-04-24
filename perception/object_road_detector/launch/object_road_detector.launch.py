@@ -17,7 +17,7 @@ def generate_launch_description():
     launch_args = (
         DeclareLaunchArgument(
             "weight_path",
-            default_value=osp.join(get_package_share_directory("object_road_detector"), "weights", "End-to-end.pth"),
+            default_value=osp.join(get_package_share_directory("object_road_detector"), "weights", "shiho-v1-20250321.pth"),
             description="Path to the weight pth file."),
         DeclareLaunchArgument(
             "use_device",
