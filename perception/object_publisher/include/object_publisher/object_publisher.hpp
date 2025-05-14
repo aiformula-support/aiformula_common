@@ -35,7 +35,7 @@ private:
     void getRosParams(InitParams& init_params);
     void initValues(InitParams& init_params);
     void printParam(const InitParams& init_params) const;
-    void bboxCallback(const aiformula_interfaces::msg::RectMultiArray::SharedPtr msg);
+    void bboxCallback(const aiformula_interfaces::msg::RectMultiArray::ConstSharedPtr msg);
     bool toPositionInVehicle(const aiformula_interfaces::msg::Rect& rect, tf2::Vector3& bottom_left_point,
                              tf2::Vector3& bottom_right_point) const;
     void updateOrAddObject(const tf2::Vector3& bottom_left, const tf2::Vector3& bottom_right,

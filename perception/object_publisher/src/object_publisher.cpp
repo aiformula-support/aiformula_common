@@ -79,7 +79,7 @@ void ObjectPublisher::printParam(const InitParams& init_params) const {
     TrackedObject::printStaticMembers();
 }
 
-void ObjectPublisher::bboxCallback(const aiformula_interfaces::msg::RectMultiArray::SharedPtr msg) {
+void ObjectPublisher::bboxCallback(const aiformula_interfaces::msg::RectMultiArray::ConstSharedPtr msg) {
     RCLCPP_INFO_ONCE(this->get_logger(), "Subscribe BBox Rect !");
     std_msgs::msg::Header header = msg->header;
     header.frame_id = vehicle_frame_id_;
