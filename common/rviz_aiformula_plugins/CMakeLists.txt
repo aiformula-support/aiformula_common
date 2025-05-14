@@ -56,9 +56,8 @@ install(DIRECTORY include/
 install(FILES rviz_common_plugins.xml
         DESTINATION share/${PROJECT_NAME}
 )
-file(GLOB ICONS "${CMAKE_CURRENT_SOURCE_DIR}/icons/classes/*.png")
-install(FILES ${ICONS}
-        DESTINATION share/${PROJECT_NAME}/icons/classes
+install(DIRECTORY "${CMAKE_CURRENT_SOURCE_DIR}/icons/classes"
+        DESTINATION share/${PROJECT_NAME}/icons
 )
 ament_export_include_directories(include)
 ament_export_targets(export_rviz_aiformula_plugins)
