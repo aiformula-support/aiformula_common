@@ -62,6 +62,8 @@ void TrackedObject::update(const float& left_x, const float& left_y, const float
 }
 
 bool TrackedObject::isExpired(const double& current_time) {
+    if (current_time < last_seen_time_) return true;  // Loop playback detected during rosbag play mode..
+
     confidence_ = 1.0 - (current_time - last_seen_time_) / expiration_duration_;
     return confidence_ < 0.0;
 }
