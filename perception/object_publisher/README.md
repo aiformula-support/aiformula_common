@@ -28,11 +28,11 @@ $ ros2 launch object_publisher object_publisher.launch.py
     - If the distance between objects is greater than this value, they are considered separate.
 
 ### tracked_object.yaml
-- `process_noise_variance` (double, default: 0.001)
+- `process_noise_variance` (double, default: 0.001 [m^2])
     - Process noise for the Kalman filter.
-- `measurement_noise_variance` (double, default: 0.1)
+- `measurement_noise_variance` (double, default: 0.1 [m^2])
     - Measurement noise for the Kalman filter.
-- `initial_error_covariance` (double, default: 1.0)
+- `initial_error_covariance` (double, default: 1.0 [m^2])
     - Initial value of the posterior error estimate covariance matrix for the Kalman filter.
     - The smaller this value is, the less the Kalman filter is affected by the observed data, making it easier to maintain the initial value. Conversely, the larger it is, the more emphasis is placed on the observed data, making it easier to update the estimation.
 - `expiration_duration` (double, default: 2.5 [sec])
