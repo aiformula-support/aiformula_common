@@ -30,9 +30,16 @@ public:
     ~ObjectPublisher() = default;
 
 private:
-    void getRosParams();
-    void initValues();
-    void printParam() const;
+    struct InitParams {
+        std::string camera_name;
+        std::string camera_frame_id;
+        cv::Mat camera_matrix;
+        InitParams() : camera_name(), camera_frame_id(), camera_matrix(cv::Mat()) {}
+    };
+
+    void getRosParams(InitParams& init_params);
+    void initValues(InitParams& init_params);
+    void printParam(const InitParams& init_params) const;
     void bboxCallback(const aiformula_interfaces::msg::RectMultiArray::SharedPtr msg);
     bool toPositionInVehicle(const aiformula_interfaces::msg::Rect& rect, tf2::Vector3& bottom_left_point,
                              tf2::Vector3& bottom_right_point) const;
@@ -42,13 +49,11 @@ private:
     void deleteExpiredObjects(const double& current_time);
     void publishObjectInfo(const std_msgs::msg::Header& header, const tf2::Transform& vehicle_T_odom);
 
-    std::string camera_frame_id_;
     std::string vehicle_frame_id_;
     std::string odom_frame_id_;
     bool debug_;
     double object_separation_distance_;
 
-    cv::Mat camera_matrix_;  // This is defined for debug log
     cv::Mat invert_camera_matrix_;
     tf2::Transform vehicle_T_camera_;
 

@@ -36,6 +36,7 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
             emulate_tty=True,
             parameters=[*ROS_PARAM_CONFIG,
                         {
+                            "camera_name": LaunchConfiguration("camera_name"),
                             "camera_frame_id": FRAME_IDS["zedx"]["left"],
                             "vehicle_frame_id": FRAME_IDS["base_footprint"],
                             "odom_frame_id": FRAME_IDS["odom"],
@@ -52,6 +53,11 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
 
 def generate_launch_description():
     launch_args = (
+        DeclareLaunchArgument(
+            "camera_name",
+            default_value="zedx",
+            description="Camera name passed to getCameraParams() to load the corresponding configuration",
+        ),
         DeclareLaunchArgument(
             "camera_sn",
             default_value="SN48311510",

@@ -4,23 +4,23 @@ namespace aiformula {
 
 ObjectPublisher::ObjectPublisher()
     : Node("object_publisher"),
-      camera_frame_id_(),
       vehicle_frame_id_(),
       odom_frame_id_(),
       debug_(false),
       object_separation_distance_(5.0),
-      camera_matrix_(cv::Mat()),
       invert_camera_matrix_(cv::Mat()),
       vehicle_T_camera_(tf2::Transform()),
       tracked_objects_(std::vector<TrackedObject>()) {
-    getRosParams();
-    initValues();
-    printParam();
+    InitParams init_params;
+    getRosParams(init_params);
+    initValues(init_params);
+    printParam(init_params);
 }
 
-void ObjectPublisher::getRosParams() {
+void ObjectPublisher::getRosParams(InitParams& init_params) {
     // From 'launch file'
-    camera_frame_id_ = getRosParameter<std::string>(this, "camera_frame_id");
+    init_params.camera_name = getRosParameter<std::string>(this, "camera_name");
+    init_params.camera_frame_id = getRosParameter<std::string>(this, "camera_frame_id");
     vehicle_frame_id_ = getRosParameter<std::string>(this, "vehicle_frame_id");
     odom_frame_id_ = getRosParameter<std::string>(this, "odom_frame_id");
     debug_ = getRosParameter<bool>(this, "debug");
@@ -31,7 +31,7 @@ void ObjectPublisher::getRosParams() {
     TrackedObject::initStaticMembers(this);
 }
 
-void ObjectPublisher::initValues() {
+void ObjectPublisher::initValues(InitParams& init_params) {
     // Subscriber & Publisher
     const int buffer_size = 10;
     bbox_sub_ = this->create_subscription<aiformula_interfaces::msg::RectMultiArray>(
@@ -41,19 +41,20 @@ void ObjectPublisher::initValues() {
         unfilered_object_pub_ =
             this->create_publisher<geometry_msgs::msg::PoseArray>("pub_unfiltered_object", buffer_size);
 
-    getCameraParams(this, "zedx", camera_matrix_);
-    invert_camera_matrix_ = camera_matrix_.inv();
-    vehicle_T_camera_ = getTf2Transform(this, vehicle_frame_id_, camera_frame_id_);
+    getCameraParams(this, init_params.camera_name, init_params.camera_matrix);
+    invert_camera_matrix_ = init_params.camera_matrix.inv();
+    vehicle_T_camera_ = getTf2Transform(this, vehicle_frame_id_, init_params.camera_frame_id);
 }
 
-void ObjectPublisher::printParam() const {
+void ObjectPublisher::printParam(const InitParams& init_params) const {
     std::ostringstream log_stream;
     const auto formatter = createFormatter(20);
     const auto& trans = vehicle_T_camera_.getOrigin();
     const auto& rot = vehicle_T_camera_.getRotation();
     log_stream << "\n[" << __func__ << "] " << std::string(57, '=') << "\n"
                << "(launch)\n"
-               << formatter("camera_frame_id_") << camera_frame_id_ << "\n"
+               << formatter("camera_name") << init_params.camera_name << "\n"
+               << formatter("camera_frame_id") << init_params.camera_frame_id << "\n"
                << formatter("vehicle_frame_id_") << vehicle_frame_id_ << "\n"
                << formatter("odom_frame_id_") << odom_frame_id_ << "\n"
                << formatter("debug_") << (debug_ ? "true" : "false") << "\n"
@@ -61,9 +62,9 @@ void ObjectPublisher::printParam() const {
                << std::fixed << std::setprecision(1) << formatter("object_separation_distance_")
                << object_separation_distance_ << " [m]\n"
                << "\n(initValues)\n"
-               << formatter("camera_matrix_") << "[" << camera_matrix_.row(0) << "\n"
-               << std::string(27, ' ') << camera_matrix_.row(1) << "\n"
-               << std::string(27, ' ') << camera_matrix_.row(2) << "]\n"
+               << formatter("camera_matrix") << "[" << init_params.camera_matrix.row(0) << "\n"
+               << std::string(27, ' ') << init_params.camera_matrix.row(1) << "\n"
+               << std::string(27, ' ') << init_params.camera_matrix.row(2) << "]\n"
                << std::setprecision(2) << formatter("trans") << "(" << trans.x() << ", " << trans.y() << ", "
                << trans.z() << ") [m]\n"
                << formatter("rot") << "(" << rot.x() << ", " << rot.y() << ", " << rot.z() << ", " << rot.w() << ")\n"
