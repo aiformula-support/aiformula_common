@@ -4,13 +4,8 @@
 // C, C++
 #include <memory>
 
-// Ogre
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-
 // ROS
 #include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/parse_color.hpp>
 #include <rviz_rendering/objects/movable_text.hpp>
 #include <rviz_rendering/objects/shape.hpp>
 

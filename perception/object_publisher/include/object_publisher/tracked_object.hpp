@@ -7,9 +7,6 @@
 // OpenCV
 #include <opencv2/opencv.hpp>
 
-// Original
-#include "common_cpp/get_ros_parameter.hpp"
-
 namespace aiformula {
 
 class TrackedObject {

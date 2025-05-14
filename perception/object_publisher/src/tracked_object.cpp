@@ -1,5 +1,7 @@
 #include "object_publisher/tracked_object.hpp"
 
+#include "common_cpp/get_ros_parameter.hpp"
+
 namespace aiformula {
 
 rclcpp::Node* TrackedObject::node_ptr_ = nullptr;

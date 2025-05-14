@@ -2,12 +2,12 @@
 #define OBJECT_PUBLISHER_HPP
 
 // ROS
+#include <tf2/LinearMath/Transform.h>
+
 #include <rclcpp/rclcpp.hpp>
 
 // ROS msg
-#include <aiformula_interfaces/msg/object_info.hpp>
 #include <aiformula_interfaces/msg/object_info_multi_array.hpp>
-#include <aiformula_interfaces/msg/rect.hpp>
 #include <aiformula_interfaces/msg/rect_multi_array.hpp>
 #include <geometry_msgs/msg/pose_array.hpp>
 
@@ -15,11 +15,6 @@
 #include <opencv2/opencv.hpp>
 
 // Original
-#include "common_cpp/camera.hpp"
-#include "common_cpp/get_ros_parameter.hpp"
-#include "common_cpp/tf2_transform.hpp"
-#include "common_cpp/to_geometry_msgs.hpp"
-#include "common_cpp/util.hpp"
 #include "object_publisher/tracked_object.hpp"
 
 namespace aiformula {

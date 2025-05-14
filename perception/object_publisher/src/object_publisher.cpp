@@ -1,5 +1,11 @@
 #include "object_publisher/object_publisher.hpp"
 
+#include "common_cpp/camera.hpp"
+#include "common_cpp/get_ros_parameter.hpp"
+#include "common_cpp/tf2_transform.hpp"
+#include "common_cpp/to_geometry_msgs.hpp"
+#include "common_cpp/util.hpp"
+
 namespace aiformula {
 
 ObjectPublisher::ObjectPublisher()
