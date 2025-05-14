@@ -48,8 +48,8 @@ TrackedObject::TrackedObject(const int& id, const float& left_x, const float& le
 }
 
 float TrackedObject::computeDistanceSquared(const float& x_in, const float& y_in) const {
-    const int obj_x = getCenterX();
-    const int obj_y = getCenterY();
+    const auto obj_x = getCenterX();
+    const auto obj_y = getCenterY();
     return (obj_x - x_in) * (obj_x - x_in) + (obj_y - y_in) * (obj_y - y_in);
 }
 

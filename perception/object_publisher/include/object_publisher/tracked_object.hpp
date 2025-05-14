@@ -30,8 +30,8 @@ public:
     float getLeftY() const { return kf_.statePost.at<float>(1); }
     float getRightX() const { return kf_.statePost.at<float>(2); }
     float getRightY() const { return kf_.statePost.at<float>(3); }
-    float getCenterX() const { return (getLeftX() + getRightX()) / 2.0f; }
-    float getCenterY() const { return (getLeftY() + getRightY()) / 2.0f; }
+    float getCenterX() const { return (getLeftX() + getRightX()) * 0.5; }
+    float getCenterY() const { return (getLeftY() + getRightY()) * 0.5; }
 
 private:
     static rclcpp::Node* node_ptr_;

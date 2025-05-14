@@ -4,9 +4,9 @@ namespace aiformula {
 
 ObjectPublisher::ObjectPublisher()
     : Node("object_publisher"),
-      camera_frame_id_(""),
-      vehicle_frame_id_(""),
-      odom_frame_id_(""),
+      camera_frame_id_(),
+      vehicle_frame_id_(),
+      odom_frame_id_(),
       debug_(false),
       object_separation_distance_(5.0),
       camera_matrix_(cv::Mat()),
@@ -48,7 +48,7 @@ void ObjectPublisher::initValues() {
 
 void ObjectPublisher::printParam() const {
     std::ostringstream log_stream;
-    const auto& formatter = createFormatter(20);
+    const auto formatter = createFormatter(20);
     const auto& trans = vehicle_T_camera_.getOrigin();
     const auto& rot = vehicle_T_camera_.getRotation();
     log_stream << "\n[" << __func__ << "] " << std::string(57, '=') << "\n"
@@ -81,7 +81,7 @@ void ObjectPublisher::bboxCallback(const aiformula_interfaces::msg::RectMultiArr
     if (debug_) unfiltered_object_msg.header = header;
 
     const auto odom_T_vehicle = getTf2Transform(this, odom_frame_id_, vehicle_frame_id_);
-    const double current_time = toTimeStampDouble(msg->header.stamp);
+    const auto current_time = toTimeStampDouble(msg->header.stamp);
     for (const auto& rect : msg->rects) {
         tf2::Vector3 bottom_left_in_vehicle, bottom_right_in_vehicle;
         if (!toPositionInVehicle(rect, bottom_left_in_vehicle, bottom_right_in_vehicle)) continue;
