@@ -45,7 +45,7 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
             remappings=[
                 ("sub_bbox", TOPIC_NAMES["perception"]["objects"]["bounding_box"]),
                 ("pub_object", TOPIC_NAMES["perception"]["objects"]["info"]),
-                ("pub_unfiltered_object", "/aiformula_visualization/object_publisher/unfiltered_object"),
+                ("pub_unfiltered_object", TOPIC_NAMES["visualization"]["unfiltered_object"]),
             ],
         ),
     )
@@ -96,7 +96,7 @@ def generate_launch_description():
         TOPIC_NAMES["perception"]["objects"]["bounding_box"],
         TOPIC_NAMES["visualization"]["annotated_mask_image"],
         "/tf",
-        "/tf_static",
+        # "/tf_static",
     ]
     rosbag_play = ExecuteProcess(
         cmd=[
