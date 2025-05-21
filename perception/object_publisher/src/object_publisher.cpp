@@ -130,19 +130,19 @@ void ObjectPublisher::updateOrAddObject(const tf2::Vector3& bottom_left, const t
 }
 
 TrackedObject* ObjectPublisher::findClosestObject(const double& obj_x, const double& obj_y) {
-    TrackedObject* closest_object = nullptr;
-    double closest_distance_squared = std::numeric_limits<double>::max();
-    const double object_separation_distance_squared = object_separation_distance_ * object_separation_distance_;
+    if (tracked_objects_.empty()) return nullptr;
 
-    for (auto& tracked_object : tracked_objects_) {
-        const double distance_squared = tracked_object.computeDistanceSquared(obj_x, obj_y);
-        if (object_separation_distance_squared < distance_squared) continue;
-        if (distance_squared < closest_distance_squared) {
-            closest_distance_squared = distance_squared;
-            closest_object = &tracked_object;
-        }
-    };
-    return closest_object;
+    std::vector<float> distances_squared;
+    for (const auto& tracked_object : tracked_objects_)
+        distances_squared.emplace_back(tracked_object.computeDistanceSquared(obj_x, obj_y));
+
+    const auto closest_distance_squared_it{std::min_element(distances_squared.begin(), distances_squared.end())};
+
+    const double max_distance_squared{object_separation_distance_ * object_separation_distance_};
+    if (*closest_distance_squared_it > max_distance_squared) return nullptr;
+
+    const auto closest_object_index{std::distance(distances_squared.begin(), closest_distance_squared_it)};
+    return &tracked_objects_.at(closest_object_index);
 }
 
 void ObjectPublisher::deleteExpiredObjects(const double& current_time) {
