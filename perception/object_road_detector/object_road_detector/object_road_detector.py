@@ -11,15 +11,15 @@ from rclpy.node import Node
 from sensor_msgs.msg import Image
 from std_msgs.msg import Header
 
-from YOLOP.lib.config import cfg                 # noqa: E402
-from YOLOP.lib.core.general import non_max_suppression, scale_coords  # noqa: E402
-from YOLOP.lib.models import get_net             # noqa: E402
-from YOLOP.lib.utils import letterbox_for_img    # noqa: E402
-from YOLOP.lib.utils.utils import select_device  # noqa: E402
+from yolop.lib.config import cfg
+from yolop.lib.core.general import non_max_suppression, scale_coords
+from yolop.lib.models import get_net
+from yolop.lib.utils import letterbox_for_img
+from yolop.lib.utils.utils import select_device
 
-from aiformula_interfaces.msg import RectMultiArray  # noqa: E402
-from common_python.get_ros_parameter import get_ros_parameter  # noqa: E402
-from .object_road_detector_util import to_rect, draw_lane_lines, draw_bounding_boxes  # noqa: E402
+from aiformula_interfaces.msg import RectMultiArray
+from common_python.get_ros_parameter import get_ros_parameter
+from .object_road_detector_util import to_rect, draw_lane_lines, draw_bounding_boxes
 
 
 class ObjectRoadDetector(Node):
@@ -68,7 +68,7 @@ class ObjectRoadDetector(Node):
         try:
             undistorted_image = self.cv_bridge.imgmsg_to_cv2(msg, 'bgr8')
         except CvBridgeError as e:
-            self.get_logger().warn()
+            self.get_logger().warning(f"CvBridgeError occurred: {str(e)}")
         # Padded resize
         padded_image, (ratio_to_padded, _), (pad_x_half, pad_y_half) = letterbox_for_img(undistorted_image,
                                                                                          new_shape=640, auto=True)  # ratio_to_padded (width, height)
@@ -90,8 +90,9 @@ class ObjectRoadDetector(Node):
                                   bbox_detections, msg.header)
 
     def decode_lane_line_output(self, ll_seg_raw: torch.Tensor, height: int, width: int, ratio_to_padded: float, pad_x_half: np.float64, pad_y_half: np.float64) -> np.ndarray:
-        top, bottom = round(pad_y_half - 0.1), round(pad_y_half + 0.1)
-        left, right = round(pad_x_half - 0.1), round(pad_x_half + 0.1)
+        ROUNDING_ADJUSTMENT = 0.1
+        top, bottom = round(pad_y_half - ROUNDING_ADJUSTMENT), round(pad_y_half + ROUNDING_ADJUSTMENT)
+        left, right = round(pad_x_half - ROUNDING_ADJUSTMENT), round(pad_x_half + ROUNDING_ADJUSTMENT)
         ll_predict = ll_seg_raw[:, :, top:(height-bottom), left:(width-right)]
         ll_seg_mask_raw = torch.nn.functional.interpolate(
             ll_predict, scale_factor=int(1.0/ratio_to_padded), mode='bilinear')

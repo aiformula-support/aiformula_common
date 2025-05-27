@@ -1,12 +1,11 @@
 from typing import Tuple
-
 import cv2
 import numpy as np
 import torch
 
-from YOLOP.lib.core.general import scale_coords  # noqa: E402
+from yolop.lib.core.general import scale_coords
 
-from aiformula_interfaces.msg import Rect        # noqa: E402
+from aiformula_interfaces.msg import Rect
 
 
 def to_rect(object_pose: torch.Tensor) -> Rect:
