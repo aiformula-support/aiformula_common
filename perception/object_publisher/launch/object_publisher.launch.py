@@ -94,9 +94,9 @@ def generate_launch_description():
 
     topics = [
         TOPIC_NAMES["perception"]["objects"]["bounding_box"],
-        TOPIC_NAMES["visualization"]["annotated_mask_image"],
+        TOPIC_NAMES["visualization"]["annotated_image"],
         "/tf",
-        # "/tf_static",
+        "/tf_static",
     ]
     rosbag_play = ExecuteProcess(
         cmd=[
