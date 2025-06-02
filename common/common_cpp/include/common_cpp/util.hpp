@@ -3,6 +3,7 @@
 
 #include <cxxabi.h>
 
+#include <iomanip>
 #include <memory>
 #include <typeinfo>
 
@@ -29,6 +30,14 @@ inline std::string toExceptionTypeString(const std::exception& e) {
 
     const std::string type_name = (status == 0) ? demangled_name.get() : typeid(e).name();
     return type_name;
+}
+
+inline std::function<std::string(const std::string&)> createFormatter(int width) {
+    return [width](const std::string& label) {
+        std::ostringstream oss;
+        oss << "    " << std::setw(width) << std::right << label << ": ";
+        return oss.str();
+    };
 }
 
 }  // namespace aiformula
