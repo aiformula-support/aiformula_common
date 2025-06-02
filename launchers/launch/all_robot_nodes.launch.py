@@ -116,6 +116,7 @@ def generate_launch_description():
                      "launch/object_publisher.launch.py"),
         ),
         launch_arguments={
+            "camera_name": CAMERA_NAME,
             "camera_sn": CAMERA_SN,
             "camera_resolution": CAMERA_RESOLUTION,
             "use_rviz": "false",
