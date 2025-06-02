@@ -46,6 +46,6 @@ control:
 # planning:
 
 visualization:
-  annotated_mask_image: "/aiformula_visualization/object_road_detector/annotated_mask_image"
+  annotated_image: "/aiformula_visualization/object_road_detector/annotated_image"
   aiformula_pilot: "/aiformula_visualization/zed/left_image/compressed"
   unfiltered_object: "/aiformula_visualization/object_publisher/unfiltered_object"

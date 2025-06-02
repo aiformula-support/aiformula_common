@@ -29,6 +29,9 @@ class MotorController(Node):
         self.can_pub = self.create_publisher(Frame, 'pub_can', buffer_size)
         self.publish_timer = self.create_timer(self.publish_timer_loop_duration, self.publish_canframe_callback)
         self.frame_msg = Frame()
+        self.frame_msg.header.frame_id = "can0"        # Default can0
+        self.frame_msg.id = 0x210                      # MotorController CAN ID : 0x210
+        self.frame_msg.dlc = 8                         # Data length
 
     def get_ros_params(self):
         self.diameter = get_ros_parameter(self, "wheel.diameter")
@@ -41,9 +44,6 @@ class MotorController(Node):
         cmd_left = self.toCanCmd(rpm[DriveWheel.LEFT])
         cmd_right = self.toCanCmd(rpm[DriveWheel.RIGHT])
         can_data = cmd_right + cmd_left
-        self.frame_msg.header.frame_id = "can0"        # Default can0
-        self.frame_msg.id = 0x210                      # MotorController CAN ID : 0x210
-        self.frame_msg.dlc = 8                         # Data length
         self.frame_msg.data = can_data
 
     def publish_canframe_callback(self):

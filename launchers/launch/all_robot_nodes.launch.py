@@ -35,6 +35,12 @@ def generate_launch_description():
         ),
     )
     # --- Perception --- #
+    object_road_detector = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("object_road_detector"),
+                     "launch/object_road_detector.launch.py"),
+        ),
+    )
     lane_line_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
             osp.join(get_package_share_directory("lane_line_publisher"), "launch/lane_line_publisher.launch.py"),
@@ -121,6 +127,7 @@ def generate_launch_description():
         vehicle_tf_broadcaster,
         zed_node,
         vectornav,
+        object_road_detector,
         lane_line_publisher,
         gamepad_joy,
         gamepad_teleop,
