@@ -4,11 +4,11 @@
 // ROS
 #include <rclcpp/rclcpp.hpp>
 
+// C++
+#include <optional>
+
 // OpenCV
 #include <opencv2/opencv.hpp>
-
-// Original
-#include "common_cpp/get_ros_parameter.hpp"
 
 namespace aiformula {
 
@@ -30,15 +30,15 @@ public:
     float getLeftY() const { return kf_.statePost.at<float>(1); }
     float getRightX() const { return kf_.statePost.at<float>(2); }
     float getRightY() const { return kf_.statePost.at<float>(3); }
-    float getCenterX() const { return (getLeftX() + getRightX()) / 2.0f; }
-    float getCenterY() const { return (getLeftY() + getRightY()) / 2.0f; }
+    float getCenterX() const { return (getLeftX() + getRightX()) * 0.5; }
+    float getCenterY() const { return (getLeftY() + getRightY()) * 0.5; }
 
 private:
-    static rclcpp::Node* node_ptr_;
-    static double process_noise_variance_;
-    static double measurement_noise_variance_;
-    static double initial_error_covariance_;
-    static double expiration_duration_;
+    static std::optional<rclcpp::Node*> node_ptr_;
+    static std::optional<double> process_noise_variance_;
+    static std::optional<double> measurement_noise_variance_;
+    static std::optional<double> initial_error_covariance_;
+    static std::optional<double> expiration_duration_;
 
     cv::KalmanFilter kf_;
     unsigned int id_;

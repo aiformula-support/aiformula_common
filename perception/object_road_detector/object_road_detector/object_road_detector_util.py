@@ -1,39 +1,41 @@
+from typing import Tuple
 import cv2
 import numpy as np
-import random
+import torch
+
+from yolop.lib.core.general import scale_coords
+
+from aiformula_interfaces.msg import Rect
 
 
-def show_seg_result(img, result, index, epoch, save_dir=None, is_ll=False, palette=None, is_demo=False, is_gt=False):
-    if palette is None:
-        palette = np.random.randint(
-            0, 255, size=(3, 3))
-    palette[0] = [0, 0, 0]
-    palette[1] = [0, 255, 0]
-    palette[2] = [255, 0, 0]
-    palette = np.array(palette)
-    assert palette.shape[0] == 3  # len(classes)
-    assert palette.shape[1] == 3
-    assert len(palette.shape) == 2
-
-    color_area = np.zeros(
-        (result[0].shape[0], result[0].shape[1], 3), dtype=np.uint8)
-    color_area[result[0] == 1] = [0, 255, 0]
-    color_area[result[1] == 1] = [255, 0, 0]
-    color_seg = color_area
-
-    # convert to BGR
-    color_seg = color_seg[..., ::-1]
-    color_mask = np.mean(color_seg, 2)
-    img[color_mask != 0] = img[color_mask != 0] * \
-        0.5 + color_seg[color_mask != 0] * 0.5
-    img = img.astype(np.uint8)
-    return img
+def to_rect(object_pose: torch.Tensor) -> Rect:
+    rect = Rect()
+    x_min, y_min, x_max, y_max = object_pose
+    rect.x = float(x_min)
+    rect.y = float(y_min)
+    rect.height = float(abs(y_min - y_max))
+    rect.width = float(abs(x_min - x_max))
+    return rect
 
 
-def plot_one_box(x, img, color=None, label=None, line_thickness=None):
-    # Plots one bounding box on image img
-    tl = line_thickness or round(
-        0.0001 * (img.shape[0] + img.shape[1]) / 2) + 1  # line/font thickness
-    color = color or [random.randint(0, 255) for _ in range(3)]
-    c1, c2 = (int(x[0]), int(x[1])), (int(x[2]), int(x[3]))
-    cv2.rectangle(img, c1, c2, color, thickness=tl, lineType=cv2.LINE_AA)
+def draw_lane_lines(image: np.ndarray, ll_seg_mask: np.ndarray, alpha: float = 0.5, color: Tuple[int, int, int] = (0, 255, 0)) -> None:
+    overlay = np.zeros_like(image, dtype=np.uint8)
+    LANE_LINE_VALUE = 1
+    mask = ll_seg_mask == LANE_LINE_VALUE
+    overlay[mask] = color
+    mask = ll_seg_mask.astype(bool)
+    image[mask] = cv2.addWeighted(image[mask], 1.0 - alpha, overlay[mask], alpha, gamma=0.0)
+
+
+def draw_bounding_boxes(image: np.ndarray, objects: torch.Tensor, input_image_shape: torch.Size) -> None:   # draw bbox with opencv
+    bboxes_coords = scale_coords(input_image_shape, objects[:, :4], image.shape).round()
+    for bboxes_coord in bboxes_coords:
+        plot_one_box(image, bboxes_coord)
+
+
+# Plots one bounding box on image
+def plot_one_box(image: np.ndarray, bbox_coords: torch.Tensor, color: Tuple[int, int, int] = (255, 0, 0)) -> None:
+    top_left = (int(bbox_coords[0]), int(bbox_coords[1]))
+    bottom_right = (int(bbox_coords[2]), int(bbox_coords[3]))
+    thickness = max(int(image.shape[0] * 0.002), 1)
+    cv2.rectangle(image, top_left, bottom_right, color, thickness, lineType=cv2.LINE_AA)

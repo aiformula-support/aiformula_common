@@ -4,13 +4,8 @@
 // C, C++
 #include <memory>
 
-// Ogre
-#include <OgreSceneManager.h>
-#include <OgreSceneNode.h>
-
 // ROS
 #include <rviz_common/properties/color_property.hpp>
-#include <rviz_common/properties/parse_color.hpp>
 #include <rviz_rendering/objects/movable_text.hpp>
 #include <rviz_rendering/objects/shape.hpp>
 
@@ -31,14 +26,14 @@ private:
     void displayObjectPositions(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
     void displayObjectWidth(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
     void displayObjectId(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
-    Ogre::ColourValue getColorWithConfidence(Ogre::ColourValue color, float confidence) const;
+    static Ogre::ColourValue getColorWithConfidence(Ogre::ColourValue color, float confidence);
 
     std::unique_ptr<rviz_common::properties::ColorProperty> position_color_property_;
     std::unique_ptr<rviz_common::properties::ColorProperty> width_color_property_;
     std::unique_ptr<rviz_common::properties::ColorProperty> id_color_property_;
     std::vector<std::unique_ptr<rviz_rendering::Shape>> position_shapes_;
     std::vector<std::unique_ptr<rviz_rendering::Shape>> width_shapes_;
-    std::vector<std::shared_ptr<rviz_rendering::MovableText>> id_texts_;
+    std::vector<std::unique_ptr<rviz_rendering::MovableText>> id_texts_;
 };
 
 }  // namespace rviz_aiformula_plugins

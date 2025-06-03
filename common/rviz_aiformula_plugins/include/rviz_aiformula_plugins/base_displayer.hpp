@@ -4,9 +4,7 @@
 // ROS
 #include <rviz_common/logging.hpp>
 #include <rviz_common/message_filter_display.hpp>
-
-// ROS msg
-#include <aiformula_interfaces/msg/object_info_multi_array.hpp>
+#include <rviz_common/properties/parse_color.hpp>
 
 namespace rviz_aiformula_plugins {
 

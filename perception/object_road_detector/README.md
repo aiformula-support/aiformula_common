@@ -1,13 +1,12 @@
-# Road Detection
-This package provides a road detector for AIFormula.
+# Object Road Detection
+This package provides a object road detector for AIFormula.
 This package is based on [YOLOP](https://github.com/hustvl/YOLOP)
 
 ![image](https://github.com/user-attachments/assets/078b5c81-7e08-4ad7-9dc2-9ec09a537de5)
 
 ## YOLOP
 ```
-cd ~/workspace
-git clone https://github.com/hustvl/YOLOP.git
+cd ~/workspace/ros/src/EC7D_AIformula_Control/perception/yolop/yolop
 ```
 ### requirements
 See requirements.txt for additional dependencies and version requirements.
@@ -50,8 +49,22 @@ cd torchvision
 export BUILD_VERSION=0.13.0
 python3 setup.py install --user
 ```
+### Environment setup
+Make sure you have pip and setuptools installed. Then:
+```
+cd ${EC7D_AIformula_Control}/perception/yolop
+pip install -e .
+```
+
+Set up your environment by export the following command.
+
+```sh
+export PYTHONPATH=${EC7D_AIformula_Control}/perception/yolop:$PYTHONPATH
+```
+
 ## Running Example:
-To start road detector
+
+* To start object road detector
 ```
 ros2 launch object_road_detector object_road_detector.launch.py
 ```

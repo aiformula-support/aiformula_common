@@ -12,10 +12,6 @@ from common_python.launch_util import get_frame_ids_and_topic_names
 from vehicle.vehicle_util import get_zed_intrinsic_param_path
 
 
-from launch.actions import IncludeLaunchDescription
-from launch.launch_description_sources import PythonLaunchDescriptionSource
-
-
 PACKAGE_NAME = "object_publisher"
 PACKAGE_DIR = get_package_share_directory(PACKAGE_NAME)
 FRAME_IDS, TOPIC_NAMES = get_frame_ids_and_topic_names()
@@ -40,6 +36,7 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
             emulate_tty=True,
             parameters=[*ROS_PARAM_CONFIG,
                         {
+                            "camera_name": LaunchConfiguration("camera_name"),
                             "camera_frame_id": FRAME_IDS["zedx"]["left"],
                             "vehicle_frame_id": FRAME_IDS["base_footprint"],
                             "odom_frame_id": FRAME_IDS["odom"],
@@ -48,15 +45,19 @@ def create_object_publisher_node(context: LaunchContext) -> Tuple[Node]:
             remappings=[
                 ("sub_bbox", TOPIC_NAMES["perception"]["objects"]["bounding_box"]),
                 ("pub_object", TOPIC_NAMES["perception"]["objects"]["info"]),
-                ("pub_unfiltered_object", "/aiformula_visualization/object_publisher/unfiltered_object"),
+                ("pub_unfiltered_object", TOPIC_NAMES["visualization"]["unfiltered_object"]),
             ],
         ),
     )
 
 
 def generate_launch_description():
-
     launch_args = (
+        DeclareLaunchArgument(
+            "camera_name",
+            default_value="zedx",
+            description="Camera name passed to getCameraParams() to load the corresponding configuration",
+        ),
         DeclareLaunchArgument(
             "camera_sn",
             default_value="SN48311510",
@@ -92,9 +93,8 @@ def generate_launch_description():
     object_publisher = OpaqueFunction(function=create_object_publisher_node)
 
     topics = [
-        TOPIC_NAMES["sensing"]["odometry"]["gyro"],
         TOPIC_NAMES["perception"]["objects"]["bounding_box"],
-        TOPIC_NAMES["visualization"]["annotated_mask_image"],
+        TOPIC_NAMES["visualization"]["annotated_image"],
         "/tf",
         "/tf_static",
     ]

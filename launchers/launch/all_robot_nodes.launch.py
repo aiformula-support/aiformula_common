@@ -45,10 +45,16 @@ def generate_launch_description():
         ),
     )
     # --- Perception --- #
-    road_publisher = IncludeLaunchDescription(
+    object_road_detector = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("road_publisher"),
-                     "launch/road_publisher.launch.py"),
+            osp.join(get_package_share_directory("object_road_detector"),
+                     "launch/object_road_detector.launch.py"),
+        ),
+    )
+    lane_line_publisher = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("lane_line_publisher"),
+                     "launch/lane_line_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -128,6 +134,7 @@ def generate_launch_description():
                      "launch/object_publisher.launch.py"),
         ),
         launch_arguments={
+            "camera_name": CAMERA_NAME,
             "camera_sn": CAMERA_SN,
             "camera_resolution": CAMERA_RESOLUTION,
             "use_rviz": "false",
@@ -140,7 +147,8 @@ def generate_launch_description():
         vehicle_tf_broadcaster,
         zed_node,
         vectornav,
-        road_publisher,
+        object_road_detector,
+        lane_line_publisher,
         gamepad_joy,
         gamepad_teleop,
         twist_mux,
@@ -149,6 +157,6 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
-        #extremum_seeking_mpc,
+        extremum_seeking_mpc,
         object_publisher,
     ])
