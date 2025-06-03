@@ -11,6 +11,3 @@
 [submodule "perception/yolop/yolop"]
 	path = perception/yolop/yolop
 	url = https://github.com/hustvl/YOLOP.git
-[submodule "control/--force"]
-	path = control/--force
-	url = https://github.com/ros-teleop/twist_mux.git
