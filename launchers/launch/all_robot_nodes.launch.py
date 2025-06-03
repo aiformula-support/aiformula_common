@@ -16,7 +16,7 @@ def generate_launch_description():
     launch_args = (
         DeclareLaunchArgument(
             "autopilot",
-            default_value="true",
+            default_value="false",
             description="If true, robot runs autonomously",
         )
     )
