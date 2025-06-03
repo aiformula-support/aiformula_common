@@ -1,4 +1,5 @@
 import numpy as np
+from typing import List
 
 from nav_msgs.msg import Odometry
 from rclpy.node import Node
@@ -9,7 +10,7 @@ from .util import Position2d, Pose, Velocity
 
 class PosePredictor:
 
-    def __init__(self, node: Node, horizon_times: list[float], seek_y_positions: np.ndarray, buffer_size: int):
+    def __init__(self, node: Node, horizon_times: List[float], seek_y_positions: np.ndarray, buffer_size: int):
         self.init_parameters(node)
         self.init_connections(node, buffer_size)
         self.ego_current_velocity = None

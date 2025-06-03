@@ -1,4 +1,5 @@
 import numpy as np
+from typing import Tuple
 
 from geometry_msgs.msg import Twist, TransformStamped
 import rclpy
@@ -68,7 +69,7 @@ class ExtremumSeekingMpc(Node):
     def init_connections(self):
         self.twist_pub = self.create_publisher(Twist, 'pub_twist_command', self.buffer_size)
 
-    def predict_ego_position(self, curvatures: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def predict_ego_position(self, curvatures: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         ego_positions = self.pose_predictor.predict_relative_ego_positions(curvatures)
         seek_position_relative = self.pose_predictor.predict_relative_seek_positions(ego_positions)
         seek_positions = self.pose_predictor.predict_absolute_seek_positions(ego_positions, seek_position_relative)
@@ -79,7 +80,7 @@ class ExtremumSeekingMpc(Node):
         object_risk = self.object_risk_calculator.compute_object_risk(seek_positions)
         return object_risk
 
-    def calculate_road_risk(self, seek_positions: np.ndarray) -> tuple[np.ndarray, np.ndarray, np.ndarray]:
+    def calculate_road_risk(self, seek_positions: np.ndarray) -> Tuple[np.ndarray, np.ndarray, np.ndarray]:
         left_road_risk, left_y_hat = self.road_risk_calculator.compute_road_risk(seek_positions, Side.LEFT)
         right_road_risk, right_y_hat = self.road_risk_calculator.compute_road_risk(seek_positions, Side.RIGHT)
         benefit = self.road_risk_calculator.get_benefit_value(seek_positions, left_y_hat, right_y_hat)
@@ -90,7 +91,7 @@ class ExtremumSeekingMpc(Node):
 
         return total_risk
 
-    def calculate_yaw_rate(self, total_risk: np.ndarray) -> tuple[float, float, np.ndarray]:
+    def calculate_yaw_rate(self, total_risk: np.ndarray) -> Tuple[float, float, np.ndarray]:
         curvatures = self.path_optimizer.apply_extremum_seeking_control(total_risk)
         predicted_pose = self.pose_predictor.predict_pose(self.curvatures[0], self.predict_horizon[0])
         yaw_angle = predicted_pose.yaw

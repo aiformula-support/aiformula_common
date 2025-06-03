@@ -149,6 +149,6 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
-        extremum_seeking_mpc,
+        #extremum_seeking_mpc,
         object_publisher,
     ])

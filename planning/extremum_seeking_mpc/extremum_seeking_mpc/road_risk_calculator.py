@@ -3,6 +3,7 @@ from functools import partial
 import numpy as np
 from scipy.interpolate import interp1d
 from scipy.stats import multivariate_normal
+from typing import Tuple
 
 from rclpy.node import Node
 from sensor_msgs.msg import PointCloud2
@@ -89,7 +90,7 @@ class RoadRiskCalculator:
             return
         self.point_length[side], self.road_offset[side], self.road_thetas[side] = self.line_identification(lane_points)
 
-    def line_identification(self, lane_points: np.ndarray) -> tuple[float, float, np.ndarray]:
+    def line_identification(self, lane_points: np.ndarray) -> Tuple[float, float, np.ndarray]:
         x_coords, y_coords = lane_points[:, 0], lane_points[:, 1]
         x_min = min(x_coords)
         x_range = max(x_coords) - x_min
@@ -116,7 +117,7 @@ class RoadRiskCalculator:
 
         return x_range, x_min, self.thetas
 
-    def identify_function_coefficients(self, ddtheta: np.ndarray, dtheta_memory: np.ndarray) -> tuple[np.ndarray, np.ndarray]:
+    def identify_function_coefficients(self, ddtheta: np.ndarray, dtheta_memory: np.ndarray) -> Tuple[np.ndarray, np.ndarray]:
         dtheta = ddtheta + (dtheta_memory * self.forget_vector)
         dtheta[:, 0] = np.clip(dtheta[:, 0], -self.road_parameter_limit, self.road_parameter_limit)
         theta = dtheta + np.array(self.theta_base)
@@ -136,7 +137,7 @@ class RoadRiskCalculator:
 
         return sum(y_hats)
 
-    def compute_road_risk(self, seek_positions: np.ndarray, side: Side) -> tuple[np.ndarray, float]:
+    def compute_road_risk(self, seek_positions: np.ndarray, side: Side) -> Tuple[np.ndarray, float]:
         num_positions = len(seek_positions)
         num_seek_position = len(seek_positions[0][0])
         risks = np.zeros((num_positions, num_seek_position))

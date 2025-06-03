@@ -1,6 +1,7 @@
 import numpy as np
 from scipy.stats import multivariate_normal
 import threading
+from typing import List
 
 from rclpy.node import Node
 
@@ -51,7 +52,7 @@ class ObjectRiskCalculator:
 
             return np.array(seek_points_risk)
 
-    def get_object_risk_value(self, objects: list[float], seek_positions: np.ndarray) -> np.ndarray:
+    def get_object_risk_value(self, objects: List[float], seek_positions: np.ndarray) -> np.ndarray:
         num_seek_points = seek_positions.shape[1]
         var_x = self.object_risk_variance_x**2
         var_y = self.object_risk_variance_y**2
