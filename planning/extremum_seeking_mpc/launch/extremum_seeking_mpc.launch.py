@@ -29,7 +29,7 @@ def generate_launch_description():
         parameters=[*ROS_PARAM_CONFIG,
                     {"base_footprint_frame_id": FRAME_IDS["base_footprint"], },],
         remappings=[
-            ('pub_twist_command', TOPIC_NAMES["planning"]["twist_command"]),
+            ('pub_twist_command', TOPIC_NAMES["control"]["speed_command"]["mpc"]),
             ('sub_road_l', TOPIC_NAMES["perception"]["lane_lines"]["left"]),
             ('sub_road_r', TOPIC_NAMES["perception"]["lane_lines"]["right"]),
             ('sub_odom', TOPIC_NAMES["sensing"]["odometry"]["gyro"]),
