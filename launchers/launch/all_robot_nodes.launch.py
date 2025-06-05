@@ -1,7 +1,9 @@
 import os.path as osp
 from launch import LaunchDescription
-from launch.actions import IncludeLaunchDescription
+from launch.actions import IncludeLaunchDescription, DeclareLaunchArgument
 from launch.launch_description_sources import PythonLaunchDescriptionSource
+from launch.substitutions import LaunchConfiguration
+from launch.conditions import IfCondition
 from ament_index_python.packages import get_package_share_directory
 
 
@@ -10,6 +12,14 @@ def generate_launch_description():
     CAMERA_NAME = "zedx"
     CAMERA_SN = "SN48311510"
     CAMERA_RESOLUTION = "nHD"
+
+    launch_args = (
+        DeclareLaunchArgument(
+            "autopilot",
+            default_value="false",
+            description="If true, robot runs autonomously",
+        )
+    )
 
     vehicle_tf_broadcaster = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -43,7 +53,8 @@ def generate_launch_description():
     )
     lane_line_publisher = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
-            osp.join(get_package_share_directory("lane_line_publisher"), "launch/lane_line_publisher.launch.py"),
+            osp.join(get_package_share_directory("lane_line_publisher"),
+                     "launch/lane_line_publisher.launch.py"),
         ),
         launch_arguments={
             "camera_name": CAMERA_NAME,
@@ -103,6 +114,13 @@ def generate_launch_description():
                      "launch/rear_potentiometer.launch.py"),
         ),
     )
+    extremum_seeking_mpc = IncludeLaunchDescription(
+        PythonLaunchDescriptionSource(
+            osp.join(get_package_share_directory("extremum_seeking_mpc"),
+                     "launch/extremum_seeking_mpc.launch.py"),
+        ),
+        condition=IfCondition([LaunchConfiguration("autopilot")]),
+    )
     # --- Compress Zed Image for AI Formula Pilot --- #
     image_compressor = IncludeLaunchDescription(
         PythonLaunchDescriptionSource(
@@ -125,6 +143,7 @@ def generate_launch_description():
     )
 
     return LaunchDescription([
+        launch_args,
         vehicle_tf_broadcaster,
         zed_node,
         vectornav,
@@ -138,5 +157,6 @@ def generate_launch_description():
         gyro_odometry_publisher,
         rear_potentiometer,
         image_compressor,
+        extremum_seeking_mpc,
         object_publisher,
     ])

@@ -43,8 +43,6 @@ control:
     gamepad: "/aiformula_control/twist_mux/gamepad/lock"
   output_can_data: "/aiformula_control/motor_controller/reference_signal"
 
-# planning:
-
 visualization:
   annotated_image: "/aiformula_visualization/object_road_detector/annotated_image"
   aiformula_pilot: "/aiformula_visualization/zed/left_image/compressed"
