@@ -10,22 +10,22 @@
 #include <rviz_rendering/objects/shape.hpp>
 
 // ROS msg
-#include <aiformula_interfaces/msg/object_info_multi_array.hpp>
+#include <aiformula_msgs/msg/object_info_multi_array.hpp>
 
 // Original
 #include <rviz_aiformula_plugins/base_displayer.hpp>
 
 namespace rviz_aiformula_plugins {
 
-class ObjectInfoMultiArrayDisplayer : public BaseDisplayer<aiformula_interfaces::msg::ObjectInfoMultiArray> {
+class ObjectInfoMultiArrayDisplayer : public BaseDisplayer<aiformula_msgs::msg::ObjectInfoMultiArray> {
     Q_OBJECT
 
 private:
     void onInitialize() override;
-    void processMessage(const aiformula_interfaces::msg::ObjectInfoMultiArray::ConstSharedPtr msg) override;
-    void displayObjectPositions(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
-    void displayObjectWidth(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
-    void displayObjectId(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects);
+    void processMessage(const aiformula_msgs::msg::ObjectInfoMultiArray::ConstSharedPtr msg) override;
+    void displayObjectPositions(const std::vector<aiformula_msgs::msg::ObjectInfo> &objects);
+    void displayObjectWidth(const std::vector<aiformula_msgs::msg::ObjectInfo> &objects);
+    void displayObjectId(const std::vector<aiformula_msgs::msg::ObjectInfo> &objects);
     static Ogre::ColourValue getColorWithConfidence(Ogre::ColourValue color, float confidence);
 
     std::unique_ptr<rviz_common::properties::ColorProperty> position_color_property_;
