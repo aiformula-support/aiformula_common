@@ -1,22 +1,22 @@
 from setuptools import find_packages, setup
+
 from common_python.setup_util import get_data_files
 
-package_name = 'common_python'
+package_name = "common_python"
 
 setup(
     name=package_name,
-    version='0.0.0',
+    version="0.0.0",
     packages=find_packages(),
     data_files=get_data_files(package_name),
-    install_requires=['setuptools'],
+    install_requires=["setuptools"],
     zip_safe=True,
-    maintainer='Yuki Akimoto',
-    maintainer_email='yuki_akimoto@jp.honda',
-    description='TODO: Package description',
-    license='TODO: License declaration',
-    tests_require=['pytest'],
+    maintainer="Yuki Akimoto",
+    maintainer_email="yuki_akimoto@jp.honda",
+    description="TODO: Package description",
+    license="TODO: License declaration",
+    tests_require=["pytest"],
     entry_points={
-        'console_scripts': [
-        ],
+        "console_scripts": [],
     },
 )

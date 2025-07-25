@@ -1,8 +1,8 @@
 import os
 
 import rclpy
-from rclpy.node import Node
 from builtin_interfaces.msg import Time
+from rclpy.node import Node
 
 
 def abort(node: Node) -> None:

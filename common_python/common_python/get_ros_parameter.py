@@ -3,7 +3,7 @@ from typing import Any
 import rclpy
 from rcl_interfaces.msg import ParameterDescriptor
 
-from common_python.util import get_ros_distro, abort
+from common_python.util import abort, get_ros_distro
 
 
 def get_ros_parameter(node: rclpy.node.Node, param_name: str) -> Any:

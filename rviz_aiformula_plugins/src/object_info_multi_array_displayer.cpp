@@ -20,7 +20,7 @@ void ObjectInfoMultiArrayDisplayer::onInitialize() {
 }
 
 void ObjectInfoMultiArrayDisplayer::processMessage(
-    const aiformula_interfaces::msg::ObjectInfoMultiArray::ConstSharedPtr msg) {
+    const aiformula_msgs::msg::ObjectInfoMultiArray::ConstSharedPtr msg) {
     this->updateSceneNodeTransform(msg->header);
     displayObjectPositions(msg->objects);
     displayObjectWidth(msg->objects);
@@ -28,7 +28,7 @@ void ObjectInfoMultiArrayDisplayer::processMessage(
 }
 
 void ObjectInfoMultiArrayDisplayer::displayObjectPositions(
-    const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects) {
+    const std::vector<aiformula_msgs::msg::ObjectInfo> &objects) {
     static const Ogre::Vector3 marker_scale(0.6, 0.6, 0.1);
     const Ogre::ColourValue color = rviz_common::properties::qtToOgre(position_color_property_->getColor());
 
@@ -43,7 +43,7 @@ void ObjectInfoMultiArrayDisplayer::displayObjectPositions(
 }
 
 void ObjectInfoMultiArrayDisplayer::displayObjectWidth(
-    const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects) {
+    const std::vector<aiformula_msgs::msg::ObjectInfo> &objects) {
     const Ogre::ColourValue color = rviz_common::properties::qtToOgre(width_color_property_->getColor());
 
     width_shapes_.clear();
@@ -56,7 +56,7 @@ void ObjectInfoMultiArrayDisplayer::displayObjectWidth(
     }
 }
 
-void ObjectInfoMultiArrayDisplayer::displayObjectId(const std::vector<aiformula_interfaces::msg::ObjectInfo> &objects) {
+void ObjectInfoMultiArrayDisplayer::displayObjectId(const std::vector<aiformula_msgs::msg::ObjectInfo> &objects) {
     const Ogre::ColourValue color = rviz_common::properties::qtToOgre(id_color_property_->getColor());
 
     id_texts_.clear();
