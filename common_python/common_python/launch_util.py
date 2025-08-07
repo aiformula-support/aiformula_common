@@ -1,7 +1,7 @@
-import sys
-from itertools import count
-from typing import List
 import os.path as osp
+from itertools import count
+from typing import Tuple
+
 import yaml
 from ament_index_python.packages import get_package_share_directory
 
@@ -29,7 +29,7 @@ def get_unique_name(name: str) -> str:
     return f"{name}_{unique_id:04d}"
 
 
-def get_frame_ids_and_topic_names() -> List[dict]:
+def get_frame_ids_and_topic_names() -> Tuple[dict]:
     """Read `sample_launchers/config/{frame_ids.yaml, topic_list.yaml}` and return their dictionaries.
 
     Returns:
@@ -55,10 +55,10 @@ def check_zedx_available_fps(grab_resolution, grab_frame_rate):
     with open(osp.join(get_package_share_directory("sample_vehicle"), "config/zedx/check_fps.yaml"), "r") as yml:
         params = yaml.safe_load(yml)
 
-    if (grab_resolution == 'HD1200' or grab_resolution == 'HD1080'):
+    if grab_resolution == "HD1200" or grab_resolution == "HD1080":
         avairable_fps = params["ZEDX_CAMERA"]["GRAB_FPS_HD"]
 
-    elif (grab_resolution == 'SVGA'):
+    elif grab_resolution == "SVGA":
         avairable_fps = params["ZEDX_CAMERA"]["GRAB_FPS_SVGA"]
 
     else:
@@ -70,6 +70,6 @@ def check_zedx_available_fps(grab_resolution, grab_frame_rate):
         return True
 
     else:
-        avairable_fps_str = ', '.join(str(fps) for fps in avairable_fps)
+        avairable_fps_str = ", ".join(str(fps) for fps in avairable_fps)
         print("\033[31m" + f"{grab_resolution}:  Please select a fps from {avairable_fps_str}" + "\033[0m")
         return False

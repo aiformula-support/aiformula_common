@@ -20,7 +20,7 @@ find_package(ament_cmake_ros REQUIRED)
 find_package(pluginlib REQUIRED)
 find_package(rviz_common REQUIRED)
 find_package(rviz_rendering REQUIRED)
-find_package(aiformula_interfaces REQUIRED)
+find_package(aiformula_msgs REQUIRED)
 
 set(CMAKE_AUTOMOC ON)
 qt5_wrap_cpp(MOC_FILES
@@ -40,7 +40,7 @@ ament_target_dependencies(object_info_multi_array_displayer
     pluginlib
     rviz_common
     rviz_rendering
-    aiformula_interfaces
+    aiformula_msgs
 )
 
 install(TARGETS

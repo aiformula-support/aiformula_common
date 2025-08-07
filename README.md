@@ -6,5 +6,6 @@
 
 ## Open Source Projects Related to AI-Formula
 * [aiformula](https://github.com/aiformula-support/aiformula)
+* [aiformula_control](https://github.com/aiformula-support/aiformula_control)
 * [aiformula_common](https://github.com/aiformula-support/aiformula_common)
 * [aiformula_pilot](https://github.com/aiformula-support/aiformula_pilot)
