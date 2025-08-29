@@ -29,27 +29,6 @@ def get_unique_name(name: str) -> str:
     return f"{name}_{unique_id:04d}"
 
 
-def get_frame_ids_and_topic_names() -> Tuple[dict]:
-    """Read `sample_launchers/config/{frame_ids.yaml, topic_list.yaml}` and return their dictionaries.
-
-    Returns:
-    ----------
-    All frame ids and topic names.
-
-    Examples:
-    ----------
-    >>> FRAME_IDS, TOPIC_NAMES = get_frame_ids_and_topic_names()
-    >>>         _, TOPIC_NAMES = get_frame_ids_and_topic_names()
-    >>> FRAME_IDS, _           = get_frame_ids_and_topic_names()
-    """
-
-    with open(osp.join(get_package_share_directory("sample_launchers"), "config/topic_list.yaml"), "r") as yml:
-        topic_names = yaml.safe_load(yml)
-    with open(osp.join(get_package_share_directory("sample_launchers"), "config/frame_id_list.yaml"), "r") as yml:
-        frame_ids = yaml.safe_load(yml)
-    return frame_ids, topic_names
-
-
 def check_zedx_available_fps(grab_resolution, grab_frame_rate):
 
     with open(osp.join(get_package_share_directory("sample_vehicle"), "config/zedx/check_fps.yaml"), "r") as yml:
