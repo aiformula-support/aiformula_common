@@ -28,17 +28,11 @@
         <geometry>
           <mesh filename="${MESH_FILE}" scale="${SCALE} ${SCALE} ${SCALE}"/>
         </geometry>
-        <!-- <origin xyz="0.0  0.001  0.0" rpy="0.0  0.0  0.0"/>
-        <geometry>
-          <box size="0.030  0.009  0.020"/>
-        </geometry> -->
       </collision>
       <inertial>
         <origin xyz="${x} ${y} ${z}" rpy="${roll} ${pitch} ${yaw}"/>
-        <mass value="0.005" />
-        <inertia ixx="0.001" ixy="0.0" ixz="0.0" iyy="0.001" iyz="0.0" izz="0.001"/>
-        <!-- <mass value="5.0" />
-        <inertia ixx="0.01517" ixy="0.0" ixz="0.0" iyy="0.01517" iyz="0.0" izz="0.02500"/> -->
+        <mass value="5.0" />
+        <inertia ixx="0.01517" ixy="0.0" ixz="0.0" iyy="0.01517" iyz="0.0" izz="0.02500"/>
       </inertial>
     </link>
   </xacro:macro>  
